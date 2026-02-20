@@ -1,8 +1,8 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 
-namespace Project3_Travelin.ViewComponents.TourViewComponents
+namespace Project3_Travelin.ViewComponents.DefaultViewComponents
 {
-    public class _TourHeadComponentPartial :ViewComponent
+    public class _DefaultScriptComponentPartial :ViewComponent
     {
         public IViewComponentResult Invoke()
         {
