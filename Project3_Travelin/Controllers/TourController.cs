@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using AutoMapper;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Project3_Travelin.DTOs.TourDTOs;
 using Project3_Travelin.Services.TourServices;
@@ -8,10 +9,13 @@ namespace Project3_Travelin.Controllers
     public class TourController : Controller
     {
         private readonly ITourService _tourService;
+        private readonly IMapper _mapper;
 
-        public TourController(ITourService tourService)
+
+        public TourController(ITourService tourService, IMapper mapper)
         {
             _tourService = tourService;
+            _mapper = mapper;
         }
 
         public IActionResult CreateTour()
@@ -43,6 +47,12 @@ namespace Project3_Travelin.Controllers
             ViewBag.TotalPages = totalPages;
 
             return View(pagedValues);
+        }
+        public async Task<IActionResult> TourDetail(string id)
+        {
+            var value = await _tourService.GetTourByIdAsync(id);
+
+            return View(value);
         }
     }
 }

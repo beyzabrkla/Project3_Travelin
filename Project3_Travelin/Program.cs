@@ -2,6 +2,7 @@ using Microsoft.Extensions.Options;
 using MongoDB.Driver.Core.Operations;
 using Project3_Travelin.Services.CategoryServices;
 using Project3_Travelin.Services.CommentServices;
+using Project3_Travelin.Services.GuideServices;
 using Project3_Travelin.Services.TourServices;
 using Project3_Travelin.Settings;
 using System.Reflection;
@@ -11,6 +12,7 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddScoped<ICommentService, CommentService>(); //DI mantýðý ICommentService istenildiðinde CommentService sunuluyor (metotlarýyla)== best practices
 builder.Services.AddScoped<ICategoryService, CategoryService>(); 
 builder.Services.AddScoped<ITourService, TourService>();
+builder.Services.AddScoped<IGuideService, GuideService>();
 
 builder.Services.AddAutoMapper(Assembly.GetExecutingAssembly()); //AutoMapper’ýn kullanýlabilmesi için uygulamaya ekleniyor
                                                                  //- Projedeki tüm Profile sýnýflarýný (AutoMapper konfigürasyonlarýný) bulup yükler.

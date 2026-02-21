@@ -1,0 +1,30 @@
+﻿@model CreateGuideDTO
+
+@{
+    ViewData["Title"] = "Yeni Rehber Ekle";
+    Layout = null; 
+}
+
+<div class="container mt-4">
+    <h3>Yeni Rehber Kaydı</h3>
+    <form method="post">
+        <div class="form-group mb-3">
+            <input type="hidden" asp-for="Status" value="true" />
+            <label>Rehber Adı Soyadı</label>
+            <input type="text" asp-for="Name" class="form-control" required />
+        </div>
+        <div class="form-group mb-3">
+            <label>Unvanı (Örn: Tarihçi, Dağcı)</label>
+            <input type="text" asp-for="Title" class="form-control" />
+        </div>
+        <div class="form-group mb-3">
+            <label>Profil Fotoğrafı Linki</label>
+            <input type="text" asp-for="ImageUrl" class="form-control" />
+        </div>
+        <div class="form-group mb-3">
+            <label>Kısa Biyografi</label>
+            <textarea asp-for="Description" class="form-control" rows="4"></textarea>
+        </div>
+        <button type="submit" class="btn btn-primary">Rehberi Kaydet</button>
+    </form>
+</div>

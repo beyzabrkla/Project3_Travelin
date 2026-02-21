@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using Project3_Travelin.DTOs.CategoryDTOs;
+using Project3_Travelin.DTOs.GuideDTOs;
 using Project3_Travelin.DTOs.TourDTOs;
 using Project3_Travelin.Entities;
 
@@ -18,6 +19,14 @@ namespace Project3_Travelin.Mapping
             CreateMap<Tour, ResultTourDTO>().ReverseMap();
             CreateMap<Tour, UpdateTourDTO>().ReverseMap();
             CreateMap<Tour, GetTourByIdDTO>().ReverseMap();
+
+            CreateMap<GetTourByIdDTO, ResultTourDTO>().ReverseMap();
+
+
+            CreateMap<Guide, CreateGuideDTO>().ReverseMap();    
+            CreateMap<Guide, ResultGuideDTO>().ReverseMap();
+            CreateMap<Guide, UpdateGuideDTO>().ReverseMap();
+            CreateMap<Guide, GetGuideByIdDTO>().ReverseMap();
         }
     }
 }

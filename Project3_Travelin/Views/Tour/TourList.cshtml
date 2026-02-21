@@ -5,8 +5,6 @@
     int currentPage = int.Parse(Context.Request.Query["page"].FirstOrDefault() ?? "1");
 }
 
-
-
 <section class="breadcrumb-main pb-20 pt-14" style="background-image: url(/travelin/images/bg/bg1.jpg);">
     <div class="section-shape section-shape1 top-inherit bottom-0" style="background-image: url(/travelin/images/shape8.png);"></div>
     <div class="breadcrumb-outer">
@@ -77,7 +75,7 @@
                                     <h3 class="mb-0">@x.TourPrice ₺</h3>
                                     <small>Kişi Başı</small>
                                 </div>
-                                <a href="tour-single.html" class="nir-btn">Detay</a>
+                                <a href="/Tour/TourDetail/@x.TourId" class="nir-btn">Detay</a>
                             </div>
                         </div>
                     </div>

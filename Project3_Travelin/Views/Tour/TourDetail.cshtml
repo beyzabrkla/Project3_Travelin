@@ -1,0 +1,191 @@
+﻿@model GetTourByIdDTO
+@{
+    ViewData["Title"] = "TourDetail";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<section class="breadcrumb-main pb-20 pt-14" style="background-image: url(@Model.ImageUrl);">
+    <div class="section-shape section-shape1 top-inherit bottom-0" style="background-image: url(/images/shape8.png);"></div>
+    <div class="breadcrumb-outer">
+        <div class="container">
+            <div class="breadcrumb-content text-center">
+                <h1 class="mb-3">@Model.TourTitle</h1>
+                <nav aria-label="breadcrumb" class="d-block">
+                    <ul class="breadcrumb">
+                        <li class="breadcrumb-item"><a href="/Home/Index">AnaSayfa</a></li>
+                        <li class="breadcrumb-item active" aria-current="page">Tur Detayları</li>
+                    </ul>
+                </nav>
+            </div>
+        </div>
+    </div>
+    <div class="dot-overlay"></div>
+</section>
+<section class="trending pt-6 pb-0 bg-lgrey overflow-hidden">
+    <div class="tabs-navbar1 bg-white sticky1 bordernone py-3">
+        <ul id="tabs" class="nav nav-tabs bordernone mb-0 overflow-visible">
+            <li class="active"><a data-toggle="tab" href="#highlight">Genel Bilgiler</a></li>
+            <li><a data-toggle="tab" href="#single-comments">Yorumlar</a></li>
+        </ul>
+    </div>
+    <div class="container">
+        <div class="single-content">
+            <div id="highlight">
+                <div class="single-full-title border-b mb-2 pb-2">
+                    <div class="single-title text-center">
+                        <h2 class="mb-1">@Model.TourTitle</h2>
+                        <div class="rating-main">
+                            <p class="mb-0 me-2 d-inline-block"><i class="icon-location-pin"></i> @Model.TourCity, @Model.TourCountry</p>
+                            <div class="rating me-2 d-inline-block">
+                                <span class="fa fa-star checked"></span>
+                                <span class="fa fa-star checked"></span>
+                                <span class="fa fa-star checked"></span>
+                                <span class="fa fa-star checked"></span>
+                                <span class="fa fa-star checked"></span>
+                            </div>
+                            <span>(1,186 Değerlendirme)</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="description-images mb-4">
+                    <div class="row">
+                        @if (Model.ImageAlbumUrls != null && Model.ImageAlbumUrls.Any())
+                        {
+                            foreach (var item in Model.ImageAlbumUrls.Take(3)) // İlk 3 resmi gösterir
+                            {
+                                <div class="col-md-4 col-sm-6 mb-2">
+                                    <img src="@item" alt="Tur Fotoğrafı" class="rounded w-100" style="height:250px; object-fit:cover;">
+                                </div>
+                            }
+                        }
+                    </div>
+                </div>
+
+                <div class="description mb-2">
+                    <h4>Tur Açıklaması</h4>
+                    <p>@Model.SubDescription</p>
+                    <p class="mb-0">@Model.FullDescription</p>
+                </div>
+
+                <div class="tour-includes mb-4">
+                    <table>
+                        <tbody>
+                            <tr>
+                                <td><i class="fa fa-clock-o pink mr-1" aria-hidden="true"></i> @Model.DayNight</td>
+                                <td><i class="fa fa-group pink mr-1" aria-hidden="true"></i> Max Kapasite : @Model.TourCapacity</td>
+                                <td><i class="fa fa-calendar pink mr-1" aria-hidden="true"></i> @Model.TourDate.ToString("dd MMM yyyy")</td>
+                            </tr>
+                            <tr>
+                                <td><i class="fa fa-tag pink mr-1" aria-hidden="true"></i> Fiyat : @Model.TourPrice.ToString("C2")</td>
+                                <td><i class="fa fa-map-signs pink mr-1" aria-hidden="true"></i> Alış: Havalimanı</td>
+                                <td><i class="fa fa-file-alt pink mr-1" aria-hidden="true"></i> Dil: Türkçe, İngilizce</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="description mb-4">
+                    <h4>Sizi Neler Bekliyor?</h4>
+                    <p>Bu tur kapsamında @Model.TourCity şehrinin en ikonik noktalarını profesyonel rehberlerimiz eşliğinde keşfedeceksiniz. @Model.DayNight sürecek olan bu macerada konforlu ulaşım ve konaklama imkanlarıyla sadece tatilinize odaklanacaksınız.</p>
+                </div>
+            </div>
+
+            <!-- blog comment list -->
+            <div id="single-comments" class="single-comments single-box mb-4">
+                <h5 class="border-b pb-2 mb-2">Showing 16 verified guest comments</h5>
+                <div class="comment-box">
+                    <div class="comment-image">
+                        <img src="images/reviewer/1.jpg" alt="image">
+                    </div>
+                    <div class="comment-content rounded">
+                        <h5 class="mb-1">Helena</h5>
+                        <p class="comment-date">April 25, 2022 at 10:46 am</p>
+                        <div class="comment-rate">
+                            <div class="rating mar-right-15">
+                                <span class="fa fa-star checked"></span>
+                                <span class="fa fa-star checked"></span>
+                                <span class="fa fa-star checked"></span>
+                                <span class="fa fa-star checked"></span>
+                                <span class="fa fa-star checked"></span>
+                            </div>
+                            <span class="comment-title">The worst hotel ever"</span>
+                        </div>
+
+                        <p class="comment">Take in the iconic skyline and visit the neighbourhood hangouts that you've only ever seen on TV. Take in the iconic skyline and visit the neighbourhood.</p>
+                        <div class="comment-like">
+                            <div class="like-title">
+                                <a href="#" class="nir-btn">Reply</a>
+                            </div>
+                            <div class="like-btn pull-right">
+                                <a href="#" class="like"><i class="fa fa-thumbs-up"></i></a>
+                                <a href="#" class="disike"><i class="fa fa-thumbs-down"></i></a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="comment-box">
+                    <div class="comment-image">
+                        <img src="images/reviewer/2.jpg" alt="image">
+                    </div>
+                    <div class="comment-content rounded">
+                        <h5 class="mb-1">Helena</h5>
+                        <p class="comment-date">April 25, 2022 at 10:46 am</p>
+                        <div class="comment-rate">
+                            <div class="rating mar-right-15">
+                                <span class="fa fa-star checked"></span>
+                                <span class="fa fa-star checked"></span>
+                                <span class="fa fa-star checked"></span>
+                                <span class="fa fa-star checked"></span>
+                                <span class="fa fa-star checked"></span>
+                            </div>
+                            <span class="comment-title">Was too noisy and not suitable for business meetings"</span>
+                        </div>
+
+                        <p class="comment">Take in the iconic skyline and visit the neighbourhood hangouts that you've only ever seen on TV. Take in the iconic skyline and visit the neighbourhood.</p>
+                        <div class="comment-like">
+                            <div class="like-title">
+                                <a href="#" class="nir-btn">Reply</a>
+                            </div>
+                            <div class="like-btn pull-right">
+                                <a href="#" class="like"><i class="fa fa-thumbs-up"></i></a>
+                                <a href="#" class="disike"><i class="fa fa-thumbs-down"></i></a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- blog review -->
+            <div id="single-add-review" class="single-add-review">
+                <h4>Write a Review</h4>
+                <form>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group mb-2">
+                                <input type="text" placeholder="Name">
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group mb-2">
+                                <input type="email" placeholder="Email">
+                            </div>
+                        </div>
+                        <div class="col-md-12">
+                            <div class="form-group mb-2">
+                                <textarea>Comment</textarea>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-btn">
+                                <a href="#" class="nir-btn">Submit Review</a>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</section>
+
+
