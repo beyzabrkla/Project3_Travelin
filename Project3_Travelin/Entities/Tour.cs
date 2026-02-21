@@ -17,5 +17,8 @@ namespace Project3_Travelin.Entities
         public DateTime TourDate { get; set; }
         public string DayNight { get; set; }
         public string ImageUrl { get; set; }
+
+        [BsonRepresentation(BsonType.Decimal128)]
+        public decimal TourPrice { get; set; } // Tur fiyatı
     }
 }

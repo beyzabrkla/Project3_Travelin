@@ -2,7 +2,7 @@
 
 namespace Project3_Travelin.ViewComponents.HomeViewComponents
 {
-    public class _HomeIndexComponentPartial :ViewComponent
+    public class _HowItWorksComponentPartial:ViewComponent
     {
         public IViewComponentResult Invoke()
         {

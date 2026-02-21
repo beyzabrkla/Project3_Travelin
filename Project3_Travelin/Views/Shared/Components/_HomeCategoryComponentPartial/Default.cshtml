@@ -1,0 +1,98 @@
+﻿<div class="category-main-inner border-t pt-1">
+    <div class="custom-category-container">
+        <div class="category-card">
+            <div class="category-item box-shadow p-3 py-4 text-center bg-white rounded overflow-hidden">
+                <div class="trending-topic-content">
+                    <img src="/travelin/images/icons/004-camping-tent.png" class="mb-1 d-inline-block" alt="" />
+                    <h4 class="mb-0"><a href="tour-grid.html">Kampçılık</a></h4>
+                </div>
+            </div>
+        </div>
+        <div class="category-card">
+            <div class="category-item box-shadow p-3 py-4 text-center bg-white rounded overflow-hidden">
+                <div class="trending-topic-content text-center">
+                    <img src="/travelin/images/icons/003-hiking.png" class="mb-1 d-inline-block" alt="" />
+                    <h4 class="mb-0"><a href="tour-grid.html">Doğa Yürüyüşü</a></h4>
+                </div>
+            </div>
+        </div>
+        <div class="category-card">
+            <div class="category-item box-shadow p-3 py-4 text-center bg-white rounded overflow-hidden">
+                <div class="trending-topic-content">
+                    <img src="/travelin/images/icons/005-sunbed.png" class="mb-1 d-inline-block" alt="" />
+                    <h4 class="mb-0"><a href="tour-grid.html">Plaj Turları</a></h4>
+                </div>
+            </div>
+        </div>
+        <div class="category-card">
+            <div class="category-item box-shadow p-3 py-4 text-center bg-white rounded overflow-hidden">
+                <div class="trending-topic-content">
+                    <img src="/travelin/images/icons/006-surf.png" class="mb-1 d-inline-block" alt="" />
+                    <h4 class="mb-0"><a href="tour-grid.html">Sörf</a></h4>
+                </div>
+            </div>
+        </div>
+        <div class="category-card">
+            <div class="category-item box-shadow p-3 py-4 text-center bg-white rounded overflow-hidden">
+                <div class="trending-topic-content">
+                    <img src="/travelin/images/icons/002-safari.png" class="mb-1 d-inline-block" alt="" />
+                    <h4 class="mb-0"><a href="tour-grid.html">Safari</a></h4>
+                </div>
+            </div>
+        </div>
+        <div class="category-card">
+            <div class="category-item box-shadow p-3 py-4 text-center bg-white rounded overflow-hidden">
+                <div class="trending-topic-content">
+                    <img src="/travelin/images/icons/008-cycling.png" class="mb-1 d-inline-block" alt="" />
+                    <h4 class="mb-0"><a href="tour-grid.html">Bisiklet</a></h4>
+                </div>
+            </div>
+        </div>
+        <div class="category-card">
+            <div class="category-item box-shadow p-3 py-4 text-center bg-white rounded overflow-hidden">
+                <div class="trending-topic-content">
+                    <img src="/travelin/images/icons/007-hiking-1.png" class="mb-1 d-inline-block" alt="" />
+                    <h4 class="mb-0"><a href="tour-grid.html">Doğa Gezisi</a></h4>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<style>
+    .custom-category-container {
+        display: flex;
+        flex-wrap: nowrap; /* Asla alt satıra geçme */
+        justify-content: space-between; /* Aralara eşit boşluk bırak */
+        gap: 10px; /* Kutular arası mesafe */
+        width: 100%;
+        padding: 20px 0;
+    }
+
+    .category-card {
+        flex: 1; /* Tüm kutulara eşit genişlik ver (100% / 7) */
+        min-width: 0; /* İçeriğin kutuyu patlatmasını engelle */
+    }
+
+    .category-item {
+        transition: transform 0.3s ease;
+        height: 100%;
+    }
+
+        .category-item:hover {
+            transform: translateY(-5px); /* Üzerine gelince hafif yukarı kalksın */
+        }
+
+    /* Mobil cihazlarda (ekran çok daralınca) 7 tanesi yan yana çok küçük kalırsa
+       burayı isteğe bağlı olarak 2 veya 3 satıra bölebiliriz: */
+    @@media (max-width: 992px) {
+        .custom-category-container {
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .category-card {
+            flex: 0 0 30%; /* Mobilde yan yana 3 tane */
+            margin-bottom: 10px;
+        }
+    }
+</style>
