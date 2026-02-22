@@ -1,20 +1,30 @@
 using System.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
 using Project3_Travelin.Models;
+using Project3_Travelin.Services.TourServices;
 
 namespace Project3_Travelin.Controllers
 {
     public class HomeController : Controller
     {
         private readonly ILogger<HomeController> _logger;
-
-        public HomeController(ILogger<HomeController> logger)
+        private readonly ITourService _tourService;
+        public HomeController(ILogger<HomeController> logger, ITourService tourService)
         {
             _logger = logger;
+            _tourService = tourService;
         }
 
-        public IActionResult Index()
+        public async Task<IActionResult> Index()
         {
+            var allTours = await _tourService.GetAllTourAsync();
+
+            // Veritabanýndaki turlardan benzersiz Ülke listesini çekiyoruz
+            ViewBag.Destinations = allTours.Select(x => x.TourCountry).Distinct().ToList();
+
+            // Veritabanýndaki turlardan benzersiz Süre listesini çekiyoruz
+            ViewBag.Durations = allTours.Select(x => x.DayNight).Distinct().ToList();
+
             return View();
         }
 
