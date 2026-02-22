@@ -5,8 +5,16 @@
 @{
     ViewData["Title"] = "Rehber Rotaları";
     Layout = "~/Views/Shared/_Layout.cshtml";
-    // Query'den seçili rehberi alalım
     var selectedGuideId = Context.Request.Query["guideId"].ToString();
+
+    int currentPage = ViewBag.CurrentPage ?? 1;
+    int pageSize = ViewBag.PageSize ?? 6;
+    int totalTours = ViewBag.TotalTours ?? 0;
+
+    int startRange = totalTours == 0 ? 0 : ((currentPage - 1) * pageSize) + 1;
+    int endRange = currentPage * pageSize;
+
+    if (endRange > totalTours) { endRange = totalTours; }
 }
 
 <style>
@@ -20,7 +28,15 @@
         min-height: 160px;
         transition: all 0.3s ease;
         border: 1px solid #eee;
+        border-radius: 12px;
     }
+
+        .guide-mini-card img {
+            width: 70px;
+            height: 70px;
+            object-fit: cover;
+            border: 2px solid #fff;
+        }
 
         .guide-mini-card:hover {
             transform: translateY(-5px);
@@ -73,6 +89,38 @@
         text-transform: uppercase;
         letter-spacing: 1px;
     }
+    /* Rehber Kaydırma Alanı */
+    .guides-scroll-container {
+        display: flex;
+        overflow-x: auto;
+        white-space: nowrap;
+        padding-bottom: 15px;
+        gap: 15px;
+        scrollbar-width: thin; /* Firefox */
+        scrollbar-color: #5d0473 #f0f0f0;
+    }
+
+        /* Webkit (Chrome/Safari) için Scrollbar tasarımı */
+        .guides-scroll-container::-webkit-scrollbar {
+            height: 6px;
+        }
+
+        .guides-scroll-container::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 10px;
+        }
+
+        .guides-scroll-container::-webkit-scrollbar-thumb {
+            background: #5d0473;
+            border-radius: 10px;
+        }
+
+    /* Rehber kartlarının genişliğini sabitleme */
+    .guide-item-wrapper {
+        flex: 0 0 auto; /* Kartların küçülmesini engeller */
+        width: 160px;
+    }
+
 </style>
 
 @* --- REHBER SEÇİM ALANI --- *@
@@ -80,32 +128,32 @@
     <div class="container">
         <div class="section-title text-center mb-5">
             <h2 class="mb-1">Bir <span class="theme">Rehber Seçin</span></h2>
-            <p>Tüm turları görebilir veya bir rehber seçerek onun özel rotalarını inceleyebilirsiniz.</p>
+            <p>Rotalarını ve tavsiyelerini görmek istediğiniz rehberin üzerine tıklayın.</p>
         </div>
 
-        <div class="row justify-content-center">
-            @* "TÜMÜ" BUTONU - Filtreyi kaldırmak için *@
-            <div class="col-lg-2 col-md-3 col-6 mb-4">
+        <div class="row row-cols-2 row-cols-md-4 row-cols-lg-6 g-3 justify-content-center">
+            <div class="col">
                 <a href="/Tour/TourRoutes" class="text-decoration-none d-block h-100">
-                    <div class="guide-mini-card text-center p-3 rounded shadow-sm @(string.IsNullOrEmpty(selectedGuideId) ? "bg-theme-active text-white" : "bg-white text-dark")">
-                        <div class="rounded-circle mb-2 d-flex align-items-center justify-content-center" style="width:70px; height:70px; background:#eee; border: 2px solid #fff;">
+                    <div class="guide-mini-card text-center p-3 shadow-sm @(string.IsNullOrEmpty(selectedGuideId) ? "bg-theme-active text-white" : "bg-white text-dark")">
+                        <div class="rounded-circle mb-2 d-flex align-items-center justify-content-center mx-auto" style="width:70px; height:70px; background:#eee; border: 2px solid #fff;">
                             <i class="fa fa-globe fa-2x @(string.IsNullOrEmpty(selectedGuideId) ? "text-white" : "text-muted")"></i>
                         </div>
-                        <h6 class="mb-1 @(string.IsNullOrEmpty(selectedGuideId) ? "text-white" : "text-dark")">Tüm Rotalar</h6>
+                        <h6 class="mb-0 @(string.IsNullOrEmpty(selectedGuideId) ? "text-white" : "text-dark")">Tüm Rotalar</h6>
                     </div>
                 </a>
             </div>
 
+            @* REHBER LİSTESİ *@
             @if (ViewBag.Guides != null)
             {
                 foreach (var guide in (List<ResultGuideDTO>)ViewBag.Guides)
                 {
-                    <div class="col-lg-2 col-md-3 col-6 mb-4">
+                    <div class="col">
                         <a href="/Tour/TourRoutes?guideId=@guide.GuideId" class="text-decoration-none d-block h-100">
-                            <div class="guide-mini-card text-center p-3 rounded shadow-sm @(selectedGuideId == guide.GuideId ? "bg-theme-active text-white" : "bg-white text-dark")">
-                                <img src="@guide.ImageUrl" class="rounded-circle mb-2" style="width:70px; height:70px; object-fit:cover; border: 2px solid #fff;">
-                                <h6 class="mb-1 @(selectedGuideId == guide.GuideId ? "text-white" : "text-dark")">@guide.Name</h6>
-                                <small class="@(selectedGuideId == guide.GuideId ? "text-white-50" : "theme")">@guide.Title</small>
+                            <div class="guide-mini-card text-center p-3 shadow-sm @(selectedGuideId == guide.GuideId ? "bg-theme-active text-white" : "bg-white text-dark")">
+                                <img src="@guide.ImageUrl" class="rounded-circle mb-2 mx-auto shadow-sm">
+                                <h6 class="mb-1 @(selectedGuideId == guide.GuideId ? "text-white" : "text-dark")" style="font-size: 0.95rem;">@guide.Name</h6>
+                                <small class="@(selectedGuideId == guide.GuideId ? "text-white-50" : "theme")" style="font-size: 0.75rem;">@guide.Title</small>
                             </div>
                         </a>
                     </div>
@@ -136,7 +184,6 @@
 
                             <div class="p-4 d-flex flex-column justify-content-between flex-grow-1">
                                 <div class="mb-3">
-                                    @* Başlık/Alt başlık *@
                                     <p class="text-muted small tour-description-text mb-3">@item.SubDescription</p>
 
                                     @* REHBER SEÇİLİYSE: Rehberin Tur Hakkındaki Blog Notu *@
@@ -155,7 +202,7 @@
                                 <div class="d-flex justify-content-between align-items-center pt-3 border-top">
                                     <span class="fw-bold theme h5 mb-0">@item.TourPrice.ToString("C2")</span>
 
-                                    @* DİNAMİK LİNK: Rehber seçiliyse Log sayfasına, değilse Standart Detay sayfasına *@
+                                    @*Rehber seçiliyse Log sayfasına, değilse Standart Detay sayfasına *@
                                     @if (!string.IsNullOrEmpty(selectedGuideId))
                                     {
                                         <a href="/Tour/GuideTourLog/@item.TourId" class="nir-btn-thin">Rehber Günlüğü</a>
@@ -181,6 +228,32 @@
                         <a href="/Tour/TourRoutes" class="btn btn-sm btn-outline-purple">Tüm Rotalara Dön</a>
                     </div>
                 </div>
+            }
+        </div>
+        <div class="text-center mt-4">
+            @* Önceki Butonu *@
+            @if (ViewBag.CurrentPage > 1)
+            {
+                <a href="/Tour/TourRoutes?guideId=@ViewBag.SelectedGuideId&page=@(ViewBag.CurrentPage - 1)" class="nir-btn me-2">
+                    <i class="fa fa-long-arrow-alt-left"></i> Önceki
+                </a>
+            }
+
+            @* Sayfa Numaraları *@
+            @for (int i = 1; i <= ViewBag.TotalPages; i++)
+            {
+                <a href="/Tour/TourRoutes?guideId=@ViewBag.SelectedGuideId&page=@i"
+                   class="nir-btn me-1 @(i == ViewBag.CurrentPage ? "active" : "")">
+                    @i
+                </a>
+            }
+
+            @* Sonraki Butonu *@
+            @if (ViewBag.CurrentPage < ViewBag.TotalPages)
+            {
+                <a href="/Tour/TourRoutes?guideId=@ViewBag.SelectedGuideId&page=@(ViewBag.CurrentPage + 1)" class="nir-btn ms-2">
+                    Sonraki <i class="fa fa-long-arrow-alt-right"></i>
+                </a>
             }
         </div>
     </div>

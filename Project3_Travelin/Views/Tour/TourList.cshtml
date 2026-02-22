@@ -2,7 +2,15 @@
 @{
     ViewData["Title"] = "View";
     Layout = "~/Views/Shared/_Layout.cshtml";
-    int currentPage = int.Parse(Context.Request.Query["page"].FirstOrDefault() ?? "1");
+
+    int currentPage = ViewBag.CurrentPage ?? 1;
+    int pageSize = ViewBag.PageSize ?? 3;
+    int totalTours = ViewBag.TotalTours ?? 0;
+
+    int startRange = totalTours == 0 ? 0 : ((currentPage - 1) * pageSize) + 1;
+    int endRange = currentPage * pageSize;
+
+    if (endRange > totalTours) { endRange = totalTours; }
 }
 
 <section class="breadcrumb-main pb-20 pt-14" style="background-image: url(/travelin/images/bg/bg1.jpg);">
@@ -10,7 +18,7 @@
     <div class="breadcrumb-outer">
         <div class="container">
             <div class="breadcrumb-content text-center">
-                <h1 class="mb-3">Tur Listesi</h1>
+                <h1 class="mb-3">TUR LİSTESİ</h1>
                 <nav aria-label="breadcrumb" class="d-block">
                     <ul class="breadcrumb">
                         <li class="breadcrumb-item"><a href="#">Ana Sayfa</a></li>
@@ -26,19 +34,14 @@
     <div class="container">
         <div class="list-results d-flex align-items-center justify-content-between">
             <div class="list-results-sort">
-                <p class="m-0">Showing 1-5 of 80 results</p>
-            </div>
-            <div class="click-menu d-flex align-items-center justify-content-between">
-                <div class="change-list f-active me-2"><a href="tour-list.html"><i class="fa fa-bars rounded"></i></a></div>
-                <div class="change-grid me-2"><a href="tour-grid.html"><i class="fa fa-th rounded"></i></a></div>
-                <div class="sortby d-flex align-items-center justify-content-between ml-2">
-                    <select class="niceSelect">
-                        <option value="1">Sort By</option>
-                        <option value="2">Average rating</option>
-                        <option value="3">Price: low to high</option>
-                        <option value="4">Price: high to low</option>
-                    </select>
-                </div>
+                @if (totalTours > 0)
+                {
+                    <p class="m-0">Toplam <b>@totalTours</b> sonuçtan <b>@startRange - @endRange</b> arası gösteriliyor</p>
+                }
+                else
+                {
+                    <p class="m-0">Görüntülenecek tur bulunamadı.</p>
+                }
             </div>
         </div>
 
