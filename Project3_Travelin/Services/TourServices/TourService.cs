@@ -9,13 +9,16 @@ namespace Project3_Travelin.Services.TourServices
     public class TourService : ITourService
     {
         private readonly IMapper _mapper;
+        private readonly IMongoCollection<Guide> _guideCollection;
         private readonly IMongoCollection<Tour> _tourCollection;
 
-        public TourService(IMapper mapper, IDatabaseSettings _databaseSettings)
+        public TourService(IMapper mapper, IDatabaseSettings _databaseSettings) // guideCollection'ı parametreden çıkardık
         {
-            var client = new MongoClient(_databaseSettings.ConnectionString); //mongo dbye bağlantı adresini çekiyoruz
-            var database = client.GetDatabase(_databaseSettings.DatabaseName); //kullanılacak veritabanı adını alıyoruz
-            _tourCollection = database.GetCollection<Tour>(_databaseSettings.TourCollectionName); //kullanılacak tablo
+            var client = new MongoClient(_databaseSettings.ConnectionString);
+            var database = client.GetDatabase(_databaseSettings.DatabaseName);
+
+            _tourCollection = database.GetCollection<Tour>(_databaseSettings.TourCollectionName);
+            _guideCollection = database.GetCollection<Guide>(_databaseSettings.GuideCollectionName);
             _mapper = mapper;
         }
 
@@ -38,8 +41,26 @@ namespace Project3_Travelin.Services.TourServices
 
         public async Task<GetTourByIdDTO> GetTourByIdAsync(string id)
         {
-            var value = await _tourCollection.Find(x => x.TourId == id).FirstOrDefaultAsync();
-            return _mapper.Map<GetTourByIdDTO>(value);
+            var tour = await _tourCollection.Find(x => x.TourId == id).FirstOrDefaultAsync();
+            var tourDto = _mapper.Map<GetTourByIdDTO>(tour);
+
+            if (tour != null && !string.IsNullOrEmpty(tour.GuideId))
+            {
+                var guide = await _guideCollection.Find(x => x.GuideId == tour.GuideId).FirstOrDefaultAsync();
+                if (guide != null)
+                {
+                    tourDto.GuideName = guide.Name;
+                    tourDto.GuideImageUrl = guide.ImageUrl;
+                    tourDto.GuideTitle = guide.Title;
+                }
+            }
+            return tourDto;
+        }
+
+        public async Task<List<ResultTourDTO>> GetToursByGuideIdAsync(string guideId)
+        {
+            var values = await _tourCollection.Find(x => x.GuideId == guideId).ToListAsync();
+            return _mapper.Map<List<ResultTourDTO>>(values);
         }
 
         public async Task UpdateTourAsync(UpdateTourDTO updateTourDTO)

@@ -1,0 +1,187 @@
+﻿@using Project3_Travelin.DTOs.TourDTOs
+@using Project3_Travelin.DTOs.GuideDTOs
+@model List<ResultTourDTO>
+
+@{
+    ViewData["Title"] = "Rehber Rotaları";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    // Query'den seçili rehberi alalım
+    var selectedGuideId = Context.Request.Query["guideId"].ToString();
+}
+
+<style>
+    /* Rehber Seçim Kartları */
+    .guide-mini-card {
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        min-height: 160px;
+        transition: all 0.3s ease;
+        border: 1px solid #eee;
+    }
+
+        .guide-mini-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+        }
+
+    .bg-theme-active {
+        background-color: #5d0473 !important;
+        border-color: #5d0473 !important;
+    }
+
+    /* Tur Kartları Tasarımı */
+    .trend-item1 {
+        display: flex;
+        flex-direction: column;
+        height: 100%;
+        border-radius: 15px;
+        overflow: hidden;
+        transition: 0.3s;
+    }
+
+        .trend-item1:hover {
+            box-shadow: 0 15px 30px rgba(0,0,0,0.15) !important;
+        }
+
+    .trend-image img {
+        height: 220px;
+        width: 100%;
+        object-fit: cover;
+    }
+
+    /* Rehberin Özel Notu (Kart Üzerindeki Blog Özeti) */
+    .guide-special-note {
+        background-color: #fcf4ff; /* Hafif mor arka plan */
+        border-left: 3px solid #5d0473;
+        font-size: 0.85rem;
+        line-height: 1.4;
+    }
+
+    .tour-description-text {
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+        min-height: 40px;
+    }
+
+    .badge-guide-name {
+        font-size: 0.7rem;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+    }
+</style>
+
+@* --- REHBER SEÇİM ALANI --- *@
+<section class="guides-selection pt-10 pb-4 bg-lgrey">
+    <div class="container">
+        <div class="section-title text-center mb-5">
+            <h2 class="mb-1">Bir <span class="theme">Rehber Seçin</span></h2>
+            <p>Tüm turları görebilir veya bir rehber seçerek onun özel rotalarını inceleyebilirsiniz.</p>
+        </div>
+
+        <div class="row justify-content-center">
+            @* "TÜMÜ" BUTONU - Filtreyi kaldırmak için *@
+            <div class="col-lg-2 col-md-3 col-6 mb-4">
+                <a href="/Tour/TourRoutes" class="text-decoration-none d-block h-100">
+                    <div class="guide-mini-card text-center p-3 rounded shadow-sm @(string.IsNullOrEmpty(selectedGuideId) ? "bg-theme-active text-white" : "bg-white text-dark")">
+                        <div class="rounded-circle mb-2 d-flex align-items-center justify-content-center" style="width:70px; height:70px; background:#eee; border: 2px solid #fff;">
+                            <i class="fa fa-globe fa-2x @(string.IsNullOrEmpty(selectedGuideId) ? "text-white" : "text-muted")"></i>
+                        </div>
+                        <h6 class="mb-1 @(string.IsNullOrEmpty(selectedGuideId) ? "text-white" : "text-dark")">Tüm Rotalar</h6>
+                    </div>
+                </a>
+            </div>
+
+            @if (ViewBag.Guides != null)
+            {
+                foreach (var guide in (List<ResultGuideDTO>)ViewBag.Guides)
+                {
+                    <div class="col-lg-2 col-md-3 col-6 mb-4">
+                        <a href="/Tour/TourRoutes?guideId=@guide.GuideId" class="text-decoration-none d-block h-100">
+                            <div class="guide-mini-card text-center p-3 rounded shadow-sm @(selectedGuideId == guide.GuideId ? "bg-theme-active text-white" : "bg-white text-dark")">
+                                <img src="@guide.ImageUrl" class="rounded-circle mb-2" style="width:70px; height:70px; object-fit:cover; border: 2px solid #fff;">
+                                <h6 class="mb-1 @(selectedGuideId == guide.GuideId ? "text-white" : "text-dark")">@guide.Name</h6>
+                                <small class="@(selectedGuideId == guide.GuideId ? "text-white-50" : "theme")">@guide.Title</small>
+                            </div>
+                        </a>
+                    </div>
+                }
+            }
+        </div>
+    </div>
+</section>
+
+@* --- TUR LİSTELEME ALANI --- *@
+<section class="trending pb-10 pt-6">
+    <div class="container">
+        <div class="row">
+            @if (Model != null && Model.Any())
+            {
+                @foreach (var item in Model)
+                {
+                    <div class="col-lg-4 col-md-6 mb-4 d-flex align-items-stretch">
+                        <div class="trend-item1 shadow-sm bg-white w-100">
+                            <div class="trend-image position-relative">
+                                <img src="@item.ImageUrl" alt="image">
+                                <div class="trend-content position-absolute bottom-0 p-3 w-100" style="background: linear-gradient(transparent, rgba(0,0,0,0.7));">
+                                    <h5 class="mb-0 white">@item.TourCountry</h5>
+                                    <h4 class="mb-0 white">@item.TourCity</h4>
+                                </div>
+                                <span class="position-absolute top-0 end-0 m-3 badge bg-theme">@item.DayNight</span>
+                            </div>
+
+                            <div class="p-4 d-flex flex-column justify-content-between flex-grow-1">
+                                <div class="mb-3">
+                                    @* Başlık/Alt başlık *@
+                                    <p class="text-muted small tour-description-text mb-3">@item.SubDescription</p>
+
+                                    @* REHBER SEÇİLİYSE: Rehberin Tur Hakkındaki Blog Notu *@
+                                    @if (!string.IsNullOrEmpty(selectedGuideId) && !string.IsNullOrEmpty(item.GuideDescription))
+                                    {
+                                        <div class="guide-special-note p-3 rounded mb-3">
+                                            <div class="badge-guide-name theme fw-bold mb-1">REHBERİN NOTU</div>
+                                            <i class="fa fa-quote-left theme me-1" style="font-size: 0.7rem;"></i>
+                                            <span class="text-dark fst-italic">
+                                                @(item.GuideDescription.Length > 95 ? item.GuideDescription.Substring(0, 95) + "..." : item.GuideDescription)
+                                            </span>
+                                        </div>
+                                    }
+                                </div>
+
+                                <div class="d-flex justify-content-between align-items-center pt-3 border-top">
+                                    <span class="fw-bold theme h5 mb-0">@item.TourPrice.ToString("C2")</span>
+
+                                    @* DİNAMİK LİNK: Rehber seçiliyse Log sayfasına, değilse Standart Detay sayfasına *@
+                                    @if (!string.IsNullOrEmpty(selectedGuideId))
+                                    {
+                                        <a href="/Tour/GuideTourLog/@item.TourId" class="nir-btn-thin">Rehber Günlüğü</a>
+                                    }
+                                    else
+                                    {
+                                        <a href="/Tour/TourDetail/@item.TourId" class="nir-btn-thin">İncele</a>
+                                    }
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                }
+            }
+            else
+            {
+                @* Boş durum görseli veya mesajı *@
+                <div class="col-12 text-center py-5">
+                    <div class="no-data-content p-5 bg-white rounded shadow-sm">
+                        <i class="fa fa-map-marked-alt fa-4x text-muted mb-3"></i>
+                        <h4 class="text-muted">Rota Bulunamadı</h4>
+                        <p>Seçtiğiniz rehber için şu an aktif bir rota bulunmamaktadır. <br> Lütfen farklı bir rehber seçin.</p>
+                        <a href="/Tour/TourRoutes" class="btn btn-sm btn-outline-purple">Tüm Rotalara Dön</a>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+</section>

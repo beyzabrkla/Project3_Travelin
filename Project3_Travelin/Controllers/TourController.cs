@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Project3_Travelin.DTOs.TourDTOs;
+using Project3_Travelin.Services.GuideServices;
 using Project3_Travelin.Services.TourServices;
 
 namespace Project3_Travelin.Controllers
@@ -9,13 +10,15 @@ namespace Project3_Travelin.Controllers
     public class TourController : Controller
     {
         private readonly ITourService _tourService;
+        private readonly IGuideService _guideService;
         private readonly IMapper _mapper;
 
 
-        public TourController(ITourService tourService, IMapper mapper)
+        public TourController(ITourService tourService, IMapper mapper, IGuideService guideService)
         {
             _tourService = tourService;
             _mapper = mapper;
+            _guideService = guideService;
         }
 
         public IActionResult CreateTour()
@@ -54,5 +57,24 @@ namespace Project3_Travelin.Controllers
 
             return View(value);
         }
+
+        public async Task<IActionResult> TourRoutes(string guideId)
+        {
+            // Tüm aktif rehberleri çekiyoruz
+            var allGuides = await _guideService.GetAllGuideAsync();
+            ViewBag.Guides = allGuides.Where(x => x.Status).ToList();
+
+            var tours = string.IsNullOrEmpty(guideId)
+                        ? await _tourService.GetAllTourAsync()
+                        : await _tourService.GetToursByGuideIdAsync(guideId);
+
+            return View(tours);
+        }
+        public async Task<IActionResult> GuideTourLog(string id)
+        {
+            var value = await _tourService.GetTourByIdAsync(id);
+            return View(value);
+        }
+
     }
 }

@@ -22,8 +22,7 @@ namespace Project3_Travelin.Entities
 
         [BsonRepresentation(BsonType.Decimal128)]
         public decimal TourPrice { get; set; } // Tur fiyatı
-
-        [BsonRepresentation(BsonType.ObjectId)]
         public string GuideId { get; set; }
+        public string GuideDescription { get; set; } //rehberin tur hakkındaki yorumu
     }
 }

@@ -11,7 +11,7 @@ namespace Project3_Travelin.Entities
         public string Name { get; set; }
         public string Title { get; set; } // Örn: Profesyonel Dağcı, Tarihçi
         public string ImageUrl { get; set; }
-        public string Description { get; set; }
+        public string Description { get; set; } //rehberin genel açıklaması
         public bool Status { get; set; }
     }
 }
