@@ -1,19 +1,17 @@
-using BusinessLayer.Services.CategoryServices;
-using BusinessLayer.Services.CommentServices;
-using BusinessLayer.Services.GuideServices;
-using BusinessLayer.Services.TourServices;
-using BusinessLayer.Settings;
+using BusinessLayer.Abstract;
+using BusinessLayer.Concrete;
+using DataAccessLayer.Abstract;
+using DataAccessLayer.Concrete;
+using EntityLayer.Settings;
 using Microsoft.Extensions.Options;
-using System.Reflection;
-using AutoMapper;
-
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddScoped<ICommentService, CommentService>(); //DI mantýðý ICommentService istenildiðinde CommentService sunuluyor (metotlarýyla)== best practices
-builder.Services.AddScoped<ICategoryService, CategoryService>(); 
-builder.Services.AddScoped<ITourService, TourService>();
-builder.Services.AddScoped<IGuideService, GuideService>();
+// DataAccessLayer (Dal) Kayýtlarý
+builder.Services.AddScoped<ICommentDal, MongoCommentDal>(); //DI mantýðý ICommentDal istenildiðinde MongoCommentDal sunuluyor (metotlarýyla)== best practices
+builder.Services.AddScoped<ICategoryDal, MongoCategoryDal>(); 
+builder.Services.AddScoped<ITourDal, MongoTourDal>();
+builder.Services.AddScoped<IGuideDal, MongoGuideDal>();
 
 // GeneralMapping sýnýfýnýn olduðu assembly'yi taramasýný söylüyoruz
 builder.Services.AddAutoMapper(typeof(DTOLayer.Mapping.GeneralMapping));//- Projedeki tüm Profile sýnýflarýný (AutoMapper konfigürasyonlarýný) bulup yükler.
@@ -25,6 +23,12 @@ builder.Services.AddScoped<IDatabaseSettings>(sp =>
 {
     return sp.GetRequiredService<IOptions<DatabaseSettings>>().Value;
 });
+
+// BusinessLayer (Service) Kayýtlarý
+builder.Services.AddScoped<ICategoryService, CategoryManager>();
+builder.Services.AddScoped<ITourService, TourManager>();
+builder.Services.AddScoped<IGuideService, GuideManager>();
+builder.Services.AddScoped<ICommentService, CommentManager>();
 
 // Add services to the container.
 builder.Services.AddControllersWithViews();

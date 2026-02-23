@@ -1,6 +1,5 @@
 ﻿using AutoMapper;
-using BusinessLayer.Services.GuideServices;
-using BusinessLayer.Services.TourServices;
+using BusinessLayer.Abstract;
 using DTOLayer.DTOs.TourDTOs;
 using Microsoft.AspNetCore.Mvc;
 

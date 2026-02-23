@@ -1,5 +1,5 @@
 using System.Diagnostics;
-using BusinessLayer.Services.TourServices;
+using BusinessLayer.Abstract;
 using Microsoft.AspNetCore.Mvc;
 using Project3_Travelin.Models;
 
