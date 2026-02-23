@@ -1,9 +1,8 @@
 ﻿using AutoMapper;
+using BusinessLayer.Services.GuideServices;
+using BusinessLayer.Services.TourServices;
+using DTOLayer.DTOs.TourDTOs;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.RazorPages;
-using Project3_Travelin.DTOs.TourDTOs;
-using Project3_Travelin.Services.GuideServices;
-using Project3_Travelin.Services.TourServices;
 
 namespace Project3_Travelin.Controllers
 {

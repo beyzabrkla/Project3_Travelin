@@ -1,7 +1,7 @@
 using System.Diagnostics;
+using BusinessLayer.Services.TourServices;
 using Microsoft.AspNetCore.Mvc;
 using Project3_Travelin.Models;
-using Project3_Travelin.Services.TourServices;
 
 namespace Project3_Travelin.Controllers
 {
