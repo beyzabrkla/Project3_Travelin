@@ -1,6 +1,6 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using Project3_Travelin.DTOs.CategoryDTOs;
-using Project3_Travelin.Services.CategoryServices;
+﻿using BusinessLayer.Services.CategoryServices;
+using DTOLayer.DTOs.CategoryDTOs;
+using Microsoft.AspNetCore.Mvc;
 
 namespace Project3_Travelin.Controllers
 {

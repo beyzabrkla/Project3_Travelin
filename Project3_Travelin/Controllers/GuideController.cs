@@ -1,6 +1,6 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using Project3_Travelin.DTOs.GuideDTOs;
-using Project3_Travelin.Services.GuideServices;
+﻿using BusinessLayer.Services.GuideServices;
+using DTOLayer.DTOs.GuideDTOs;
+using Microsoft.AspNetCore.Mvc;
 
 namespace Project3_Travelin.Controllers
 {
