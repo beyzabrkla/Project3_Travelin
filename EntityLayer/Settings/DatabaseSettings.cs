@@ -1,4 +1,4 @@
-﻿namespace BusinessLayer.Settings
+﻿namespace EntityLayer.Settings
 {
     public class DatabaseSettings : IDatabaseSettings
     {
