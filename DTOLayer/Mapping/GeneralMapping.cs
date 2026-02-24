@@ -22,7 +22,7 @@ namespace DTOLayer.Mapping
             CreateMap<Tour, GetTourByIdDTO>().ReverseMap();
 
             CreateMap<GetTourByIdDTO, ResultTourDTO>().ReverseMap();
-
+            CreateMap<GetTourByIdDTO, UpdateTourDTO>().ReverseMap();
 
             CreateMap<Guide, CreateGuideDTO>().ReverseMap();    
             CreateMap<Guide, ResultGuideDTO>().ReverseMap();
