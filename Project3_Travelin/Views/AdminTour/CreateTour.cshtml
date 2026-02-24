@@ -1,0 +1,539 @@
+﻿@model CreateTourDTO
+@{
+    ViewData["Title"] = "Yeni Tur Ekle";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+}
+<!-- PAGE HEADER -->
+<div class="page-header">
+    <div>
+        <h1 class="page-title">Yeni Tur Ekle</h1>
+        <nav aria-label="breadcrumb" class="mt-2">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="#">Admin</a></li>
+                <li class="breadcrumb-item"><a asp-action="TourList">Turlar</a></li>
+                <li class="breadcrumb-item active" aria-current="page">Yeni Tur</li>
+            </ol>
+        </nav>
+    </div>
+    <a asp-action="TourList" class="btn btn-outline-secondary d-flex align-items-center gap-2" style="border-radius:10px;font-size:.875rem;font-weight:500;padding:.55rem 1.1rem;">
+        <i class="bi bi-arrow-left"></i> Tur Listesine Dön
+    </a>
+</div>
+
+<form method="post" id="createTourForm" novalidate>
+    @Html.AntiForgeryToken()
+
+    <div class="form-grid">
+        <div class="form-main">
+
+            <!-- TEMEL BİLGİLER -->
+            <div class="form-section">
+                <div class="section-header">
+                    <div class="section-icon blue"><i class="bi bi-info-circle"></i></div>
+                    <div>
+                        <div class="section-title">Temel Bilgiler</div>
+                        <div class="section-subtitle">Turun başlığı ve açıklaması</div>
+                    </div>
+                </div>
+                <div class="section-body">
+                    <!-- Tur Başlığı -->
+                    <div class="field-group">
+                        <label asp-for="TourTitle" class="field-label">
+                            <i class="bi bi-tag" style="color:#a0aec0;font-size:.85rem;"></i>
+                            Tur Başlığı <span class="required">*</span>
+                        </label>
+                        <input asp-for="TourTitle" class="form-control" placeholder="Örn: Kapadokya Balon Turu - 3 Gece 4 Gün" maxlength="120" id="tourTitleInput" />
+                        <div class="char-counter" id="titleCounter">0 / 120</div>
+                        <span asp-validation-for="TourTitle" class="text-danger-field"><i class="bi bi-exclamation-circle"></i><span></span></span>
+                    </div>
+
+                    <!-- Açıklama -->
+                    <div class="field-group">
+                        <label asp-for="FullDescription" class="field-label">
+                            <i class="bi bi-text-left" style="color:#a0aec0;font-size:.85rem;"></i>
+                            Açıklama <span class="required">*</span>
+                        </label>
+                        <textarea asp-for="FullDescription" class="form-control" placeholder="Tur hakkında detaylı açıklama yazın..." maxlength="1000" id="descInput" rows="5"></textarea>
+                        <div class="char-counter" id="descCounter">0 / 1000</div>
+                        <span asp-validation-for="FullDescription" class="text-danger-field"><i class="bi bi-exclamation-circle"></i><span></span></span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- KONUM BİLGİLERİ -->
+            <div class="form-section">
+                <div class="section-header">
+                    <div class="section-icon green"><i class="bi bi-geo-alt"></i></div>
+                    <div>
+                        <div class="section-title">Konum Bilgileri</div>
+                        <div class="section-subtitle">Turun gideceği ülke ve şehir</div>
+                    </div>
+                </div>
+                <div class="section-body">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <div class="field-group">
+                                <label asp-for="TourCountry" class="field-label">
+                                    <i class="bi bi-globe2" style="color:#a0aec0;font-size:.85rem;"></i>
+                                    Ülke <span class="required">*</span>
+                                </label>
+                                <div class="input-with-icon">
+                                    <i class="bi bi-globe2 input-icon"></i>
+                                    <select asp-for="TourCountry" class="form-select" id="countrySelect" style="padding-left:2.4rem;">
+                                        <option value="">— Ülke seçin —</option>
+                                        @if (ViewBag.Countries != null)
+                                        {
+                                            foreach (var item in ViewBag.Countries)
+                                            {
+                                                <option value="@item">@item</option>
+                                            }
+                                        }
+                                    </select>
+                                </div>
+                                <span asp-validation-for="TourCountry" class="text-danger-field"><i class="bi bi-exclamation-circle"></i><span></span></span>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="field-group">
+                                <label asp-for="TourCity" class="field-label">
+                                    <i class="bi bi-building" style="color:#a0aec0;font-size:.85rem;"></i>
+                                    Şehir <span class="required">*</span>
+                                </label>
+                                <div class="input-with-icon">
+                                    <i class="bi bi-geo-alt input-icon"></i>
+                                    <input asp-for="TourCity" class="form-control" placeholder="Örn: Nevşehir, Kapadokya" id="cityInput" />
+                                </div>
+                                <span asp-validation-for="TourCity" class="text-danger-field"><i class="bi bi-exclamation-circle"></i><span></span></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TUR DETAYLARI -->
+            <div class="form-section">
+                <div class="section-header">
+                    <div class="section-icon amber"><i class="bi bi-calendar3"></i></div>
+                    <div>
+                        <div class="section-title">Tur Detayları</div>
+                        <div class="section-subtitle">Tarih, süre ve kapasite bilgileri</div>
+                    </div>
+                </div>
+                <div class="section-body">
+                    <div class="row g-3">
+                        <!-- Tur Tarihi -->
+                        <div class="col-md-6">
+                            <div class="field-group">
+                                <label asp-for="TourDate" class="field-label">
+                                    <i class="bi bi-calendar-event" style="color:#a0aec0;font-size:.85rem;"></i>
+                                    Tur Tarihi <span class="required">*</span>
+                                </label>
+                                <div class="input-with-icon">
+                                    <i class="bi bi-calendar3 input-icon"></i>
+                                    <input asp-for="TourDate" type="date" class="form-control" id="tourDateInput"
+                                           min="@DateTime.Now.ToString("yyyy-MM-dd")" />
+                                </div>
+                                <div class="field-hint"><i class="bi bi-info-circle me-1"></i>Bugünden önceki tarih seçilemez.</div>
+                                <span asp-validation-for="TourDate" class="text-danger-field"><i class="bi bi-exclamation-circle"></i><span></span></span>
+                            </div>
+                        </div>
+
+                        <!-- Kapasite -->
+                        <div class="col-md-6">
+                            <div class="field-group">
+                                <label asp-for="TourCapacity" class="field-label">
+                                    <i class="bi bi-people" style="color:#a0aec0;font-size:.85rem;"></i>
+                                    Kapasite <span class="required">*</span>
+                                </label>
+                                <div class="stepper">
+                                    <button type="button" class="stepper-btn" onclick="stepperDecrement()" aria-label="Azalt">
+                                        <i class="bi bi-dash"></i>
+                                    </button>
+                                    <input asp-for="TourCapacity" type="number" min="1" max="500" id="capacityInput" value="20" />
+                                    <button type="button" class="stepper-btn" onclick="stepperIncrement()" aria-label="Artır">
+                                        <i class="bi bi-plus"></i>
+                                    </button>
+                                </div>
+                                <div class="field-hint"><i class="bi bi-info-circle me-1"></i>Maksimum katılımcı sayısı (1–500)</div>
+                                <span asp-validation-for="TourCapacity" class="text-danger-field"><i class="bi bi-exclamation-circle"></i><span></span></span>
+                            </div>
+                        </div>
+
+                        <!-- Süre (DayNight) -->
+                        <div class="col-12">
+                            <div class="field-group">
+                                <label class="field-label">
+                                    <i class="bi bi-clock" style="color:#a0aec0;font-size:.85rem;"></i>
+                                    Tur Süresi <span class="required">*</span>
+                                </label>
+                                <div class="duration-builder">
+                                    <div class="duration-unit">
+                                        <label for="dayCount">Gün Sayısı</label>
+                                        <div class="input-with-icon">
+                                            <i class="bi bi-sun input-icon"></i>
+                                            <input type="number" id="dayCount" min="1" max="30" value="3" class="form-control" placeholder="3" />
+                                        </div>
+                                    </div>
+                                    <div class="duration-unit">
+                                        <label for="nightCount">Gece Sayısı</label>
+                                        <div class="input-with-icon">
+                                            <i class="bi bi-moon input-icon"></i>
+                                            <input type="number" id="nightCount" min="0" max="30" value="2" class="form-control" placeholder="2" />
+                                        </div>
+                                    </div>
+                                </div>
+                                <input asp-for="DayNight" type="hidden" id="dayNightHidden" />
+                                <div class="field-hint" id="durationPreview">
+                                    <i class="bi bi-clock me-1"></i>Önizleme: <strong id="durationText">3 Gün / 2 Gece</strong>
+                                </div>
+                                <span asp-validation-for="DayNight" class="text-danger-field"><i class="bi bi-exclamation-circle"></i><span></span></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- GÖRSEL -->
+            <div class="form-section">
+                <div class="section-header">
+                    <div class="section-icon purple"><i class="bi bi-image"></i></div>
+                    <div>
+                        <div class="section-title">Tur Görseli</div>
+                        <div class="section-subtitle">URL girin veya dosya yükleyin</div>
+                    </div>
+                </div>
+                <div class="section-body">
+                    <!-- URL ile -->
+                    <div class="field-group">
+                        <label asp-for="ImageUrl" class="field-label">
+                            <i class="bi bi-link-45deg" style="color:#a0aec0;font-size:.85rem;"></i>
+                            Görsel URL
+                        </label>
+                        <div class="input-with-icon">
+                            <i class="bi bi-link-45deg input-icon"></i>
+                            <input asp-for="ImageUrl" type="url" class="form-control" placeholder="https://ornek.com/gorsel.jpg" id="imageUrlInput" />
+                        </div>
+                        <div class="field-hint"><i class="bi bi-info-circle me-1"></i>JPEG, PNG, WebP desteklenir.</div>
+                        <img src="" alt="Görsel önizleme" class="url-preview-thumb" id="urlPreviewImg" />
+                        <span asp-validation-for="ImageUrl" class="text-danger-field"><i class="bi bi-exclamation-circle"></i><span></span></span>
+                    </div>
+
+                    <!-- Ayırıcı -->
+                    <div class="d-flex align-items-center gap-3 my-3">
+                        <div style="flex:1;height:1px;background:#e2e8f0;"></div>
+                        <span style="font-size:.73rem;color:#a0aec0;font-weight:600;text-transform:uppercase;letter-spacing:.06em;">veya</span>
+                        <div style="flex:1;height:1px;background:#e2e8f0;"></div>
+                    </div>
+
+                    <!-- Dosya yükleme -->
+                    <div class="image-upload-zone" id="uploadZone">
+                        <input type="file" accept="image/*" id="imageFileInput" aria-label="Görsel dosyası seç" />
+                        <div class="upload-icon"><i class="bi bi-cloud-arrow-up"></i></div>
+                        <div class="upload-title">Dosya sürükleyin veya seçin</div>
+                        <div class="upload-sub">PNG, JPG, WebP — Maks. 5MB</div>
+                    </div>
+
+                    <div class="image-preview-box mt-3" id="previewBox">
+                        <img src="" alt="Yüklenen görsel önizleme" id="previewImg" />
+                        <div class="preview-overlay">
+                            <button type="button" class="preview-remove" onclick="removeImage()">
+                                <i class="bi bi-trash3"></i> Görseli Kaldır
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- ═══════════════════════════════════════
+             RIGHT COLUMN — SIDEBAR PANEL
+        ════════════════════════════════════════ -->
+        <div class="sidebar-panel">
+
+            <!-- YAYIM DURUMU -->
+            <div class="form-section">
+                <div class="section-header">
+                    <div class="section-icon green"><i class="bi bi-send-check"></i></div>
+                    <div>
+                        <div class="section-title">Yayım Durumu</div>
+                        <div class="section-subtitle">Tur hangi durumda yayımlansın?</div>
+                    </div>
+                </div>
+                <div class="section-body">
+                    <label class="status-option selected-active" id="statusActive">
+                        <input type="radio" name="PublishStatus" value="active" checked onchange="updateStatus(this)" />
+                        <span class="status-dot dot-active"></span>
+                        <div class="status-text">
+                            <div class="stitle">Aktif</div>
+                            <div class="ssub">Hemen yayımla</div>
+                        </div>
+                        <i class="bi bi-check-circle-fill ms-auto" style="color:#16a34a;font-size:.95rem;"></i>
+                    </label>
+
+                    <label class="status-option" id="statusDraft">
+                        <input type="radio" name="PublishStatus" value="draft" onchange="updateStatus(this)" />
+                        <span class="status-dot dot-draft"></span>
+                        <div class="status-text">
+                            <div class="stitle">Taslak</div>
+                            <div class="ssub">Şimdilik gizle</div>
+                        </div>
+                    </label>
+
+                    <label class="status-option" id="statusPassive">
+                        <input type="radio" name="PublishStatus" value="passive" onchange="updateStatus(this)" />
+                        <span class="status-dot dot-passive"></span>
+                        <div class="status-text">
+                            <div class="stitle">Pasif</div>
+                            <div class="ssub">Yayımdan kaldır</div>
+                        </div>
+                    </label>
+                </div>
+            </div>
+
+            <!-- ÖN İZLEME ÖZETİ -->
+            <div class="form-section">
+                <div class="section-header">
+                    <div class="section-icon blue"><i class="bi bi-eye"></i></div>
+                    <div>
+                        <div class="section-title">Tur Özeti</div>
+                        <div class="section-subtitle">Canlı önizleme</div>
+                    </div>
+                </div>
+                <div class="section-body">
+                    <div class="summary-box">
+                        <div class="summary-row">
+                            <span class="label">Başlık</span>
+                            <span class="value" id="sumTitle" style="max-width:150px;text-align:right;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">—</span>
+                        </div>
+                        <div class="summary-row">
+                            <span class="label">Ülke / Şehir</span>
+                            <span class="value" id="sumLocation">—</span>
+                        </div>
+                        <div class="summary-row">
+                            <span class="label">Tarih</span>
+                            <span class="value" id="sumDate">—</span>
+                        </div>
+                        <div class="summary-row">
+                            <span class="label">Süre</span>
+                            <span class="value" id="sumDuration">—</span>
+                        </div>
+                        <div class="summary-row">
+                            <span class="label">Kapasite</span>
+                            <span class="value" id="sumCapacity">—</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- FORMUN GÖNDERİM BUTONLARI -->
+            <div class="form-section">
+                <div class="section-body">
+                    <div class="form-actions">
+                        <button type="submit" class="btn-submit" id="submitBtn">
+                            <i class="bi bi-plus-circle-fill"></i>
+                            Turu Kaydet
+                        </button>
+                        <a asp-action="TourList" class="btn-cancel">
+                            <i class="bi bi-x me-1"></i>İptal et, geri dön
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- KISA İPUÇLARI -->
+            <div class="form-section">
+                <div class="section-header" style="background:none;">
+                    <div class="section-icon amber"><i class="bi bi-lightbulb"></i></div>
+                    <div>
+                        <div class="section-title">İpuçları</div>
+                    </div>
+                </div>
+                <div class="section-body" style="padding-top:.75rem;">
+                    <ul style="list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:.6rem;">
+                        <li style="font-size:.78rem;color:#718096;display:flex;gap:.5rem;align-items:flex-start;">
+                            <i class="bi bi-check2-circle" style="color:#16a34a;margin-top:1px;flex-shrink:0;"></i>
+                            Başlık <strong>60–80 karakter</strong> arasında olmalı.
+                        </li>
+                        <li style="font-size:.78rem;color:#718096;display:flex;gap:.5rem;align-items:flex-start;">
+                            <i class="bi bi-check2-circle" style="color:#16a34a;margin-top:1px;flex-shrink:0;"></i>
+                            Görselin en az <strong>1200×800px</strong> çözünürlükte olması önerilir.
+                        </li>
+                        <li style="font-size:.78rem;color:#718096;display:flex;gap:.5rem;align-items:flex-start;">
+                            <i class="bi bi-check2-circle" style="color:#16a34a;margin-top:1px;flex-shrink:0;"></i>
+                            Açıklama <strong>özellikler ve dahil/hariç</strong> bilgileri içermeli.
+                        </li>
+                        <li style="font-size:.78rem;color:#718096;display:flex;gap:.5rem;align-items:flex-start;">
+                            <i class="bi bi-check2-circle" style="color:#16a34a;margin-top:1px;flex-shrink:0;"></i>
+                            Kapasite doluluk oranı rezervasyon panelinden takip edilir.
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+        </div><!-- /sidebar-panel -->
+
+    </div><!-- /form-grid -->
+</form>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script>
+        // ── CHAR COUNTERS ─────────────────────────────
+        function initCounter(inputId, counterId, max) {
+            const el = document.getElementById(inputId);
+            const counter = document.getElementById(counterId);
+            if (!el || !counter) return;
+            function update() {
+                const len = el.value.length;
+                counter.textContent = len + ' / ' + max;
+                counter.className = 'char-counter' + (len > max * .9 ? (len >= max ? ' danger' : ' warn') : '');
+            }
+            el.addEventListener('input', update);
+            update();
+        }
+
+        initCounter('tourTitleInput', 'titleCounter', 120);
+        initCounter('descInput', 'descCounter', 1000);
+
+        // ── STEPPER ────────────────────────────────────
+        function stepperDecrement() {
+            const inp = document.getElementById('capacityInput');
+            const val = parseInt(inp.value) || 1;
+            if (val > 1) { inp.value = val - 1; updateSummary(); }
+        }
+
+        function stepperIncrement() {
+            const inp = document.getElementById('capacityInput');
+            const val = parseInt(inp.value) || 1;
+            if (val < 500) { inp.value = val + 1; updateSummary(); }
+        }
+
+        document.getElementById('capacityInput').addEventListener('input', updateSummary);
+
+        // ── DURATION BUILDER ──────────────────────────
+        function updateDuration() {
+            const days   = parseInt(document.getElementById('dayCount').value)   || 0;
+            const nights = parseInt(document.getElementById('nightCount').value) || 0;
+            const text   = days + ' Gün / ' + nights + ' Gece';
+            document.getElementById('dayNightHidden').value = text;
+            document.getElementById('durationText').textContent = text;
+            updateSummary();
+        }
+
+        document.getElementById('dayCount').addEventListener('input', updateDuration);
+        document.getElementById('nightCount').addEventListener('input', updateDuration);
+        updateDuration();
+
+        // ── IMAGE URL PREVIEW ─────────────────────────
+        const imageUrlInput = document.getElementById('imageUrlInput');
+        const urlPreviewImg = document.getElementById('urlPreviewImg');
+        let urlDebounce;
+
+        imageUrlInput.addEventListener('input', function () {
+            clearTimeout(urlDebounce);
+            urlDebounce = setTimeout(function () {
+                const url = imageUrlInput.value.trim();
+                if (url) {
+                    urlPreviewImg.src = url;
+                    urlPreviewImg.style.display = 'block';
+                    urlPreviewImg.onerror = function () { urlPreviewImg.style.display = 'none'; };
+                } else {
+                    urlPreviewImg.style.display = 'none';
+                }
+            }, 600);
+        });
+
+        // ── FILE UPLOAD PREVIEW ────────────────────────
+        const uploadZone = document.getElementById('uploadZone');
+        const imageFileInput = document.getElementById('imageFileInput');
+        const previewBox = document.getElementById('previewBox');
+        const previewImg = document.getElementById('previewImg');
+
+        imageFileInput.addEventListener('change', function () {
+            const file = this.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = function (e) {
+                previewImg.src = e.target.result;
+                previewBox.style.display = 'block';
+                uploadZone.style.display = 'none';
+            };
+            reader.readAsDataURL(file);
+        });
+
+        ['dragover', 'dragleave', 'drop'].forEach(function (evt) {
+            uploadZone.addEventListener(evt, function (e) {
+                e.preventDefault();
+                if (evt === 'dragover') uploadZone.classList.add('dragover');
+                else uploadZone.classList.remove('dragover');
+                if (evt === 'drop' && e.dataTransfer.files[0]) {
+                    imageFileInput.files = e.dataTransfer.files;
+                    imageFileInput.dispatchEvent(new Event('change'));
+                }
+            });
+        });
+
+        function removeImage() {
+            previewBox.style.display = 'none';
+            uploadZone.style.display = 'block';
+            imageFileInput.value = '';
+            previewImg.src = '';
+        }
+
+        // ── STATUS TOGGLE ─────────────────────────────
+        function updateStatus(radio) {
+            ['statusActive','statusDraft','statusPassive'].forEach(function(id) {
+                const el = document.getElementById(id);
+                el.classList.remove('selected-active','selected-draft');
+            });
+            const parent = radio.closest('.status-option');
+            if (radio.value === 'active') parent.classList.add('selected-active');
+            else if (radio.value === 'draft') parent.classList.add('selected-draft');
+        }
+
+        // ── LIVE SUMMARY ──────────────────────────────
+        function updateSummary() {
+            const title    = document.getElementById('tourTitleInput').value.trim();
+            const country  = document.getElementById('countrySelect').value;
+            const city     = document.getElementById('cityInput')?.value.trim();
+            const date     = document.getElementById('tourDateInput').value;
+            const duration = document.getElementById('dayNightHidden').value;
+            const capacity = document.getElementById('capacityInput').value;
+
+            document.getElementById('sumTitle').textContent    = title    || '—';
+            document.getElementById('sumLocation').textContent = (country && city) ? country + ' / ' + city : (country || city || '—');
+            document.getElementById('sumDate').textContent     = date ? formatDate(date) : '—';
+            document.getElementById('sumDuration').textContent = duration  || '—';
+            document.getElementById('sumCapacity').textContent = capacity  ? capacity + ' kişi' : '—';
+        }
+
+        function formatDate(dateStr) {
+            const [y, m, d] = dateStr.split('-');
+            return d + '.' + m + '.' + y;
+        }
+
+        ['tourTitleInput','countrySelect','cityInput','tourDateInput','capacityInput'].forEach(function(id) {
+            const el = document.getElementById(id);
+            if (el) el.addEventListener('input', updateSummary);
+        });
+
+        updateSummary();
+
+        // ── DRAFT SAVE ────────────────────────────────
+        function saveDraft() {
+            const radio = document.querySelector('input[name="PublishStatus"][value="draft"]');
+            if (radio) { radio.checked = true; updateStatus(radio); }
+            document.getElementById('createTourForm').submit();
+        }
+
+        // ── SUBMIT FEEDBACK ───────────────────────────
+        document.getElementById('createTourForm').addEventListener('submit', function () {
+            const btn = document.getElementById('submitBtn');
+            btn.disabled = true;
+            btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status"></span>Kaydediliyor...';
+        });
+    </script>
+}
+
+

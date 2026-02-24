@@ -12,6 +12,8 @@
         public string ImageUrl { get; set; }
         public decimal TourPrice { get; set; } // Tur fiyatı
         public string FullDescription { get; set; }
+        public bool IsDrafts { get; set; }
+        public bool IsStatus { get; set; }
         public List<string> ImageAlbumUrls { get; set; }
         public string GuideId { get; set; } 
     }

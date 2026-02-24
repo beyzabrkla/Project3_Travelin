@@ -18,6 +18,8 @@ namespace EntityLayer
         public DateTime TourDate { get; set; }
         public string DayNight { get; set; }
         public string ImageUrl { get; set; }
+        public bool IsDrafts { get; set; }
+        public bool IsStatus { get; set; }
         public List<string> ImageAlbumUrls { get; set; }
 
         [BsonRepresentation(BsonType.Decimal128)]
