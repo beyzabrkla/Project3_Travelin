@@ -25,39 +25,68 @@
             </div>
         </a>
 
+        <!-- TURLAR -->
         <div class="sidebar-section">
-            <div class="sidebar-section-label">Hızlı Erişim</div>
+            <div class="sidebar-section-label">Turlar</div>
+            <a href="/AdminTour/TourList" class="nav-item-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "AdminTour" ? "active" : "")">
+                <i class="bi bi-map"></i> Tüm Turlar
+            </a>
             <a href="/AdminTour/TourList?status=active" class="nav-item-link">
                 <i class="bi bi-check-circle text-success"></i> Aktif Turlar
             </a>
             <a href="/AdminTour/TourList?status=draft" class="nav-item-link">
                 <i class="bi bi-pencil-square text-warning"></i> Taslak Turlar
             </a>
-            <a href="/AdminTour/TourList" class="nav-item-link">
-                <i class="bi bi-map"></i> Tüm Turlar
+            <a href="/AdminTour/TourList?status=passive" class="nav-item-link">
+                <i class="bi bi-x-circle text-danger"></i> Pasif Turlar
+            </a>
+            <a href="/AdminTour/CreateTour" class="nav-item-link">
+                <i class="bi bi-plus-circle"></i> Yeni Tur Ekle
             </a>
         </div>
 
+        <!-- REZERVASYONLAR -->
         <div class="sidebar-section">
-            <div class="sidebar-section-label">İşlemler</div>
-            <a href="#" class="nav-item-link">
-                <i class="bi bi-calendar2-check"></i> Rezervasyonlar
+            <div class="sidebar-section-label">Rezervasyonlar</div>
+            <a href="/AdminReservation/ReservationList" class="nav-item-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "AdminReservation" ? "active" : "")">
+                <i class="bi bi-calendar2-check"></i> Tüm Rezervasyonlar
             </a>
-            <a href="#" class="nav-item-link">
-                <i class="bi bi-people"></i> Müşteriler
+            <a href="/AdminReservation/ReservationList?status=pending" class="nav-item-link">
+                <i class="bi bi-hourglass-split text-warning"></i> Onay Bekleyenler
             </a>
-            <a href="#" class="nav-item-link">
-                <i class="bi bi-bar-chart-line"></i> Raporlar
+            <a href="/AdminReservation/ReservationList?status=approved" class="nav-item-link">
+                <i class="bi bi-check2-circle text-success"></i> Onaylananlar
             </a>
-            <a href="#" class="nav-item-link">
+            <a href="/AdminReservation/ReservationList?status=rejected" class="nav-item-link">
+                <i class="bi bi-x-circle text-danger"></i> Reddedilenler
+            </a>
+        </div>
+
+        <!-- YÖNETİM -->
+        <div class="sidebar-section">
+            <div class="sidebar-section-label">Yönetim</div>
+            <a href="/AdminGuide/GuideList" class="nav-item-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "AdminGuide" ? "active" : "")">
+                <i class="bi bi-people"></i> Rehberler
+            </a>
+            <a href="/AdminCategory/CategoryList" class="nav-item-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "AdminCategory" ? "active" : "")">
+                <i class="bi bi-tags"></i> Kategoriler
+            </a>
+            <a href="/AdminReview/ReviewList" class="nav-item-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "AdminReview" ? "active" : "")">
                 <i class="bi bi-star"></i> Yorumlar
             </a>
+            <a href="/AdminUser/UserList" class="nav-item-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "AdminUser" ? "active" : "")">
+                <i class="bi bi-person-badge"></i> Müşteriler
+            </a>
         </div>
 
+        <!-- RAPORLAR -->
         <div class="sidebar-section">
-            <div class="sidebar-section-label">Sistem</div>
-            <a href="#" class="nav-item-link">
-                <i class="bi bi-gear"></i> Ayarlar
+            <div class="sidebar-section-label">Raporlar</div>
+            <a href="/AdminReport/TourCustomers" class="nav-item-link">
+                <i class="bi bi-people-fill"></i> Tur Müşteri Listeleri
+            </a>
+            <a href="/AdminReport/Dashboard" class="nav-item-link">
+                <i class="bi bi-bar-chart-line"></i> Genel Rapor
             </a>
         </div>
 
@@ -114,9 +143,18 @@
             document.getElementById('sidebar').classList.toggle('open');
             document.getElementById('sidebarOverlay').classList.toggle('show');
         }
+
+        // Aktif menü linkini vurgula
+        document.addEventListener('DOMContentLoaded', function () {
+            const currentPath = window.location.pathname + window.location.search;
+            document.querySelectorAll('.nav-item-link').forEach(function (link) {
+                const href = link.getAttribute('href');
+                if (href && currentPath === href) {
+                    link.classList.add('active');
+                }
+            });
+        });
     </script>
     @await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>
-
-

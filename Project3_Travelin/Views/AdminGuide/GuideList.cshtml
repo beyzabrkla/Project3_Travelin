@@ -1,0 +1,414 @@
+﻿@model List<ResultGuideDTO>
+@{
+    ViewData["Title"] = "Rehber Listesi";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+}
+
+<style>
+    .guide-card {
+        background: #fff;
+        border-radius: 16px;
+        overflow: hidden;
+        box-shadow: 0 1px 4px rgba(0,0,0,.06);
+        border: 1px solid #f0f0f0;
+        transition: transform .2s, box-shadow .2s;
+        display: flex;
+        flex-direction: column;
+        height: 100%;
+    }
+
+        .guide-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 24px rgba(0,0,0,.10);
+        }
+
+    .guide-card-img {
+        position: relative;
+        height: 220px;
+        overflow: hidden;
+        background: linear-gradient(135deg,#f8f4ff,#ede9fe);
+    }
+
+        .guide-card-img img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform .3s;
+        }
+
+    .guide-card:hover .guide-card-img img {
+        transform: scale(1.04);
+    }
+
+    .guide-card-img .no-photo {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        height: 100%;
+    }
+
+    .guide-badge {
+        position: absolute;
+        top: 12px;
+        right: 12px;
+        padding: .28rem .7rem;
+        border-radius: 20px;
+        font-size: .7rem;
+        font-weight: 700;
+        letter-spacing: .03em;
+        display: flex;
+        align-items: center;
+        gap: .3rem;
+        backdrop-filter: blur(4px);
+    }
+
+        .guide-badge.active {
+            background: rgba(220,252,231,.92);
+            color: #15803d;
+        }
+
+        .guide-badge.passive {
+            background: rgba(254,226,226,.92);
+            color: #dc2626;
+        }
+
+        .guide-badge .dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: currentColor;
+            display: inline-block;
+        }
+
+    .guide-card-body {
+        padding: 1.1rem 1.2rem 1.2rem;
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .guide-name {
+        font-size: 1rem;
+        font-weight: 700;
+        color: #1a202c;
+        margin-bottom: .2rem;
+    }
+
+    .guide-title-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: .35rem;
+        background: #f3f0ff;
+        color: #6d28d9;
+        padding: .2rem .65rem;
+        border-radius: 20px;
+        font-size: .72rem;
+        font-weight: 600;
+        margin-top: .35rem;
+    }
+
+    .guide-actions {
+        display: flex;
+        gap: .5rem;
+        margin-top: auto;
+        padding-top: 1rem;
+    }
+
+    .btn-guide-edit {
+        flex: 1;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: .4rem;
+        padding: .48rem .75rem;
+        border-radius: 9px;
+        font-size: .8rem;
+        font-weight: 600;
+        border: 1.5px solid #6d28d9;
+        color: #6d28d9;
+        background: transparent;
+        text-decoration: none;
+        transition: all .18s;
+    }
+
+        .btn-guide-edit:hover {
+            background: #6d28d9;
+            color: #fff;
+        }
+
+    .btn-guide-toggle {
+        flex: 1;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: .4rem;
+        padding: .48rem .75rem;
+        border-radius: 9px;
+        font-size: .8rem;
+        font-weight: 600;
+        border: none;
+        cursor: pointer;
+        transition: all .18s;
+        width: 100%;
+    }
+
+        .btn-guide-toggle.to-passive {
+            background: #fff7ed;
+            color: #c2410c;
+            border: 1.5px solid #fed7aa;
+        }
+
+            .btn-guide-toggle.to-passive:hover {
+                background: #c2410c;
+                color: #fff;
+                border-color: #c2410c;
+            }
+
+        .btn-guide-toggle.to-active {
+            background: #f0fdf4;
+            color: #15803d;
+            border: 1.5px solid #bbf7d0;
+        }
+
+            .btn-guide-toggle.to-active:hover {
+                background: #15803d;
+                color: #fff;
+                border-color: #15803d;
+            }
+
+    .guide-stat-card {
+        background: #fff;
+        border-radius: 14px;
+        border: 1px solid #f0f0f0;
+        box-shadow: 0 1px 4px rgba(0,0,0,.05);
+        padding: 1.1rem 1.4rem;
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+    }
+
+    .guide-stat-icon {
+        width: 46px;
+        height: 46px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.15rem;
+        flex-shrink: 0;
+    }
+
+        .guide-stat-icon.purple {
+            background: #f3f0ff;
+            color: #6d28d9;
+        }
+
+        .guide-stat-icon.green {
+            background: #f0fdf4;
+            color: #15803d;
+        }
+
+        .guide-stat-icon.red {
+            background: #fef2f2;
+            color: #dc2626;
+        }
+
+    .guide-stat-value {
+        font-size: 1.45rem;
+        font-weight: 700;
+        color: #1a202c;
+        line-height: 1;
+    }
+
+    .guide-stat-label {
+        font-size: .75rem;
+        color: #a0aec0;
+        margin-top: .2rem;
+    }
+
+    .guide-search-wrap {
+        background: #fff;
+        border-radius: 14px;
+        border: 1px solid #f0f0f0;
+        box-shadow: 0 1px 4px rgba(0,0,0,.05);
+        padding: 1rem 1.2rem;
+        margin-bottom: 1.5rem;
+        display: flex;
+        gap: .75rem;
+        align-items: center;
+    }
+
+        .guide-search-wrap .form-control {
+            border-radius: 9px;
+            border: 1.5px solid #e2e8f0;
+            font-size: .875rem;
+            max-width: 320px;
+        }
+
+            .guide-search-wrap .form-control:focus {
+                border-color: #6d28d9;
+                box-shadow: 0 0 0 3px rgba(109,40,217,.1);
+            }
+</style>
+
+<!-- PAGE HEADER -->
+<div class="page-header">
+    <div>
+        <h1 class="page-title">Rehberler</h1>
+        <nav aria-label="breadcrumb" class="mt-2">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="#">Admin</a></li>
+                <li class="breadcrumb-item active" aria-current="page">Rehber Listesi</li>
+            </ol>
+        </nav>
+    </div>
+    <a asp-action="CreateGuide" class="btn btn-brand d-flex align-items-center gap-2"
+       style="border-radius:10px;font-size:.875rem;font-weight:500;padding:.55rem 1.2rem;">
+        <i class="bi bi-plus-circle-fill"></i> Yeni Rehber Ekle
+    </a>
+</div>
+
+<!-- STATS -->
+<div class="row g-3 mb-4">
+    <div class="col-md-4">
+        <div class="guide-stat-card">
+            <div class="guide-stat-icon purple"><i class="bi bi-people-fill"></i></div>
+            <div>
+                <div class="guide-stat-value">@ViewBag.TotalCount</div>
+                <div class="guide-stat-label">Toplam Rehber</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="guide-stat-card">
+            <div class="guide-stat-icon green"><i class="bi bi-check-circle-fill"></i></div>
+            <div>
+                <div class="guide-stat-value">@Model.Count(x => x.Status)</div>
+                <div class="guide-stat-label">Aktif Rehber</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="guide-stat-card">
+            <div class="guide-stat-icon red"><i class="bi bi-x-circle-fill"></i></div>
+            <div>
+                <div class="guide-stat-value">@Model.Count(x => !x.Status)</div>
+                <div class="guide-stat-label">Pasif Rehber</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ARAMA -->
+<div class="guide-search-wrap">
+    <form method="get" asp-action="GuideList" class="d-flex gap-2 w-100">
+        <input type="text" name="q" value="@ViewBag.SearchQuery"
+               class="form-control" placeholder="İsim veya unvan ara..." />
+        <button type="submit" class="btn btn-brand" style="border-radius:9px;font-size:.875rem;">
+            <i class="bi bi-search me-1"></i> Ara
+        </button>
+        @if (!string.IsNullOrEmpty(ViewBag.SearchQuery as string))
+        {
+            <a asp-action="GuideList" class="btn btn-outline-secondary" style="border-radius:9px;">
+                <i class="bi bi-x me-1"></i> Temizle
+            </a>
+        }
+    </form>
+</div>
+
+<!-- REHBER KARTLARI -->
+@if (!Model.Any())
+{
+    <div class="guide-stat-card justify-content-center flex-column text-center py-5">
+        <i class="bi bi-people" style="font-size:3rem;color:#cbd5e0;"></i>
+        <div class="mt-3" style="color:#a0aec0;font-size:.95rem;">Henüz rehber eklenmemiş.</div>
+        <a asp-action="CreateGuide" class="btn btn-brand mt-3">
+            <i class="bi bi-plus-circle-fill me-1"></i> İlk Rehberi Ekle
+        </a>
+    </div>
+}
+else
+{
+    <div class="row g-4">
+        @foreach (var guide in Model)
+        {
+            <div class="col-md-6 col-lg-4">
+                <div class="guide-card">
+
+                    <!-- Görsel -->
+                    <div class="guide-card-img">
+                        @if (!string.IsNullOrEmpty(guide.ImageUrl))
+                        {
+                            <img src="@guide.ImageUrl" alt="@guide.Name" />
+                        }
+                        else
+                        {
+                            <div class="no-photo">
+                                <i class="bi bi-person-circle" style="font-size:5rem;color:#c4b5fd;"></i>
+                            </div>
+                        }
+                        <span class="guide-badge @(guide.Status ? "active" : "passive")">
+                            <span class="dot"></span>
+                            @(guide.Status ? "Aktif" : "Pasif")
+                        </span>
+                    </div>
+
+                    <!-- Bilgiler -->
+                    <div class="guide-card-body">
+                        <div class="guide-name">@guide.Name</div>
+                        <div>
+                            <span class="guide-title-badge">
+                                <i class="bi bi-briefcase-fill" style="font-size:.68rem;"></i>
+                                @guide.Title
+                            </span>
+                        </div>
+
+                        <!-- Butonlar -->
+                        <div class="guide-actions">
+                            <a asp-action="UpdateGuide" asp-route-id="@guide.GuideId" class="btn-guide-edit">
+                                <i class="bi bi-pencil-square"></i> Düzenle
+                            </a>
+                            <form asp-action="ToggleStatus" method="post" style="flex:1;margin:0;">
+                                <input type="hidden" name="id" value="@guide.GuideId" />
+                                <button type="submit" class="btn-guide-toggle @(guide.Status ? "to-passive" : "to-active")">
+                                    <i class="bi @(guide.Status ? "bi-pause-circle-fill" : "bi-play-circle-fill")"></i>
+                                    @(guide.Status ? "Pasife Al" : "Aktife Al")
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        }
+    </div>
+
+    <!-- SAYFALAMA -->
+    @if (ViewBag.TotalPages > 1)
+    {
+        <div class="d-flex justify-content-center align-items-center gap-2 mt-4">
+            @if (ViewBag.CurrentPage > 1)
+            {
+                <a asp-action="GuideList" asp-route-page="@(ViewBag.CurrentPage - 1)"
+                   asp-route-q="@ViewBag.SearchQuery" class="btn btn-outline-secondary btn-sm">
+                    <i class="bi bi-chevron-left"></i>
+                </a>
+            }
+            @for (int i = 1; i <= ViewBag.TotalPages; i++)
+            {
+                <a asp-action="GuideList" asp-route-page="@i"
+                   asp-route-q="@ViewBag.SearchQuery"
+                   class="btn btn-sm @(i == (int)ViewBag.CurrentPage ? "btn-brand" : "btn-outline-secondary")">
+                    @i
+                </a>
+            }
+            @if (ViewBag.CurrentPage < ViewBag.TotalPages)
+            {
+                <a asp-action="GuideList" asp-route-page="@(ViewBag.CurrentPage + 1)"
+                   asp-route-q="@ViewBag.SearchQuery" class="btn btn-outline-secondary btn-sm">
+                    <i class="bi bi-chevron-right"></i>
+                </a>
+            }
+        </div>
+    }
+}
