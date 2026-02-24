@@ -44,10 +44,30 @@
                         </ul>
                     </div><!-- /.navbar-collapse -->
                     <div class="register-login d-flex align-items-center">
-                        <a href="#" data-bs-toggle="modal" data-bs-target="#exampleModal" class="me-3">
-                            <i class="icon-user"></i> Giriş Yap / Kayıt Ol
-                        </a>
-                        <a href="booking.html" class="nir-btn white">Rezervasyon Yap</a>
+                        @if (User.Identity.IsAuthenticated)
+                        {
+                            <a href="/Customer/Dashboard" class="me-3">
+                                <i class="icon-user"></i> @User.Identity.Name
+                            </a>
+                            <a href="/Login/Logout" class="me-3 text-danger">
+                                <i class="fa fa-sign-out-alt"></i> Çıkış Yap
+                            </a>
+                        }
+                        else
+                        {
+                            <a href="#" data-bs-toggle="modal" data-bs-target="#exampleModal" class="me-3">
+                                <i class="icon-user"></i> Giriş Yap / Kayıt Ol
+                            </a>
+                        }
+
+                        @if (User.Identity.IsAuthenticated)
+                        {
+                            <a href="/Reservation/NewReservation" class="nir-btn white">Rezervasyon Yap</a>
+                        }
+                        else
+                        {
+                            <a href="#" data-bs-toggle="modal" data-bs-target="#exampleModal" class="nir-btn white">Rezervasyon Yap</a>
+                        }
                     </div>
 
                     <div id="slicknav-mobile"></div>

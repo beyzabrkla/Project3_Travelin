@@ -19,18 +19,6 @@ namespace Project3_Travelin.Controllers
             _guideService = guideService;
         }
 
-        public IActionResult CreateTour()
-        {
-            return View();
-        }
-
-        [HttpPost]
-        public async Task<IActionResult> CreateTour(CreateTourDTO createTourDTO)
-        {
-            await _tourService.CreateTourAsync(createTourDTO);
-            return RedirectToAction("TourList");
-        }
-
         public async Task<IActionResult> TourList(string destination, string duration, int page = 1)
         {
             int pageSize = 3;

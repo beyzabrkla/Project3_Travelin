@@ -1,0 +1,170 @@
+﻿<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="shortcut icon" type="image/x-icon" href="/travelin/images/favicon.png">
+    <title>@ViewData["Title"] — Müşteri Paneli</title>
+    <link href="/css/Admin.css" rel="stylesheet" type="text/css">
+    <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet" />
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet" />
+    <style>
+        :root {
+            --sidebar-bg: #1a1c23;
+            --theme-pink: #d946ef; /* İstediğin o canlı pembe/mor tonu */
+        }
+
+        /* Sidebar Logo Alanı */
+        .sidebar-brand {
+            display: flex !important;
+            align-items: center !important;
+            padding: 1.5rem 1.25rem !important;
+            text-decoration: none !important;
+        }
+
+        /* Aktif olan linkin (Dashboard gibi) yazı ve ikon rengini pembe yapar */
+        .nav-item-link.active {
+            background-color: rgba(217, 70, 239, 0.1) !important; /* Hafif pembe arka plan */
+            color: var(--theme-pink) !important; /* Yazıyı pembe yapar */
+            border-left: 3px solid var(--theme-pink) !important;
+            font-weight: 700 !important;
+        }
+
+            .nav-item-link.active i {
+                color: var(--theme-pink) !important; /* İkonu pembe yapar */
+            }
+
+        /* Müşteri Alanı alt başlığı */
+        .brand-sub {
+            color: var(--theme-pink) !important; /* Burayı da pembe yaptık */
+            font-size: 0.9rem !important;
+            font-weight: 600 !important;
+            display: block !important;
+            margin-top: 2px !important;
+            opacity: 1 !important;
+        }
+
+        .brand-name {
+            font-size: 1.25rem !important;
+            font-weight: 800 !important;
+            color: #ffffff !important;
+            line-height: 1.1 !important;
+        }
+
+        /* Diğer (aktif olmayan) linkler */
+        .nav-item-link {
+            color: rgba(255, 255, 255, 0.6) !important;
+            transition: all 0.3s ease;
+        }
+
+            .nav-item-link:hover {
+                color: var(--theme-pink) !important;
+                background-color: rgba(217, 70, 239, 0.05) !important;
+            }
+    </style>
+    @await RenderSectionAsync("Styles", required: false)
+</head>
+<body>
+
+    <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
+
+    <aside class="sidebar" id="sidebar">
+        <a href="/Customer/Dashboard" class="sidebar-brand">
+            <div class="brand-icon"><i class="bi bi-person-workspace"></i></div>
+            <div>
+                <span class="brand-sub">Müşteri Alanı</span>
+            </div>
+        </a>
+
+        <div class="sidebar-section">
+            <div class="sidebar-section-label">Menü</div>
+            <a href="/Customer/Dashboard" class="nav-item-link">
+                <i class="bi bi-speedometer2"></i> Dashboard
+            </a>
+        </div>
+
+        <div class="sidebar-section">
+            <div class="sidebar-section-label">Gezilerim</div>
+            <a href="/Reservation/MyReservations" class="nav-item-link">
+                <i class="bi bi-calendar-event"></i> Aktif Rezervasyonlar
+            </a>
+            <a href="/Reservation/OldReservations" class="nav-item-link">
+                <i class="bi bi-clock-history"></i> Geçmiş Turlarım
+            </a>
+            <a href="/Reservation/NewReservation" class="nav-item-link">
+                <i class="bi bi-plus-circle"></i> Yeni Rezervasyon Yap
+            </a>
+        </div>
+
+        <div class="sidebar-section">
+            <div class="sidebar-section-label">Hesabım</div>
+            <a href="/Customer/MyReviews" class="nav-item-link">
+                <i class="bi bi-chat-left-text"></i> Yorumlarım
+            </a>
+            <a href="/Customer/Profile" class="nav-item-link">
+                <i class="bi bi-person-gear"></i> Profil Ayarları
+            </a>
+            <a href="/Customer/Support" class="nav-item-link">
+                <i class="bi bi-headset"></i> Destek Talepleri
+            </a>
+        </div>
+
+        <div class="sidebar-footer">
+            <a href="/Login/Logout" class="nav-item-link text-danger">
+                <i class="bi bi-box-arrow-left"></i> Çıkış Yap
+            </a>
+        </div>
+    </aside>
+
+    <header class="topbar">
+        <button class="hamburger" onclick="toggleSidebar()">
+            <i class="bi bi-list"></i>
+        </button>
+        <span class="topbar-title">@ViewData["Title"]</span>
+        <div class="topbar-spacer"></div>
+        <div class="topbar-actions">
+            <div class="dropdown">
+                <div class="admin-profile" data-bs-toggle="dropdown" aria-expanded="false">
+                    <div class="admin-avatar" style="background: #6366f1">@User.Identity.Name.Substring(0, 1).ToUpper()</div>
+                    <div>
+                        <div class="admin-name">@User.Identity.Name</div>
+                        <span class="admin-role">Gezgin Üye</span>
+                    </div>
+                    <i class="bi bi-chevron-down ms-1" style="font-size:.7rem;color:#718096"></i>
+                </div>
+                <ul class="dropdown-menu dropdown-menu-end shadow-sm border-0 mt-1">
+                    <li><a class="dropdown-item" href="/Customer/Profile"><i class="bi bi-person me-2"></i>Profilim</a></li>
+                    <li><hr class="dropdown-divider"></li>
+                    <li><a class="dropdown-item text-danger" href="/Login/Logout"><i class="bi bi-box-arrow-left me-2"></i>Çıkış Yap</a></li>
+                </ul>
+            </div>
+        </div>
+    </header>
+
+    <main class="main-wrapper">
+        <div class="container-fluid p-4">
+            @RenderBody()
+        </div>
+    </main>
+
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        function toggleSidebar() {
+            document.getElementById('sidebar').classList.toggle('open');
+            document.getElementById('sidebarOverlay').classList.toggle('show');
+        }
+
+        document.addEventListener('DOMContentLoaded', function () {
+            const currentPath = window.location.pathname;
+            document.querySelectorAll('.nav-item-link').forEach(function (link) {
+                if (link.getAttribute('href') === currentPath) {
+                    link.classList.add('active');
+                }
+            });
+        });
+    </script>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

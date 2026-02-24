@@ -1,12 +1,14 @@
 ﻿using AutoMapper;
 using BusinessLayer.Abstract;
 using DTOLayer.DTOs.TourDTOs;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using System.Diagnostics.Metrics;
 
 namespace Project3_Travelin.Controllers
 {
+    [Authorize(Roles = "Admin")]
     public class AdminTourController : Controller
     {
         private readonly ITourService _tourService;
@@ -34,11 +36,11 @@ namespace Project3_Travelin.Controllers
             }
         }
 
-        public async Task<IActionResult> TourList(string q, string country, DateTime? fromDate, DateTime? toDate, int page = 1)
+        public async Task<IActionResult> TourList(string q, string country, string status, DateTime? fromDate, DateTime? toDate, int page = 1)
         {
             var values = await _tourService.GetAllTourAsync();
 
-            // ÜLKE LİSTESİ 
+            // ÜLKE LİSTESİ
             ViewBag.Countries = values
                 .Where(x => !string.IsNullOrEmpty(x.TourCountry))
                 .Select(x => x.TourCountry)
@@ -46,7 +48,19 @@ namespace Project3_Travelin.Controllers
                 .OrderBy(x => x)
                 .ToList();
 
-            // Arama Filtresi
+            // DURUM FİLTRESİ (sidebar linklerinden gelir)
+            if (!string.IsNullOrEmpty(status))
+            {
+                values = status switch
+                {
+                    "active" => values.Where(x => x.IsStatus == true && x.IsDrafts == false).ToList(),
+                    "draft" => values.Where(x => x.IsDrafts == true).ToList(),
+                    "passive" => values.Where(x => x.IsStatus == false && x.IsDrafts == false).ToList(),
+                    _ => values
+                };
+            }
+
+            // ARAMA FİLTRESİ
             if (!string.IsNullOrEmpty(q))
             {
                 values = values.Where(x =>
@@ -55,45 +69,32 @@ namespace Project3_Travelin.Controllers
                 ).ToList();
             }
 
-            // Ülke Filtresi (Null kontrolü eklendi)
+            // ÜLKE FİLTRESİ
             if (!string.IsNullOrEmpty(country))
-            {
                 values = values.Where(x => x.TourCountry != null && x.TourCountry == country).ToList();
-            }
 
-            // Başlangıç Tarihi Filtresi
+            // TARİH FİLTRELERİ
             if (fromDate.HasValue)
-            {
                 values = values.Where(x => x.TourDate >= fromDate.Value).ToList();
-            }
-
-            // Bitiş Tarihi Filtresi
             if (toDate.HasValue)
-            {
                 values = values.Where(x => x.TourDate <= toDate.Value).ToList();
-            }
 
-            //SAYFALAMA İŞLEMLERİ
+            // SAYFALAMA
             int pageSize = 6;
             int totalCount = values.Count;
             int totalPages = (int)Math.Ceiling(totalCount / (double)pageSize);
-
-            // Eğer sayfa sayısı 1'den küçük gelirse 1 yap
             page = page < 1 ? 1 : page;
 
-            // Veriyi 6'şar 6'şar böl
             var pagedData = values.Skip((page - 1) * pageSize).Take(pageSize).ToList();
 
-            // View tarafına lazım olacak bilgileri ViewBag ile gönder
             ViewBag.CurrentPage = page;
             ViewBag.TotalPages = totalPages;
             ViewBag.TotalCount = totalCount;
             ViewBag.PageSize = pageSize;
+            ViewBag.ActiveStatus = status; // View'da hangi linkin aktif olduğunu vurgulamak için
 
             return View(pagedData);
-
         }
-
         public async Task<IActionResult> DraftTours()
         {
             var values = await _tourService.GetAllTourAsync();

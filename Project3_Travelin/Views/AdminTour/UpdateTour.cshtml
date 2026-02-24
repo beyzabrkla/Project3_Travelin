@@ -2,7 +2,6 @@
 @{
     ViewData["Title"] = "Tur Düzenle";
     Layout = "~/Views/Shared/_AdminLayout.cshtml";
-    string country = Context.Request.Query["country"];
 }
 @if (ViewBag.Errors != null)
 {
@@ -15,6 +14,7 @@
         </ul>
     </div>
 }
+
 <!-- PAGE HEADER -->
 <div class="page-header">
     <div>
@@ -22,12 +22,13 @@
         <nav aria-label="breadcrumb" class="mt-2">
             <ol class="breadcrumb">
                 <li class="breadcrumb-item"><a href="#">Admin</a></li>
-                <li class="breadcrumb-item"><a asp-action="/AdminTour/TourList">Turlar</a></li>
+                <li class="breadcrumb-item"><a asp-action="TourList">Turlar</a></li>
                 <li class="breadcrumb-item active" aria-current="page">Tur Düzenle</li>
             </ol>
         </nav>
     </div>
-    <a asp-action="TourList" class="btn btn-outline-secondary d-flex align-items-center gap-2" style="border-radius:10px;font-size:.875rem;font-weight:500;padding:.55rem 1.1rem;">
+    <a asp-action="TourList" class="btn btn-outline-secondary d-flex align-items-center gap-2"
+       style="border-radius:10px;font-size:.875rem;font-weight:500;padding:.55rem 1.1rem;">
         <i class="bi bi-arrow-left"></i> Tur Listesine Dön
     </a>
 </div>
@@ -40,6 +41,7 @@
 
     <div class="form-grid">
         <div class="form-main">
+
             <!-- TEMEL BİLGİLER -->
             <div class="form-section">
                 <div class="section-header">
@@ -50,26 +52,32 @@
                     </div>
                 </div>
                 <div class="section-body">
-                    <!-- Tur Başlığı -->
                     <div class="field-group">
                         <label asp-for="TourTitle" class="field-label">
                             <i class="bi bi-tag" style="color:#a0aec0;font-size:.85rem;"></i>
                             Tur Başlığı <span class="required">*</span>
                         </label>
-                        <input asp-for="TourTitle" class="form-control" placeholder="Örn: Kapadokya Balon Turu - 3 Gece 4 Gün" maxlength="120" id="tourTitleInput" />
+                        <input asp-for="TourTitle" class="form-control"
+                               placeholder="Örn: Kapadokya Balon Turu - 3 Gece 4 Gün"
+                               maxlength="120" id="tourTitleInput" />
                         <div class="char-counter" id="titleCounter">0 / 120</div>
-                        <span asp-validation-for="TourTitle" class="text-danger-field"><i class="bi bi-exclamation-circle"></i><span></span></span>
+                        <span asp-validation-for="TourTitle" class="text-danger-field">
+                            <i class="bi bi-exclamation-circle"></i><span></span>
+                        </span>
                     </div>
 
-                    <!-- Açıklama -->
                     <div class="field-group">
                         <label asp-for="FullDescription" class="field-label">
                             <i class="bi bi-text-left" style="color:#a0aec0;font-size:.85rem;"></i>
                             Açıklama <span class="required">*</span>
                         </label>
-                        <textarea asp-for="FullDescription" class="form-control" placeholder="Tur hakkında detaylı açıklama yazın..." maxlength="1000" id="descInput" rows="5"></textarea>
+                        <textarea asp-for="FullDescription" class="form-control"
+                                  placeholder="Tur hakkında detaylı açıklama yazın..."
+                                  maxlength="1000" id="descInput" rows="5"></textarea>
                         <div class="char-counter" id="descCounter">0 / 1000</div>
-                        <span asp-validation-for="FullDescription" class="text-danger-field"><i class="bi bi-exclamation-circle"></i><span></span></span>
+                        <span asp-validation-for="FullDescription" class="text-danger-field">
+                            <i class="bi bi-exclamation-circle"></i><span></span>
+                        </span>
                     </div>
                 </div>
             </div>
@@ -91,20 +99,19 @@
                                     <i class="bi bi-globe2" style="color:#a0aec0;font-size:.85rem;"></i>
                                     Ülke <span class="required">*</span>
                                 </label>
-                                <div class="input-with-icon">
-                                    <i class="bi bi-globe2 input-icon"></i>
-                                    <select asp-for="TourCountry" class="form-select" id="countrySelect">
-                                        <option value="">Seçiniz...</option>
-                                        @if (ViewBag.Countries != null)
+                                <select asp-for="TourCountry" class="form-select" id="countrySelect">
+                                    <option value="">Seçiniz...</option>
+                                    @if (ViewBag.Countries != null)
+                                    {
+                                        foreach (var item in (List<string>)ViewBag.Countries)
                                         {
-                                            foreach (var item in (List<string>)ViewBag.Countries)
-                                            {
-                                                <option value="@item">@item</option>
-                                            }
+                                            <option value="@item">@item</option>
                                         }
-                                    </select>
-                                </div>
-                                <span asp-validation-for="TourCountry" class="text-danger-field"><i class="bi bi-exclamation-circle"></i><span></span></span>
+                                    }
+                                </select>
+                                <span asp-validation-for="TourCountry" class="text-danger-field">
+                                    <i class="bi bi-exclamation-circle"></i><span></span>
+                                </span>
                             </div>
                         </div>
                         <div class="col-md-6">
@@ -115,9 +122,12 @@
                                 </label>
                                 <div class="input-with-icon">
                                     <i class="bi bi-geo-alt input-icon"></i>
-                                    <input asp-for="TourCity" class="form-control" placeholder="Örn: Nevşehir, Kapadokya" id="cityInput" />
+                                    <input asp-for="TourCity" class="form-control"
+                                           placeholder="Örn: Nevşehir, Kapadokya" id="cityInput" />
                                 </div>
-                                <span asp-validation-for="TourCity" class="text-danger-field"><i class="bi bi-exclamation-circle"></i><span></span></span>
+                                <span asp-validation-for="TourCity" class="text-danger-field">
+                                    <i class="bi bi-exclamation-circle"></i><span></span>
+                                </span>
                             </div>
                         </div>
                     </div>
@@ -135,6 +145,7 @@
                 </div>
                 <div class="section-body">
                     <div class="row g-3">
+
                         <!-- Tur Tarihi -->
                         <div class="col-md-6">
                             <div class="field-group">
@@ -144,11 +155,15 @@
                                 </label>
                                 <div class="input-with-icon">
                                     <i class="bi bi-calendar3 input-icon"></i>
-                                    <input asp-for="TourDate" type="date" class="form-control" id="tourDateInput"
-                                           min="@DateTime.Now.ToString("yyyy-MM-dd")" />
+                                    <input asp-for="TourDate" type="date" class="form-control"
+                                           id="tourDateInput" min="@DateTime.Now.ToString("yyyy-MM-dd")" />
                                 </div>
-                                <div class="field-hint"><i class="bi bi-info-circle me-1"></i>Bugünden önceki tarih seçilemez.</div>
-                                <span asp-validation-for="TourDate" class="text-danger-field"><i class="bi bi-exclamation-circle"></i><span></span></span>
+                                <div class="field-hint">
+                                    <i class="bi bi-info-circle me-1"></i>Bugünden önceki tarih seçilemez.
+                                </div>
+                                <span asp-validation-for="TourDate" class="text-danger-field">
+                                    <i class="bi bi-exclamation-circle"></i><span></span>
+                                </span>
                             </div>
                         </div>
 
@@ -163,18 +178,21 @@
                                     <button type="button" class="stepper-btn" onclick="stepperDecrement()" aria-label="Azalt">
                                         <i class="bi bi-dash"></i>
                                     </button>
-                                    {{-- DÜZELTME 2: Sabit value="20" kaldırıldı. asp-for model değerini otomatik yazar --}}
                                     <input asp-for="TourCapacity" type="number" min="1" max="500" id="capacityInput" />
                                     <button type="button" class="stepper-btn" onclick="stepperIncrement()" aria-label="Artır">
                                         <i class="bi bi-plus"></i>
                                     </button>
                                 </div>
-                                <div class="field-hint"><i class="bi bi-info-circle me-1"></i>Maksimum katılımcı sayısı (1–500)</div>
-                                <span asp-validation-for="TourCapacity" class="text-danger-field"><i class="bi bi-exclamation-circle"></i><span></span></span>
+                                <div class="field-hint">
+                                    <i class="bi bi-info-circle me-1"></i>Maksimum katılımcı sayısı (1–500)
+                                </div>
+                                <span asp-validation-for="TourCapacity" class="text-danger-field">
+                                    <i class="bi bi-exclamation-circle"></i><span></span>
+                                </span>
                             </div>
                         </div>
 
-                        <!-- Süre (DayNight) -->
+                        <!-- Tur Süresi -->
                         <div class="col-12">
                             <div class="field-group">
                                 <label class="field-label">
@@ -186,7 +204,6 @@
                                         <label for="dayCount">Gün Sayısı</label>
                                         <div class="input-with-icon">
                                             <i class="bi bi-sun input-icon"></i>
-                                            {{-- DÜZELTME 3: Sabit value="3" kaldırıldı, JS ile model'den parse edilecek --}}
                                             <input type="number" id="dayCount" min="1" max="30" class="form-control" placeholder="3" />
                                         </div>
                                     </div>
@@ -194,7 +211,6 @@
                                         <label for="nightCount">Gece Sayısı</label>
                                         <div class="input-with-icon">
                                             <i class="bi bi-moon input-icon"></i>
-                                            {{-- DÜZELTME 3: Sabit value="2" kaldırıldı, JS ile model'den parse edilecek --}}
                                             <input type="number" id="nightCount" min="0" max="30" class="form-control" placeholder="2" />
                                         </div>
                                     </div>
@@ -203,9 +219,12 @@
                                 <div class="field-hint" id="durationPreview">
                                     <i class="bi bi-clock me-1"></i>Önizleme: <strong id="durationText">—</strong>
                                 </div>
-                                <span asp-validation-for="DayNight" class="text-danger-field"><i class="bi bi-exclamation-circle"></i><span></span></span>
+                                <span asp-validation-for="DayNight" class="text-danger-field">
+                                    <i class="bi bi-exclamation-circle"></i><span></span>
+                                </span>
                             </div>
                         </div>
+
                     </div>
                 </div>
             </div>
@@ -220,7 +239,6 @@
                     </div>
                 </div>
                 <div class="section-body">
-                    <!-- URL ile -->
                     <div class="field-group">
                         <label asp-for="ImageUrl" class="field-label">
                             <i class="bi bi-link-45deg" style="color:#a0aec0;font-size:.85rem;"></i>
@@ -228,21 +246,22 @@
                         </label>
                         <div class="input-with-icon">
                             <i class="bi bi-link-45deg input-icon"></i>
-                            <input asp-for="ImageUrl" type="url" class="form-control" placeholder="https://ornek.com/gorsel.jpg" id="imageUrlInput" />
+                            <input asp-for="ImageUrl" type="url" class="form-control"
+                                   placeholder="https://ornek.com/gorsel.jpg" id="imageUrlInput" />
                         </div>
                         <div class="field-hint"><i class="bi bi-info-circle me-1"></i>JPEG, PNG, WebP desteklenir.</div>
-                        <img src="" alt="Görsel önizleme" class="url-preview-thumb" id="urlPreviewImg" />
-                        <span asp-validation-for="ImageUrl" class="text-danger-field"><i class="bi bi-exclamation-circle"></i><span></span></span>
+                        <img src="" alt="Görsel önizleme" class="url-preview-thumb" id="urlPreviewImg" style="display:none;" />
+                        <span asp-validation-for="ImageUrl" class="text-danger-field">
+                            <i class="bi bi-exclamation-circle"></i><span></span>
+                        </span>
                     </div>
 
-                    <!-- Ayırıcı -->
                     <div class="d-flex align-items-center gap-3 my-3">
                         <div style="flex:1;height:1px;background:#e2e8f0;"></div>
                         <span style="font-size:.73rem;color:#a0aec0;font-weight:600;text-transform:uppercase;letter-spacing:.06em;">veya</span>
                         <div style="flex:1;height:1px;background:#e2e8f0;"></div>
                     </div>
 
-                    <!-- Dosya yükleme -->
                     <div class="image-upload-zone" id="uploadZone">
                         <input type="file" accept="image/*" id="imageFileInput" aria-label="Görsel dosyası seç" />
                         <div class="upload-icon"><i class="bi bi-cloud-arrow-up"></i></div>
@@ -250,7 +269,7 @@
                         <div class="upload-sub">PNG, JPG, WebP — Maks. 5MB</div>
                     </div>
 
-                    <div class="image-preview-box mt-3" id="previewBox">
+                    <div class="image-preview-box mt-3" id="previewBox" style="display:none;">
                         <img src="" alt="Yüklenen görsel önizleme" id="previewImg" />
                         <div class="preview-overlay">
                             <button type="button" class="preview-remove" onclick="removeImage()">
@@ -261,11 +280,8 @@
                 </div>
             </div>
 
-        </div>
-
-        <!-- ═══════════════════════════════════════
-             RIGHT COLUMN — SIDEBAR PANEL
-        ════════════════════════════════════════ -->
+        </div><!-- /form-main -->
+        <!-- SIDEBAR PANEL -->
         <div class="sidebar-panel">
 
             <!-- YAYIM DURUMU -->
@@ -278,8 +294,6 @@
                     </div>
                 </div>
                 <div class="section-body">
-                    {{-- DÜZELTME 4: HTML'deki sabit checked ve selected-active kaldırıldı.
-                    Doğru seçim JS'de DOMContentLoaded içinde yapılıyor. --}}
                     <label class="status-option" id="statusActive">
                         <input type="radio" name="PublishStatus" value="active" onchange="updateStatus(this)" />
                         <span class="status-dot dot-active"></span>
@@ -289,7 +303,6 @@
                         </div>
                         <i class="bi bi-check-circle-fill ms-auto" style="color:#16a34a;font-size:.95rem;"></i>
                     </label>
-
                     <label class="status-option" id="statusDraft">
                         <input type="radio" name="PublishStatus" value="draft" onchange="updateStatus(this)" />
                         <span class="status-dot dot-draft"></span>
@@ -298,7 +311,6 @@
                             <div class="ssub">Şimdilik gizle</div>
                         </div>
                     </label>
-
                     <label class="status-option" id="statusPassive">
                         <input type="radio" name="PublishStatus" value="passive" onchange="updateStatus(this)" />
                         <span class="status-dot dot-passive"></span>
@@ -310,7 +322,7 @@
                 </div>
             </div>
 
-            <!-- ÖN İZLEME ÖZETİ -->
+            <!-- TUR ÖZETİ -->
             <div class="form-section">
                 <div class="section-header">
                     <div class="section-icon blue"><i class="bi bi-eye"></i></div>
@@ -323,7 +335,8 @@
                     <div class="summary-box">
                         <div class="summary-row">
                             <span class="label">Başlık</span>
-                            <span class="value" id="sumTitle" style="max-width:150px;text-align:right;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">—</span>
+                            <span class="value" id="sumTitle"
+                                  style="max-width:150px;text-align:right;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">—</span>
                         </div>
                         <div class="summary-row">
                             <span class="label">Ülke / Şehir</span>
@@ -345,7 +358,7 @@
                 </div>
             </div>
 
-            <!-- FORMUN GÖNDERİM BUTONLARI -->
+            <!-- BUTONLAR -->
             <div class="form-section">
                 <div class="section-body">
                     <div class="form-actions">
@@ -364,7 +377,7 @@
                 </div>
             </div>
 
-            <!-- KISA İPUÇLARI -->
+            <!-- İPUÇLARI -->
             <div class="form-section">
                 <div class="section-header" style="background:none;">
                     <div class="section-icon amber"><i class="bi bi-lightbulb"></i></div>
@@ -406,218 +419,208 @@
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
     <script>
+
         // ── CHAR COUNTERS ─────────────────────────────
-            function initCounter(inputId, counterId, max) {
-                const el = document.getElementById(inputId);
-                const counter = document.getElementById(counterId);
-                if (!el || !counter) return;
-                function update() {
-                    const len = el.value.length;
-                    counter.textContent = len + ' / ' + max;
-                    counter.className = 'char-counter' + (len > max * .9 ? (len >= max ? ' danger' : ' warn') : '');
-                }
-                el.addEventListener('input', update);
-                update();
+        function initCounter(inputId, counterId, max) {
+            const el = document.getElementById(inputId);
+            const counter = document.getElementById(counterId);
+            if (!el || !counter) return;
+            function update() {
+                const len = el.value.length;
+                counter.textContent = len + ' / ' + max;
+                counter.className = 'char-counter' + (len > max * .9 ? (len >= max ? ' danger' : ' warn') : '');
             }
+            el.addEventListener('input', update);
+            update();
+        }
+        initCounter('tourTitleInput', 'titleCounter', 120);
+        initCounter('descInput', 'descCounter', 1000);
 
-            initCounter('tourTitleInput', 'titleCounter', 120);
-            initCounter('descInput', 'descCounter', 1000);
+        // ── STEPPER ───────────────────────────────────
+        function stepperDecrement() {
+            const inp = document.getElementById('capacityInput');
+            const val = parseInt(inp.value) || 1;
+            if (val > 1) { inp.value = val - 1; updateSummary(); }
+        }
+        function stepperIncrement() {
+            const inp = document.getElementById('capacityInput');
+            const val = parseInt(inp.value) || 1;
+            if (val < 500) { inp.value = val + 1; updateSummary(); }
+        }
+        document.getElementById('capacityInput').addEventListener('input', updateSummary);
 
-            // ── STEPPER ────────────────────────────────────
-            function stepperDecrement() {
-                const inp = document.getElementById('capacityInput');
-                const val = parseInt(inp.value) || 1;
-                if (val > 1) { inp.value = val - 1; updateSummary(); }
-            }
-
-            function stepperIncrement() {
-                const inp = document.getElementById('capacityInput');
-                const val = parseInt(inp.value) || 1;
-                if (val < 500) { inp.value = val + 1; updateSummary(); }
-            }
-
-            document.getElementById('capacityInput').addEventListener('input', updateSummary);
-
-            // ── DURATION BUILDER ──────────────────────────
-            function updateDuration() {
-                const days   = parseInt(document.getElementById('dayCount').value) || 0;
-                const nights = parseInt(document.getElementById('nightCount').value) || 0;
-                const text   = days + ' Gün / ' + nights + ' Gece';
-                document.getElementById('dayNightHidden').value = text;
-                document.getElementById('durationText').textContent = text;
-                updateSummary();
-            }
-
-            document.getElementById('dayCount').addEventListener('input', updateDuration);
-            document.getElementById('nightCount').addEventListener('input', updateDuration);
-
-            (function initDuration() {
-                const existing = document.getElementById('dayNightHidden').value || '';
-                const match = existing.match(/(\d+)\s*Gün\s*\/\s*(\d+)\s*Gece/i);
-                if (match) {
-                    document.getElementById('dayCount').value   = match[1];
-                    document.getElementById('nightCount').value = match[2];
-                    document.getElementById('durationText').textContent = match[1] + ' Gün / ' + match[2] + ' Gece';
-                } else {
-                    // Model'de değer yoksa default olarak 1 Gün / 0 Gece yaz
-                    document.getElementById('dayCount').value   = 1;
-                    document.getElementById('nightCount').value = 0;
-                    updateDuration();
-                }
-                updateSummary();
-            })();
-
-            // ── IMAGE URL PREVIEW ─────────────────────────
-            const imageUrlInput = document.getElementById('imageUrlInput');
-            const urlPreviewImg = document.getElementById('urlPreviewImg');
-            let urlDebounce;
-
-            imageUrlInput.addEventListener('input', function () {
-                clearTimeout(urlDebounce);
-                urlDebounce = setTimeout(function () {
-                    const url = imageUrlInput.value.trim();
-                    if (url) {
-                        urlPreviewImg.src = url;
-                        urlPreviewImg.style.display = 'block';
-                        urlPreviewImg.onerror = function () { urlPreviewImg.style.display = 'none'; };
-                    } else {
-                        urlPreviewImg.style.display = 'none';
-                    }
-                }, 600);
-            });
-
-            // Mevcut görsel varsa önizle
-            (function initImagePreview() {
-                const existingUrl = document.getElementById('imageUrlInput').value.trim();
-                if (existingUrl) {
-                    urlPreviewImg.src = existingUrl;
-                    urlPreviewImg.style.display = 'block';
-                }
-            })();
-
-            // ── FILE UPLOAD PREVIEW ────────────────────────
-            const uploadZone = document.getElementById('uploadZone');
-            const imageFileInput = document.getElementById('imageFileInput');
-            const previewBox = document.getElementById('previewBox');
-            const previewImg = document.getElementById('previewImg');
-
-            imageFileInput.addEventListener('change', function () {
-                const file = this.files[0];
-                if (!file) return;
-                const reader = new FileReader();
-                reader.onload = function (e) {
-                    previewImg.src = e.target.result;
-                    previewBox.style.display = 'block';
-                    uploadZone.style.display = 'none';
-                };
-                reader.readAsDataURL(file);
-            });
-
-            ['dragover', 'dragleave', 'drop'].forEach(function (evt) {
-                uploadZone.addEventListener(evt, function (e) {
-                    e.preventDefault();
-                    if (evt === 'dragover') uploadZone.classList.add('dragover');
-                    else uploadZone.classList.remove('dragover');
-                    if (evt === 'drop' && e.dataTransfer.files[0]) {
-                        imageFileInput.files = e.dataTransfer.files;
-                        imageFileInput.dispatchEvent(new Event('change'));
-                    }
-                });
-            });
-
-            function removeImage() {
-                previewBox.style.display = 'none';
-                uploadZone.style.display = 'block';
-                imageFileInput.value = '';
-                previewImg.src = '';
-            }
-
-            // ── YAYIM DURUMU ──────────────────────────────
-            function updateStatus(radio) {
-                $('.status-option').removeClass('selected-active selected-draft selected-passive');
-
-                const val    = radio.value;
-                const parent = $(radio).closest('.status-option');
-                const isStatus = $('#isStatusHidden');
-                const isDrafts = $('#isDraftsHidden');
-
-                if (val === 'active') {
-                    parent.addClass('selected-active');
-                    isStatus.val("true");
-                    isDrafts.val("false");
-                } else if (val === 'draft') {
-                    parent.addClass('selected-draft');
-                    isStatus.val("false");
-                    isDrafts.val("true");
-                } else if (val === 'passive') {
-                    parent.addClass('selected-passive');
-                    isStatus.val("false");
-                    isDrafts.val("false");
-                }
-            }
-
-            window.addEventListener('DOMContentLoaded', function () {
-                const isStatus = "@Model.IsStatus".toLowerCase() === "true";
-                const isDraft  = "@Model.IsDrafts".toLowerCase() === "true";
-
-                let targetValue = "passive";
-                if (isDraft)    targetValue = "draft";
-                else if (isStatus) targetValue = "active";
-
-                const targetRadio = document.querySelector('input[name="PublishStatus"][value="' + targetValue + '"]');
-                if (targetRadio) {
-                    targetRadio.checked = true;
-                    updateStatus(targetRadio);
-                }
-            });
-
-            // ── LIVE SUMMARY ──────────────────────────────
-            function updateSummary() {
-                const title    = document.getElementById('tourTitleInput').value.trim();
-                const country  = document.getElementById('countrySelect').value;
-                const city     = document.getElementById('cityInput')?.value.trim();
-                const date     = document.getElementById('tourDateInput').value;
-                const duration = document.getElementById('dayNightHidden').value;
-                const capacity = document.getElementById('capacityInput').value;
-
-                document.getElementById('sumTitle').textContent    = title    || '—';
-                document.getElementById('sumLocation').textContent = (country && city) ? country + ' / ' + city : (country || city || '—');
-                document.getElementById('sumDate').textContent     = date ? formatDate(date) : '—';
-                document.getElementById('sumDuration').textContent = duration  || '—';
-                document.getElementById('sumCapacity').textContent = capacity  ? capacity + ' kişi' : '—';
-            }
-
-            function formatDate(dateStr) {
-                const [y, m, d] = dateStr.split('-');
-                return d + '.' + m + '.' + y;
-            }
-
-            ['tourTitleInput','countrySelect','cityInput','tourDateInput','capacityInput'].forEach(function(id) {
-                const el = document.getElementById(id);
-                if (el) el.addEventListener('input', updateSummary);
-            });
-
+        // ── DURATION BUILDER ──────────────────────────
+        function updateDuration() {
+            const days   = parseInt(document.getElementById('dayCount').value)   || 0;
+            const nights = parseInt(document.getElementById('nightCount').value) || 0;
+            const text   = days + ' Gün / ' + nights + ' Gece';
+            document.getElementById('dayNightHidden').value     = text;
+            document.getElementById('durationText').textContent = text;
             updateSummary();
+        }
+        document.getElementById('dayCount').addEventListener('input', updateDuration);
+        document.getElementById('nightCount').addEventListener('input', updateDuration);
 
-            // ── DRAFT SAVE ────────────────────────────────
-            function saveDraft() {
+        // Sayfa yüklenince model'den gelen DayNight değerini parse et
+        (function initDuration() {
+            const existing = document.getElementById('dayNightHidden').value || '';
+            const match = existing.match(/(\d+)\s*Gün\s*\/\s*(\d+)\s*Gece/i);
+            if (match) {
+                document.getElementById('dayCount').value    = match[1];
+                document.getElementById('nightCount').value = match[2];
+                document.getElementById('durationText').textContent = match[1] + ' Gün / ' + match[2] + ' Gece';
+            } else {
+                document.getElementById('dayCount').value    = 1;
+                document.getElementById('nightCount').value = 0;
+                updateDuration();
+            }
+            updateSummary();
+        })();
+
+        // ── IMAGE URL PREVIEW ─────────────────────────
+        const imageUrlInput = document.getElementById('imageUrlInput');
+        const urlPreviewImg = document.getElementById('urlPreviewImg');
+        let urlDebounce;
+
+        imageUrlInput.addEventListener('input', function () {
+            clearTimeout(urlDebounce);
+            urlDebounce = setTimeout(function () {
+                const url = imageUrlInput.value.trim();
+                if (url) {
+                    urlPreviewImg.src = url;
+                    urlPreviewImg.style.display = 'block';
+                    urlPreviewImg.onerror = function () { urlPreviewImg.style.display = 'none'; };
+                } else {
+                    urlPreviewImg.style.display = 'none';
+                }
+            }, 600);
+        });
+
+        (function initImagePreview() {
+            const existingUrl = imageUrlInput.value.trim();
+            if (existingUrl) {
+                urlPreviewImg.src = existingUrl;
+                urlPreviewImg.style.display = 'block';
+            }
+        })();
+
+        // ── FILE UPLOAD PREVIEW ───────────────────────
+        const uploadZone     = document.getElementById('uploadZone');
+        const imageFileInput = document.getElementById('imageFileInput');
+        const previewBox     = document.getElementById('previewBox');
+        const previewImg     = document.getElementById('previewImg');
+
+        imageFileInput.addEventListener('change', function () {
+            const file = this.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = function (e) {
+                previewImg.src = e.target.result;
+                previewBox.style.display = 'block';
+                uploadZone.style.display = 'none';
+            };
+            reader.readAsDataURL(file);
+        });
+
+        ['dragover', 'dragleave', 'drop'].forEach(function (evt) {
+            uploadZone.addEventListener(evt, function (e) {
+                e.preventDefault();
+                if (evt === 'dragover') uploadZone.classList.add('dragover');
+                else uploadZone.classList.remove('dragover');
+                if (evt === 'drop' && e.dataTransfer.files[0]) {
+                    imageFileInput.files = e.dataTransfer.files;
+                    imageFileInput.dispatchEvent(new Event('change'));
+                }
+            });
+        });
+
+        function removeImage() {
+            previewBox.style.display  = 'none';
+            uploadZone.style.display  = 'block';
+            imageFileInput.value = '';
+            previewImg.src = '';
+        }
+
+        // ── YAYIM DURUMU ──────────────────────────────
+        function updateStatus(radio) {
+            $('.status-option').removeClass('selected-active selected-draft selected-passive');
+            const val    = radio.value;
+            const parent = $(radio).closest('.status-option');
+            if (val === 'active') {
+                parent.addClass('selected-active');
+                $('#isStatusHidden').val("true");
+                $('#isDraftsHidden').val("false");
+            } else if (val === 'draft') {
+                parent.addClass('selected-draft');
                 $('#isStatusHidden').val("false");
                 $('#isDraftsHidden').val("true");
-                document.getElementById('updateTourForm').submit();
+            } else if (val === 'passive') {
+                parent.addClass('selected-passive');
+                $('#isStatusHidden').val("false");
+                $('#isDraftsHidden').val("false");
             }
+        }
 
-            // ── SUBMIT FEEDBACK ───────────────────────────
-            // DÜZELTME 4: Sadece submit eventi var, çift radyo-init kaldırıldı.
-            $(document).ready(function () {
-                $('#updateTourForm').on('submit', function (e) {
-                    if (!$(this).valid()) {
-                        return false;
-                    }
-                    const btn = $('#submitBtn');
-                    btn.prop('disabled', true);
-                    btn.html('<span class="spinner-border spinner-border-sm me-2"></span>Güncelleniyor...');
-                    return true;
-                });
+        // Sayfa yüklenince modeldeki duruma göre radyo seç
+        window.addEventListener('DOMContentLoaded', function () {
+            const isStatus = "@Model.IsStatus".toLowerCase() === "true";
+            const isDraft  = "@Model.IsDrafts".toLowerCase()  === "true";
+
+            let targetValue = "passive";
+            if (isDraft)       targetValue = "draft";
+            else if (isStatus) targetValue = "active";
+
+            const targetRadio = document.querySelector('input[name="PublishStatus"][value="' + targetValue + '"]');
+            if (targetRadio) {
+                targetRadio.checked = true;
+                updateStatus(targetRadio);
+            }
+        });
+
+        // ── LIVE SUMMARY ──────────────────────────────
+        function updateSummary() {
+            const title    = document.getElementById('tourTitleInput').value.trim();
+            const country  = document.getElementById('countrySelect').value;
+            const city     = document.getElementById('cityInput')?.value.trim();
+            const date     = document.getElementById('tourDateInput').value;
+            const duration = document.getElementById('dayNightHidden').value;
+            const capacity = document.getElementById('capacityInput').value;
+
+            document.getElementById('sumTitle').textContent    = title    || '—';
+            document.getElementById('sumLocation').textContent = (country && city) ? country + ' / ' + city : (country || city || '—');
+            document.getElementById('sumDate').textContent     = date     ? formatDate(date) : '—';
+            document.getElementById('sumDuration').textContent = duration || '—';
+            document.getElementById('sumCapacity').textContent = capacity ? capacity + ' kişi' : '—';
+        }
+
+        function formatDate(dateStr) {
+            const [y, m, d] = dateStr.split('-');
+            return d + '.' + m + '.' + y;
+        }
+
+        ['tourTitleInput', 'countrySelect', 'cityInput', 'tourDateInput', 'capacityInput'].forEach(function (id) {
+            const el = document.getElementById(id);
+            if (el) el.addEventListener('input', updateSummary);
+        });
+        updateSummary();
+
+        // ── DRAFT SAVE ────────────────────────────────
+        function saveDraft() {
+            $('#isStatusHidden').val("false");
+            $('#isDraftsHidden').val("true");
+            document.getElementById('updateTourForm').submit();
+        }
+
+        // ── FORM SUBMIT ───────────────────────────────
+        $(document).ready(function () {
+            $('#updateTourForm').on('submit', function () {
+                if (!$(this).valid()) return false;
+                const btn = $('#submitBtn');
+                btn.prop('disabled', true);
+                btn.html('<span class="spinner-border spinner-border-sm me-2"></span>Güncelleniyor...');
+                return true;
             });
+        });
+
     </script>
 }

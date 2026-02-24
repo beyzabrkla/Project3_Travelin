@@ -1,10 +1,12 @@
 using System.Diagnostics;
 using BusinessLayer.Abstract;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Project3_Travelin.Models;
 
 namespace Project3_Travelin.Controllers
 {
+    [AllowAnonymous]
     public class HomeController : Controller
     {
         private readonly ILogger<HomeController> _logger;

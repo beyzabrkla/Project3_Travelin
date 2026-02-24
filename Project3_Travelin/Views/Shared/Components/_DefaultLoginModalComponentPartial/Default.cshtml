@@ -1,13 +1,47 @@
 ﻿<style>
-    /* Üst üste binen modalların birbirini ezmemesi için */
     #termsModal, #privacyModal {
         z-index: 1070 !important;
     }
-    /* İkinci karartmanın ekranı tamamen siyah yapmasını engeller */
+
     .modal-stack-fix {
         background: rgba(0,0,0,0.2) !important;
     }
 </style>
+
+@* Toast bildirimleri *@
+@if (TempData["LoginError"] != null)
+{
+    <div class="position-fixed bottom-0 end-0 m-3" style="z-index:9999;">
+        <div class="toast show align-items-center text-white bg-danger border-0 shadow">
+            <div class="d-flex">
+                <div class="toast-body"><i class="bi bi-exclamation-circle me-2"></i>@TempData["LoginError"]</div>
+                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+            </div>
+        </div>
+    </div>
+}
+@if (TempData["RegisterError"] != null)
+{
+    <div class="position-fixed bottom-0 end-0 m-3" style="z-index:9999;">
+        <div class="toast show align-items-center text-white bg-danger border-0 shadow">
+            <div class="d-flex">
+                <div class="toast-body"><i class="bi bi-exclamation-circle me-2"></i>@TempData["RegisterError"]</div>
+                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+            </div>
+        </div>
+    </div>
+}
+@if (TempData["RegisterSuccess"] != null)
+{
+    <div class="position-fixed bottom-0 end-0 m-3" style="z-index:9999;">
+        <div class="toast show align-items-center text-white bg-success border-0 shadow">
+            <div class="d-flex">
+                <div class="toast-body"><i class="bi bi-check-circle me-2"></i>@TempData["RegisterSuccess"]</div>
+                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+            </div>
+        </div>
+    </div>
+}
 
 <div class="modal fade log-reg" id="exampleModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog">
@@ -16,15 +50,23 @@
                 <div class="post-tabs">
                     <ul class="nav nav-tabs nav-pills nav-fill" id="postsTab" role="tablist">
                         <li class="nav-item">
-                            <button class="nav-link active" data-bs-target="#login" data-bs-toggle="tab" type="button">Giriş Yap</button>
+                            <button class="nav-link @(TempData["RegisterError"] != null ? "" : "active")"
+                                    data-bs-target="#login" data-bs-toggle="tab" type="button">
+                                Giriş Yap
+                            </button>
                         </li>
                         <li class="nav-item">
-                            <button class="nav-link" data-bs-target="#register" data-bs-toggle="tab" type="button">Üye Ol</button>
+                            <button class="nav-link @(TempData["RegisterError"] != null ? "active" : "")"
+                                    data-bs-target="#register" data-bs-toggle="tab" type="button">
+                                Üye Ol
+                            </button>
                         </li>
                     </ul>
                     <div class="tab-content blog-full" id="postsTabContent">
+
                         @*--- LOGIN ---*@
-                        <div class="tab-pane fade active show" id="login" role="tabpanel">
+                        <div class="tab-pane fade @(TempData["RegisterError"] != null ? "" : "active show")"
+                             id="login" role="tabpanel">
                             <div class="row">
                                 <div class="col-lg-6">
                                     <div class="blog-image rounded">
@@ -33,22 +75,49 @@
                                 </div>
                                 <div class="col-lg-6">
                                     <h4 class="text-center border-b pb-2">Giriş Yap</h4>
+
+                                    @if (TempData["LoginError"] != null)
+                                    {
+                                        <div class="alert alert-danger py-2 small mb-2">
+                                            <i class="bi bi-exclamation-circle me-1"></i>@TempData["LoginError"]
+                                        </div>
+                                    }
+
                                     <div class="log-reg-button d-flex align-items-center justify-content-between">
                                         <button type="button" class="btn btn-fb"><i class="fab fa-facebook"></i> Facebook ile Giriş Yap</button>
                                         <button type="button" class="btn btn-google"><i class="fab fa-google"></i> Google ile Giriş Yap</button>
                                     </div>
                                     <hr class="log-reg-hr position-relative my-4 overflow-visible" />
+
                                     <form method="post" action="/Login/Login">
-                                        <div class="form-group mb-2"><input type="text" name="user_name" class="form-control" placeholder="Kullanıcı Adınız..." /></div>
-                                        <div class="form-group mb-2"><input type="password" name="password_name" class="form-control" placeholder="Şifreniz...." /></div>
-                                        <div class="comment-btn mb-2 pb-2"><input type="submit" class="nir-btn w-100" value="Login" /></div>
+                                        @Html.AntiForgeryToken()
+                                        <div class="form-group mb-2">
+                                            <input type="text" name="user_name" class="form-control"
+                                                   placeholder="Kullanıcı Adı veya E-posta..." required />
+                                        </div>
+                                        <div class="form-group mb-2">
+                                            <input type="password" name="password_name" class="form-control"
+                                                   placeholder="Şifreniz..." required />
+                                        </div>
+                                        <div class="comment-btn mb-2 pb-2">
+                                            <input type="submit" class="nir-btn w-100" value="Giriş Yap" />
+                                        </div>
                                     </form>
+
+                                    @if (User.Identity != null && User.Identity.IsAuthenticated)
+                                    {
+                                        <div class="text-center small mt-1">
+                                            <span class="text-muted">@User.Identity.Name olarak giriş yaptınız.</span>
+                                            <a href="/Login/Logout" class="text-danger ms-2 fw-bold">Çıkış Yap</a>
+                                        </div>
+                                    }
                                 </div>
                             </div>
                         </div>
 
-                        @*--- REGISTER (Eksikler Eklendi) ---*@
-                        <div class="tab-pane fade" id="register" role="tabpanel">
+                        @*--- REGISTER ---*@
+                        <div class="tab-pane fade @(TempData["RegisterError"] != null ? "active show" : "")"
+                             id="register" role="tabpanel">
                             <div class="row">
                                 <div class="col-lg-6">
                                     <div class="blog-image rounded">
@@ -57,33 +126,49 @@
                                 </div>
                                 <div class="col-lg-6">
                                     <h4 class="text-center border-b pb-2">Üye Ol</h4>
-                                    <form method="post" action="/Login/Register">
-                                        <div class="form-group mb-2">
-                                            <input type="text" name="user_name" class="form-control" placeholder="Kullanıcı Adınız..." required />
-                                        </div>
-                                        <div class="form-group mb-2">
-                                            <input type="email" name="user_email" class="form-control" placeholder="E-posta Adresiniz..." required />
-                                        </div>
-                                        <div class="form-group mb-2">
-                                            <input type="password" name="password_name" class="form-control" placeholder="Şifreniz..." required />
-                                        </div>
-                                        <div class="form-group mb-2">
-                                            <input type="password" name="repassword_name" class="form-control" placeholder="Şifre Tekrar..." required />
-                                        </div>
 
+                                    @if (TempData["RegisterError"] != null)
+                                    {
+                                        <div class="alert alert-danger py-2 small mb-2">
+                                            <i class="bi bi-exclamation-circle me-1"></i>@TempData["RegisterError"]
+                                        </div>
+                                    }
+
+                                    <form method="post" action="/Login/Register">
+                                        @Html.AntiForgeryToken()
+                                        <div class="form-group mb-2">
+                                            <input type="text" name="user_name" class="form-control"
+                                                   placeholder="Kullanıcı Adınız..." required />
+                                        </div>
+                                        <div class="form-group mb-2">
+                                            <input type="email" name="user_email" class="form-control"
+                                                   placeholder="E-posta Adresiniz..." required />
+                                        </div>
+                                        <div class="form-group mb-2">
+                                            <input type="password" name="password_name" class="form-control"
+                                                   placeholder="Şifreniz..." required minlength="6" />
+                                        </div>
+                                        <div class="form-group mb-2">
+                                            <input type="password" name="repassword_name" class="form-control"
+                                                   placeholder="Şifre Tekrar..." required minlength="6" />
+                                        </div>
                                         <div class="form-group mb-2 d-flex align-items-start">
                                             <input type="checkbox" class="mt-1" id="exampleCheck1" required />
-                                            <label class="mb-0 ms-1" for="exampleCheck1" style="font-size: 13px;">
-                                                @* Buradaki data-bs-toggle="modal" arkadakini kapatmasın diye sadece target kullanıyoruz *@
-                                                <a href="#" data-bs-toggle="modal" data-bs-target="#termsModal" class="theme fw-bold">Kullanım Şartları</a> ve
-                                                <a href="#" data-bs-toggle="modal" data-bs-target="#privacyModal" class="theme fw-bold">Gizlilik Politikası</a>'nı okudum.
+                                            <label class="mb-0 ms-1" for="exampleCheck1" style="font-size:13px;">
+                                                <a href="#" data-bs-toggle="modal" data-bs-target="#termsModal"
+                                                   class="theme fw-bold">Kullanım Şartları</a> ve
+                                                <a href="#" data-bs-toggle="modal" data-bs-target="#privacyModal"
+                                                   class="theme fw-bold">Gizlilik Politikası</a>'nı okudum.
                                             </label>
                                         </div>
-                                        <div class="comment-btn mb-2 pb-2"><input type="submit" class="nir-btn w-100" value="Kayıt Ol" /></div>
+                                        <div class="comment-btn mb-2 pb-2">
+                                            <input type="submit" class="nir-btn w-100" value="Kayıt Ol" />
+                                        </div>
                                     </form>
                                 </div>
                             </div>
                         </div>
+
                     </div>
                 </div>
             </div>
@@ -91,6 +176,7 @@
     </div>
 </div>
 
+<!-- Kullanım Şartları Modal -->
 <div class="modal fade modal-stack-fix" id="termsModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content border-0 shadow-lg">
@@ -108,6 +194,7 @@
     </div>
 </div>
 
+<!-- Gizlilik Politikası Modal -->
 <div class="modal fade modal-stack-fix" id="privacyModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content border-0 shadow-lg">
@@ -127,28 +214,42 @@
 
 <script>
     function closeSubModal() {
-        // 1. Önce açık olan alt modalı (terms veya privacy) kapat
-        const termsModal = bootstrap.Modal.getInstance(document.getElementById('termsModal'));
+        const termsModal   = bootstrap.Modal.getInstance(document.getElementById('termsModal'));
         const privacyModal = bootstrap.Modal.getInstance(document.getElementById('privacyModal'));
-
-        if (termsModal) termsModal.hide();
+        if (termsModal)   termsModal.hide();
         if (privacyModal) privacyModal.hide();
-
-        // 2. Çok kısa bir bekleme sonrası (animasyon biterken) body'yi düzelt
         setTimeout(() => {
-            // Eğer hala ana modal (exampleModal) açıksa body sınıfını geri yükle
             if (document.querySelector('#exampleModal.show')) {
                 document.body.classList.add('modal-open');
-                // Ekranın kaymasını önlemek için bootstrap'in eklediği padding'i koru
-                document.body.style.overflow = 'hidden';
-                document.body.style.paddingRight = '17px'; // Scroll bar genişliği
+                document.body.style.overflow     = 'hidden';
+                document.body.style.paddingRight = '17px';
             }
         }, 400);
     }
 
-    // Ekstra Önlem: Herhangi bir modal kapandığında arka planda başka modal varsa body'yi kilitle
     document.addEventListener('hidden.bs.modal', function () {
         if (document.querySelectorAll('.modal.show').length > 0) {
             document.body.classList.add('modal-open');
         }
-    });</script>
+    });
+
+    // Hata varsa modal'ı otomatik aç
+    @if (TempData["LoginError"] != null || TempData["RegisterError"] != null)
+    {
+            <text>
+            document.addEventListener('DOMContentLoaded', function () {
+                var loginModal = new bootstrap.Modal(document.getElementById('exampleModal'));
+                loginModal.show();
+            });
+            </text>
+    }
+
+    // Toast'ları 4 saniye sonra kapat
+    document.addEventListener('DOMContentLoaded', function () {
+        document.querySelectorAll('.toast').forEach(function (el) {
+            setTimeout(function () {
+                el.closest('.position-fixed')?.remove();
+            }, 4000);
+        });
+    });
+</script>
