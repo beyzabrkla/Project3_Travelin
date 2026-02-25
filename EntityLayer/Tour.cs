@@ -3,8 +3,9 @@ using MongoDB.Bson.Serialization.Attributes;
 
 namespace EntityLayer
 {
+    [BsonIgnoreExtraElements]
     public class Tour
-    { 
+    {
         //bu komutlar mongo db deki primary key ve onun veri türüne karşılık geliyor
         [BsonId]
         [BsonRepresentation(BsonType.ObjectId)]
@@ -24,7 +25,7 @@ namespace EntityLayer
 
         [BsonRepresentation(BsonType.Decimal128)]
         public decimal TourPrice { get; set; } // Tur fiyatı
+
         public string GuideId { get; set; }
-        public string GuideDescription { get; set; } //rehberin tur hakkındaki yorumu
     }
 }

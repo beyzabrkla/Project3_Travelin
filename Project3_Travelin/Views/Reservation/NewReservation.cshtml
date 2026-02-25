@@ -118,11 +118,10 @@
 
 @section Scripts {
     <script>
-        // Sayfa yüklendiğinde seçili turu özete yansıt
         document.getElementById('tourSelect').addEventListener('change', function() {
             const selectedText = this.options[this.selectedIndex].text;
             document.getElementById('sumTourTitle').textContent = selectedText;
-            document.getElementById('hiddenTourTitle').value = selectedText; // Hidden alanı da güncelle
+            document.getElementById('hiddenTourTitle').value = selectedText; 
         });
 
         function changeCount(val) {

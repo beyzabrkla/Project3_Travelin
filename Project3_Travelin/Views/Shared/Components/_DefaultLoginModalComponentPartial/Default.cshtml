@@ -1,5 +1,5 @@
 ﻿<style>
-    #termsModal, #privacyModal {
+    #termsModal, #privacyModal, #adminTermsModal, #adminPrivacyModal {
         z-index: 1070 !important;
     }
 
@@ -43,6 +43,7 @@
     </div>
 }
 
+<!-- ============= KULLANICI GİRİŞ/ÜYE OL MODAL ============= -->
 <div class="modal fade log-reg" id="exampleModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">
@@ -176,7 +177,142 @@
     </div>
 </div>
 
-<!-- Kullanım Şartları Modal -->
+<!-- ============= ADMIN GİRİŞ/ÜYE OL MODAL ============= -->
+<div class="modal fade log-reg" id="adminModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-body">
+                <div class="post-tabs">
+                    <ul class="nav nav-tabs nav-pills nav-fill" id="adminTab" role="tablist">
+                        <li class="nav-item">
+                            <button class="nav-link @(TempData["AdminRegisterError"] != null ? "" : "active")"
+                                    data-bs-target="#adminLogin" data-bs-toggle="tab" type="button">
+                                Admin Giriş
+                            </button>
+                        </li>
+                        <li class="nav-item">
+                            <button class="nav-link @(TempData["AdminRegisterError"] != null ? "active" : "")"
+                                    data-bs-target="#adminRegister" data-bs-toggle="tab" type="button">
+                                Admin Üye Ol
+                            </button>
+                        </li>
+                    </ul>
+                    <div class="tab-content blog-full" id="adminTabContent">
+
+                        @*--- ADMIN LOGIN ---*@
+                        <div class="tab-pane fade @(TempData["AdminRegisterError"] != null ? "" : "active show")"
+                             id="adminLogin" role="tabpanel">
+                            <div class="row">
+                                <div class="col-lg-6">
+                                    <div class="blog-image rounded">
+                                        <a href="#" style="background-image: url(/travelin/images/giris.png)"></a>
+                                    </div>
+                                </div>
+                                <div class="col-lg-6">
+                                    <h4 class="text-center border-b pb-2">
+                                        <i class="fa fa-shield-alt text-danger me-2"></i>Admin Giriş
+                                    </h4>
+
+                                    @if (TempData["AdminLoginError"] != null)
+                                    {
+                                        <div class="alert alert-danger py-2 small mb-2">
+                                            <i class="bi bi-exclamation-circle me-1"></i>@TempData["AdminLoginError"]
+                                        </div>
+                                    }
+
+                                    <hr class="log-reg-hr position-relative my-4 overflow-visible" />
+
+                                    <form method="post" action="/Login/AdminLogin">
+                                        @Html.AntiForgeryToken()
+                                        <div class="form-group mb-2">
+                                            <input type="text" name="user_name" class="form-control"
+                                                   placeholder="Yönetici Adı veya E-posta..." required />
+                                        </div>
+                                        <div class="form-group mb-2">
+                                            <input type="password" name="password_name" class="form-control"
+                                                   placeholder="Şifreniz..." required />
+                                        </div>
+                                        <div class="comment-btn mb-2 pb-2">
+                                            <input type="submit" class="nir-btn w-100" value="Giriş Yap" />
+                                        </div>
+                                    </form>
+
+                                    @if (User.Identity != null && User.Identity.IsAuthenticated)
+                                    {
+                                        <div class="text-center small mt-1">
+                                            <span class="text-muted">@User.Identity.Name olarak giriş yaptınız.</span>
+                                            <a href="/Login/Logout" class="text-danger ms-2 fw-bold">Çıkış Yap</a>
+                                        </div>
+                                    }
+                                </div>
+                            </div>
+                        </div>
+
+                        @*--- ADMIN REGISTER ---*@
+                        <div class="tab-pane fade @(TempData["AdminRegisterError"] != null ? "active show" : "")"
+                             id="adminRegister" role="tabpanel">
+                            <div class="row">
+                                <div class="col-lg-6">
+                                    <div class="blog-image rounded">
+                                        <a href="#" style="background-image: url(/travelin/images/kayitol.png)"></a>
+                                    </div>
+                                </div>
+                                <div class="col-lg-6">
+                                    <h4 class="text-center border-b pb-2">
+                                        <i class="fa fa-shield-alt text-danger me-2"></i>Admin Üye Ol
+                                    </h4>
+
+                                    @if (TempData["AdminRegisterError"] != null)
+                                    {
+                                        <div class="alert alert-danger py-2 small mb-2">
+                                            <i class="bi bi-exclamation-circle me-1"></i>@TempData["AdminRegisterError"]
+                                        </div>
+                                    }
+
+                                    <form method="post" action="/Login/AdminRegister">
+                                        @Html.AntiForgeryToken()
+                                        <div class="form-group mb-2">
+                                            <input type="text" name="user_name" class="form-control"
+                                                   placeholder="Yönetici Adınız..." required />
+                                        </div>
+                                        <div class="form-group mb-2">
+                                            <input type="email" name="user_email" class="form-control"
+                                                   placeholder="E-posta Adresiniz..." required />
+                                        </div>
+                                        <div class="form-group mb-2">
+                                            <input type="password" name="password_name" class="form-control"
+                                                   placeholder="Şifreniz..." required minlength="6" />
+                                        </div>
+                                        <div class="form-group mb-2">
+                                            <input type="password" name="repassword_name" class="form-control"
+                                                   placeholder="Şifre Tekrar..." required minlength="6" />
+                                        </div>
+                                        <div class="form-group mb-2 d-flex align-items-start">
+                                            <input type="checkbox" class="mt-1" id="adminCheck1" required />
+                                            <label class="mb-0 ms-1" for="adminCheck1" style="font-size:13px;">
+                                                <a href="#" data-bs-toggle="modal" data-bs-target="#adminTermsModal"
+                                                   class="theme fw-bold">Kullanım Şartları</a> ve
+                                                <a href="#" data-bs-toggle="modal" data-bs-target="#adminPrivacyModal"
+                                                   class="theme fw-bold">Gizlilik Politikası</a>'nı okudum.
+                                            </label>
+                                        </div>
+                                        <div class="comment-btn mb-2 pb-2">
+                                            <input type="submit" class="nir-btn w-100" value="Kayıt Ol" />
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ============= KULLANICI MODALLARI ============= -->
+<!-- Kullanıcı - Kullanım Şartları Modal -->
 <div class="modal fade modal-stack-fix" id="termsModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content border-0 shadow-lg">
@@ -194,7 +330,7 @@
     </div>
 </div>
 
-<!-- Gizlilik Politikası Modal -->
+<!-- Kullanıcı - Gizlilik Politikası Modal -->
 <div class="modal fade modal-stack-fix" id="privacyModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content border-0 shadow-lg">
@@ -212,16 +348,67 @@
     </div>
 </div>
 
+<!-- ============= ADMIN MODALLARI ============= -->
+<!-- Admin - Kullanım Şartları Modal -->
+<div class="modal fade modal-stack-fix" id="adminTermsModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg">
+            <div class="modal-header bg-theme">
+                <h5 class="modal-title text-white">Kullanım Şartları (Admin)</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>Admin Kullanım şartları içeriği buraya gelecek...</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="nir-btn" onclick="closeAdminSubModal()">Okudum, Kabul Ediyorum</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Admin - Gizlilik Politikası Modal -->
+<div class="modal fade modal-stack-fix" id="adminPrivacyModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg">
+            <div class="modal-header bg-theme">
+                <h5 class="modal-title text-white">Gizlilik Politikası (Admin)</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>Admin Gizlilik politikası içeriği buraya gelecek...</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="nir-btn" onclick="closeAdminSubModal()">Okudum, Kabul Ediyorum</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <script>
     function closeSubModal() {
-        const termsModal   = bootstrap.Modal.getInstance(document.getElementById('termsModal'));
+        const termsModal = bootstrap.Modal.getInstance(document.getElementById('termsModal'));
         const privacyModal = bootstrap.Modal.getInstance(document.getElementById('privacyModal'));
-        if (termsModal)   termsModal.hide();
+        if (termsModal) termsModal.hide();
         if (privacyModal) privacyModal.hide();
         setTimeout(() => {
             if (document.querySelector('#exampleModal.show')) {
                 document.body.classList.add('modal-open');
-                document.body.style.overflow     = 'hidden';
+                document.body.style.overflow = 'hidden';
+                document.body.style.paddingRight = '17px';
+            }
+        }, 400);
+    }
+
+    function closeAdminSubModal() {
+        const adminTermsModal = bootstrap.Modal.getInstance(document.getElementById('adminTermsModal'));
+        const adminPrivacyModal = bootstrap.Modal.getInstance(document.getElementById('adminPrivacyModal'));
+        if (adminTermsModal) adminTermsModal.hide();
+        if (adminPrivacyModal) adminPrivacyModal.hide();
+        setTimeout(() => {
+            if (document.querySelector('#adminModal.show')) {
+                document.body.classList.add('modal-open');
+                document.body.style.overflow = 'hidden';
                 document.body.style.paddingRight = '17px';
             }
         }, 400);
@@ -237,10 +424,20 @@
     @if (TempData["LoginError"] != null || TempData["RegisterError"] != null)
     {
             <text>
-            document.addEventListener('DOMContentLoaded', function () {
-                var loginModal = new bootstrap.Modal(document.getElementById('exampleModal'));
-                loginModal.show();
-            });
+                document.addEventListener('DOMContentLoaded', function () {
+                    var loginModal = new bootstrap.Modal(document.getElementById('exampleModal'));
+                    loginModal.show();
+                });
+            </text>
+    }
+
+    @if (TempData["AdminLoginError"] != null || TempData["AdminRegisterError"] != null)
+    {
+            <text>
+                document.addEventListener('DOMContentLoaded', function () {
+                    var adminModal = new bootstrap.Modal(document.getElementById('adminModal'));
+                    adminModal.show();
+                });
             </text>
     }
 

@@ -10,6 +10,10 @@ namespace DTOLayer.DTOs.ReservationDTOs
     {
         public string ReservationId { get; set; }
         public string TourId { get; set; }
+        public string GuideId { get; set; }
+        public string GuideName { get; set; }
+        public string GuideTitle { get; set; }
+        public string GuideImageUrl { get; set; }
         public string TourTitle { get; set; }
         public string CustomerName { get; set; }
         public string CustomerEmail { get; set; }

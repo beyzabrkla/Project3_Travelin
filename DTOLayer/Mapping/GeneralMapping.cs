@@ -36,7 +36,11 @@ namespace DTOLayer.Mapping
 
             // Reservation
             CreateMap<Reservation, CreateReservationDTO>().ReverseMap();
-            CreateMap<Reservation, ResultReservationDTO>().ReverseMap();
+            CreateMap<Reservation, ResultReservationDTO>()
+                .ForMember(dest => dest.TourTitle, opt => opt.MapFrom(src => src.TourTitle))
+                // Eğer Tour nesnesi Reservation içinde yüklü geliyorsa:
+                // .ForMember(dest => dest.GuideName, opt => opt.MapFrom(src => src.Tour.GuideName))
+                .ReverseMap();
             CreateMap<Reservation, UpdateReservationStatusDTO>().ReverseMap();
 
         }

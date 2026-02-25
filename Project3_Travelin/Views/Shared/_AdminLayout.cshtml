@@ -1,4 +1,7 @@
-﻿<!DOCTYPE html>
+﻿@{
+    var statusQuery = Context.Request.Query["status"].ToString().ToLower();
+}
+<!DOCTYPE html>
 <html lang="tr">
 <head>
     <meta charset="utf-8" />
@@ -48,16 +51,24 @@
         <!-- REZERVASYONLAR -->
         <div class="sidebar-section">
             <div class="sidebar-section-label">Rezervasyonlar</div>
-            <a href="/AdminReservation/ReservationList" class="nav-item-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "AdminReservation" ? "active" : "")">
+
+            <a href="/AdminReservation/ReservationList"
+               class="nav-item-link @(string.IsNullOrEmpty(statusQuery) ? "active" : "")">
                 <i class="bi bi-calendar2-check"></i> Tüm Rezervasyonlar
             </a>
-            <a href="/AdminReservation/ReservationList?status=pending" class="nav-item-link">
+
+            <a href="/AdminReservation/ReservationList?status=pending"
+               class="nav-item-link @(statusQuery == "pending" ? "active" : "")">
                 <i class="bi bi-hourglass-split text-warning"></i> Onay Bekleyenler
             </a>
-            <a href="/AdminReservation/ReservationList?status=approved" class="nav-item-link">
+
+            <a href="/AdminReservation/ReservationList?status=approved"
+               class="nav-item-link @(statusQuery == "approved" ? "active" : "")">
                 <i class="bi bi-check2-circle text-success"></i> Onaylananlar
             </a>
-            <a href="/AdminReservation/ReservationList?status=rejected" class="nav-item-link">
+
+            <a href="/AdminReservation/ReservationList?status=rejected"
+               class="nav-item-link @(statusQuery == "rejected" ? "active" : "")">
                 <i class="bi bi-x-circle text-danger"></i> Reddedilenler
             </a>
         </div>
@@ -91,7 +102,7 @@
         </div>
 
         <div class="sidebar-footer">
-            <a href="#" class="nav-item-link">
+            <a href="/Login/Logout" class="nav-item-link">
                 <i class="bi bi-box-arrow-left"></i> Çıkış Yap
             </a>
         </div>

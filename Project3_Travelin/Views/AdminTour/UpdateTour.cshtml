@@ -192,6 +192,34 @@
                             </div>
                         </div>
 
+                        <!-- Tur Fiyatı -->
+                        <div class="col-md-6">
+                            <div class="field-group">
+                                <label asp-for="TourPrice" class="field-label">
+                                    <i class="bi bi-currency-dollar" style="color:#a0aec0;font-size:.85rem;"></i>
+                                    Tur Fiyatı <span class="required">*</span>
+                                </label>
+                                <div class="input-with-icon">
+                                    <i class="bi bi-cash-stack input-icon"></i>
+                                    <input asp-for="TourPrice" type="number" step="0.01" class="form-control" placeholder="0.00" />
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Rehber -->
+                        <div class="col-md-6">
+                            <div class="field-group">
+                                <label asp-for="GuideId" class="field-label">
+                                    <i class="bi bi-person-badge" style="color:#a0aec0;font-size:.85rem;"></i>
+                                    Tur Rehberi
+                                </label>
+                                <select asp-for="GuideId" class="form-select"
+                                        asp-items="@(new SelectList(ViewBag.Guides, "Id", "FullName"))">
+                                    <option value="">Rehber Seçiniz...</option>
+                                </select>
+                            </div>
+                        </div>
+
                         <!-- Tur Süresi -->
                         <div class="col-12">
                             <div class="field-group">
