@@ -1,4 +1,6 @@
-﻿namespace DTOLayer.DTOs.TourDTOs
+﻿using MongoDB.Bson.Serialization.Attributes;
+
+namespace DTOLayer.DTOs.TourDTOs
 {
     public class CreateTourDTO
     {
@@ -14,7 +16,8 @@
         public string FullDescription { get; set; }
         public bool IsDrafts { get; set; }
         public bool IsStatus { get; set; }
-        public List<string> ImageAlbumUrls { get; set; }
+        public List<string> ImageAlbumUrls { get; set; } = new List<string>();
+
         public string GuideId { get; set; } 
     }
 }

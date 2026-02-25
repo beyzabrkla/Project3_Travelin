@@ -20,7 +20,7 @@
     </a>
 </div>
 
-<form method="post" id="createTourForm" novalidate>
+<form asp-action="CreateTour" asp-controller="AdminTour" method="post" id="createTourForm" enctype="multipart/form-data" novalidate>
     @Html.AntiForgeryToken()
 
     <div class="form-grid">
@@ -57,6 +57,13 @@
                         <div class="char-counter" id="descCounter">0 / 1000</div>
                         <span asp-validation-for="FullDescription" class="text-danger-field"><i class="bi bi-exclamation-circle"></i><span></span></span>
                     </div>
+                    <div class="field-group">
+                        <label asp-for="SubDescription" class="field-label">Kısa Açıklama (Alt Başlık)</label>
+                        <input asp-for="SubDescription" class="form-control" placeholder="Tur kartında görünecek kısa özet..." maxlength="200" />
+                        <span asp-validation-for="SubDescription" class="text-danger-field"></span>
+                    </div>
+
+                    <input type="hidden" name="ImageAlbumUrls" value="" />
                 </div>
             </div>
 
@@ -79,16 +86,7 @@
                                 </label>
                                 <div class="input-with-icon">
                                     <i class="bi bi-globe2 input-icon"></i>
-                                    <select asp-for="TourCountry" class="form-select" id="countrySelect" style="padding-left:2.4rem;">
-                                        <option value="">— Ülke seçin —</option>
-                                        @if (ViewBag.Countries != null)
-                                        {
-                                            foreach (var item in ViewBag.Countries)
-                                            {
-                                                <option value="@item">@item</option>
-                                            }
-                                        }
-                                    </select>
+                                    <input asp-for="TourCountry" class="form-control" placeholder="Örn: Türkiye" id="countryInput" style="padding-left:2.4rem;" />
                                 </div>
                                 <span asp-validation-for="TourCountry" class="text-danger-field"><i class="bi bi-exclamation-circle"></i><span></span></span>
                             </div>
@@ -106,6 +104,33 @@
                                 <span asp-validation-for="TourCity" class="text-danger-field"><i class="bi bi-exclamation-circle"></i><span></span></span>
                             </div>
                         </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Rehber Ataması -->
+            <div class="form-section">
+                <div class="section-header">
+                    <div class="section-icon purple"><i class="bi bi-person-badge"></i></div>
+                    <div>
+                        <div class="section-title">Rehber Ataması</div>
+                        <div class="section-subtitle">Tura eşlik edecek rehberi seçin</div>
+                    </div>
+                </div>
+                <div class="section-body">
+                    <div class="field-group">
+                        <label asp-for="GuideId" class="field-label">Tur Rehberi <span class="required">*</span></label>
+                        <div class="input-with-icon">
+                            <i class="bi bi-person input-icon"></i>
+                            <select asp-for="GuideId" class="form-select" asp-items="ViewBag.Guides" style="padding-left:2.4rem;">
+                                <option value="">— Bir Rehber Seçin —</option>
+                            </select>
+                        </div>
+                        <span asp-validation-for="GuideId" class="text-danger-field"></span>
+                    </div>
+
+                    <div class="field-hint">
+                        <i class="bi bi-info-circle me-1"></i> Rehber listede yoksa önce "Rehberler" sekmesinden yeni rehber eklemelisiniz.
                     </div>
                 </div>
             </div>
@@ -311,6 +336,10 @@
                             <span class="value" id="sumLocation">—</span>
                         </div>
                         <div class="summary-row">
+                            <span class="label">Rehber</span>
+                            <span class="value" id="sumGuide">—</span>
+                        </div>
+                        <div class="summary-row">
                             <span class="label">Tarih</span>
                             <span class="value" id="sumDate">—</span>
                         </div>
@@ -379,16 +408,17 @@
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
     <script>
-        // ── CHAR COUNTERS ─────────────────────────────
+        // ── KARAKTER SAYACI ─────────────────────────────
         function initCounter(inputId, counterId, max) {
             const el = document.getElementById(inputId);
             const counter = document.getElementById(counterId);
             if (!el || !counter) return;
-            function update() {
+
+            const update = () => {
                 const len = el.value.length;
-                counter.textContent = len + ' / ' + max;
+                counter.textContent = `${len} / ${max}`;
                 counter.className = 'char-counter' + (len > max * .9 ? (len >= max ? ' danger' : ' warn') : '');
-            }
+            };
             el.addEventListener('input', update);
             update();
         }
@@ -396,26 +426,31 @@
         initCounter('tourTitleInput', 'titleCounter', 120);
         initCounter('descInput', 'descCounter', 1000);
 
-        // ── STEPPER ────────────────────────────────────
+        // ── KAPASİTE STEPPER ───────────────────────────
         function stepperDecrement() {
             const inp = document.getElementById('capacityInput');
-            const val = parseInt(inp.value) || 1;
-            if (val > 1) { inp.value = val - 1; updateSummary(); }
+            let val = parseInt(inp.value) || 1;
+            if (val > 1) {
+                inp.value = val - 1;
+                inp.dispatchEvent(new Event('input')); // Özeti tetikle
+            }
         }
 
         function stepperIncrement() {
             const inp = document.getElementById('capacityInput');
-            const val = parseInt(inp.value) || 1;
-            if (val < 500) { inp.value = val + 1; updateSummary(); }
+            let val = parseInt(inp.value) || 1;
+            if (val < 500) {
+                inp.value = val + 1;
+                inp.dispatchEvent(new Event('input')); // Özeti tetikle
+            }
         }
 
-        document.getElementById('capacityInput').addEventListener('input', updateSummary);
-
-        // ── DURATION BUILDER ──────────────────────────
+        // ── SÜRE OLUŞTURUCU (GÜN/GECE) ─────────────────
         function updateDuration() {
-            const days   = parseInt(document.getElementById('dayCount').value)   || 0;
+            const days   = parseInt(document.getElementById('dayCount').value) || 0;
             const nights = parseInt(document.getElementById('nightCount').value) || 0;
-            const text   = days + ' Gün / ' + nights + ' Gece';
+            const text   = `${days} Gün / ${nights} Gece`;
+
             document.getElementById('dayNightHidden').value = text;
             document.getElementById('durationText').textContent = text;
             updateSummary();
@@ -423,28 +458,27 @@
 
         document.getElementById('dayCount').addEventListener('input', updateDuration);
         document.getElementById('nightCount').addEventListener('input', updateDuration);
-        updateDuration();
 
-        // ── IMAGE URL PREVIEW ─────────────────────────
+        // ── GÖRSEL ÖNİZLEME (URL) ───────────────────────
         const imageUrlInput = document.getElementById('imageUrlInput');
         const urlPreviewImg = document.getElementById('urlPreviewImg');
         let urlDebounce;
 
         imageUrlInput.addEventListener('input', function () {
             clearTimeout(urlDebounce);
-            urlDebounce = setTimeout(function () {
-                const url = imageUrlInput.value.trim();
+            urlDebounce = setTimeout(() => {
+                const url = this.value.trim();
                 if (url) {
                     urlPreviewImg.src = url;
                     urlPreviewImg.style.display = 'block';
-                    urlPreviewImg.onerror = function () { urlPreviewImg.style.display = 'none'; };
+                    urlPreviewImg.onerror = () => urlPreviewImg.style.display = 'none';
                 } else {
                     urlPreviewImg.style.display = 'none';
                 }
             }, 600);
         });
 
-        // ── FILE UPLOAD PREVIEW ────────────────────────
+        // ── GÖRSEL ÖNİZLEME (DOSYA YÜKLEME) ─────────────
         const uploadZone = document.getElementById('uploadZone');
         const imageFileInput = document.getElementById('imageFileInput');
         const previewBox = document.getElementById('previewBox');
@@ -454,24 +488,12 @@
             const file = this.files[0];
             if (!file) return;
             const reader = new FileReader();
-            reader.onload = function (e) {
+            reader.onload = (e) => {
                 previewImg.src = e.target.result;
                 previewBox.style.display = 'block';
                 uploadZone.style.display = 'none';
             };
             reader.readAsDataURL(file);
-        });
-
-        ['dragover', 'dragleave', 'drop'].forEach(function (evt) {
-            uploadZone.addEventListener(evt, function (e) {
-                e.preventDefault();
-                if (evt === 'dragover') uploadZone.classList.add('dragover');
-                else uploadZone.classList.remove('dragover');
-                if (evt === 'drop' && e.dataTransfer.files[0]) {
-                    imageFileInput.files = e.dataTransfer.files;
-                    imageFileInput.dispatchEvent(new Event('change'));
-                }
-            });
         });
 
         function removeImage() {
@@ -481,59 +503,70 @@
             previewImg.src = '';
         }
 
-        // ── STATUS TOGGLE ─────────────────────────────
+        // ── DURUM SEÇİMİ (RADİO) ───────────────────────
         function updateStatus(radio) {
-            ['statusActive','statusDraft','statusPassive'].forEach(function(id) {
-                const el = document.getElementById(id);
-                el.classList.remove('selected-active','selected-draft');
+            ['statusActive','statusDraft','statusPassive'].forEach(id => {
+                document.getElementById(id)?.classList.remove('selected-active','selected-draft');
             });
             const parent = radio.closest('.status-option');
             if (radio.value === 'active') parent.classList.add('selected-active');
             else if (radio.value === 'draft') parent.classList.add('selected-draft');
         }
 
-        // ── LIVE SUMMARY ──────────────────────────────
+        // ── CANLI ÖZET PANELİ ──────────────────────────
         function updateSummary() {
-            const title    = document.getElementById('tourTitleInput').value.trim();
-            const country  = document.getElementById('countrySelect').value;
-            const city     = document.getElementById('cityInput')?.value.trim();
-            const date     = document.getElementById('tourDateInput').value;
-            const duration = document.getElementById('dayNightHidden').value;
-            const capacity = document.getElementById('capacityInput').value;
+            const getValue = (id) => document.getElementById(id)?.value.trim() || '';
 
-            document.getElementById('sumTitle').textContent    = title    || '—';
-            document.getElementById('sumLocation').textContent = (country && city) ? country + ' / ' + city : (country || city || '—');
+            const title    = getValue('tourTitleInput');
+            const country  = getValue('countryInput');
+            const city     = getValue('cityInput');
+            const date     = getValue('tourDateInput');
+            const duration = getValue('dayNightHidden');
+            const capacity = getValue('capacityInput');
+
+            // Rehber adını yakala (select içindeki görünen metin)
+            const guideEl = document.querySelector('select[asp-for="GuideId"]') || document.querySelector('select[name="GuideId"]');
+            const guideName = guideEl && guideEl.selectedIndex > 0 ? guideEl.options[guideEl.selectedIndex].text : '—';
+
+            document.getElementById('sumTitle').textContent    = title || '—';
+            document.getElementById('sumLocation').textContent = (country && city) ? `${country} / ${city}` : (country || city || '—');
             document.getElementById('sumDate').textContent     = date ? formatDate(date) : '—';
-            document.getElementById('sumDuration').textContent = duration  || '—';
-            document.getElementById('sumCapacity').textContent = capacity  ? capacity + ' kişi' : '—';
+            document.getElementById('sumDuration').textContent = duration || '—';
+            document.getElementById('sumCapacity').textContent = capacity ? `${capacity} kişi` : '—';
+
+            // Eğer HTML'de rehber için bir sumGuide ID'li alan açarsan burası çalışır
+            const sumGuide = document.getElementById('sumGuide');
+            if (sumGuide) sumGuide.textContent = guideName;
         }
 
         function formatDate(dateStr) {
             const [y, m, d] = dateStr.split('-');
-            return d + '.' + m + '.' + y;
+            return `${d}.${m}.${y}`;
         }
 
-        ['tourTitleInput','countrySelect','cityInput','tourDateInput','capacityInput'].forEach(function(id) {
+        // Tüm tetikleyicileri bağla
+        ['tourTitleInput','countrySelect','cityInput','tourDateInput','capacityInput'].forEach(id => {
             const el = document.getElementById(id);
-            if (el) el.addEventListener('input', updateSummary);
+            if (el) {
+                const eventType = el.tagName === 'SELECT' ? 'change' : 'input';
+                el.addEventListener(eventType, updateSummary);
+            }
         });
 
+        // Rehber dropdown'ı için özel dinleyici
+        const guideDropdown = document.querySelector('select[name="GuideId"]');
+        if (guideDropdown) guideDropdown.addEventListener('change', updateSummary);
+
+        // Sayfa yüklendiğinde çalıştır
+        updateDuration();
         updateSummary();
 
-        // ── DRAFT SAVE ────────────────────────────────
-        function saveDraft() {
-            const radio = document.querySelector('input[name="PublishStatus"][value="draft"]');
-            if (radio) { radio.checked = true; updateStatus(radio); }
-            document.getElementById('createTourForm').submit();
-        }
-
-        // ── SUBMIT FEEDBACK ───────────────────────────
-        document.getElementById('createTourForm').addEventListener('submit', function () {
+        // ── FORM GÖNDERİMİ ─────────────────────────────
+        document.getElementById('createTourForm').addEventListener('submit', function (e) {
             const btn = document.getElementById('submitBtn');
             btn.disabled = true;
-            btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status"></span>Kaydediliyor...';
+            btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Kaydediliyor...';
         });
     </script>
 }
-
 

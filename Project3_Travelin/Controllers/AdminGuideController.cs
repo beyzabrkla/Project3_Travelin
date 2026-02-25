@@ -1,106 +1,180 @@
-﻿using AutoMapper;
-using BusinessLayer.Abstract;
+﻿using BusinessLayer.Abstract;
 using DTOLayer.DTOs.GuideDTOs;
+using EntityLayer;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using System;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace Project3_Travelin.Controllers
 {
     [Authorize(Roles = "Admin")]
     public class AdminGuideController : Controller
     {
+        private readonly UserManager<AppUser> _userManager;
         private readonly IGuideService _guideService;
-        private readonly IMapper _mapper;
 
-        public AdminGuideController(IGuideService guideService, IMapper mapper)
+        public AdminGuideController(UserManager<AppUser> userManager, IGuideService guideService)
         {
+            _userManager = userManager;
             _guideService = guideService;
-            _mapper = mapper;
         }
 
+        [HttpGet]
         public async Task<IActionResult> GuideList(string q, int page = 1)
         {
-            var values = await _guideService.GetAllGuideAsync();
+            var guides = await _guideService.GetAllGuideAsync();
 
             if (!string.IsNullOrEmpty(q))
             {
-                values = values.Where(x =>
-                    (x.Name != null && x.Name.Contains(q, StringComparison.OrdinalIgnoreCase)) ||
-                    (x.Title != null && x.Title.Contains(q, StringComparison.OrdinalIgnoreCase))
-                ).ToList();
+                guides = guides.Where(x => x.Name.Contains(q) || x.Title.Contains(q)).ToList();
             }
 
-            int pageSize = 6;
-            int totalCount = values.Count;
-            int totalPages = (int)Math.Ceiling(totalCount / (double)pageSize);
-            page = page < 1 ? 1 : page;
-
-            var pagedData = values.Skip((page - 1) * pageSize).Take(pageSize).ToList();
-
-            ViewBag.CurrentPage = page;
-            ViewBag.TotalPages = totalPages;
-            ViewBag.TotalCount = totalCount;
-            ViewBag.PageSize = pageSize;
+            ViewBag.TotalCount = guides.Count;
             ViewBag.SearchQuery = q;
+            ViewBag.TotalPages = 1;
+            ViewBag.CurrentPage = 1;
 
-            return View(pagedData);
+            return View(guides); 
         }
 
         [HttpGet]
         public IActionResult CreateGuide()
         {
-            return View();
+            return View(new CreateGuideDTO { Status = true});
         }
 
+        // ==================== YENİ REHBER EKLEME (POST) ====================
         [HttpPost]
         public async Task<IActionResult> CreateGuide(CreateGuideDTO createGuideDTO)
         {
-            if (ModelState.IsValid)
+            if (!ModelState.IsValid)
             {
-                await _guideService.CreateGuideAsync(createGuideDTO);
-                return RedirectToAction("GuideList");
+                return View(createGuideDTO);
             }
 
-            var errors = ModelState.Values
-                .SelectMany(v => v.Errors)
-                .Select(e => e.ErrorMessage)
-                .ToList();
-            ViewBag.Errors = errors;
-            return View(createGuideDTO);
+            createGuideDTO.CreatedAt = DateTime.Now.ToString("o");
+
+            await _guideService.CreateGuideAsync(createGuideDTO);
+            return RedirectToAction("GuideList");
         }
 
         [HttpGet]
         public async Task<IActionResult> UpdateGuide(string id)
         {
-            var value = await _guideService.GetGuideByIdAsync(id);
-            var model = _mapper.Map<UpdateGuideDTO>(value);
-            return View(model);
+            var guide = await _guideService.GetGuideByIdAsync(id);
+            if (guide == null) return NotFound();
+
+            // Senin UpdateGuideDTO yapına göre mapping yapıyoruz
+            var updateDto = new UpdateGuideDTO
+            {
+                GuideId = guide.GuideId,
+                Name = guide.Name,
+                Title = guide.Title,
+                Description = guide.Description, 
+                ImageUrl = guide.ImageUrl,
+                Status = guide.Status,
+                UserId = guide.UserId,
+                Specialization = guide.Specialization,
+                Experience = guide.Experience,
+                Languages = guide.Languages,
+                About = guide.About,
+            };
+
+            return View(updateDto);
         }
 
         [HttpPost]
         public async Task<IActionResult> UpdateGuide(UpdateGuideDTO updateGuideDTO)
         {
-            if (ModelState.IsValid)
+            if (!ModelState.IsValid)
             {
-                await _guideService.UpdateGuideAsync(updateGuideDTO);
-                return RedirectToAction("GuideList");
+                return View(updateGuideDTO);
             }
 
-            var errors = ModelState.Values
-                .SelectMany(v => v.Errors)
-                .Select(e => e.ErrorMessage)
-                .ToList();
-            ViewBag.Errors = errors;
-            return View(updateGuideDTO);
-        }
+            updateGuideDTO.UpdatedAt = DateTime.Now;
+            await _guideService.UpdateGuideAsync(updateGuideDTO);
 
+            return RedirectToAction("GuideList");
+        }
         [HttpPost]
         public async Task<IActionResult> ToggleStatus(string id)
         {
             var guide = await _guideService.GetGuideByIdAsync(id);
-            var model = _mapper.Map<UpdateGuideDTO>(guide);
-            model.Status = !model.Status;
-            await _guideService.UpdateGuideAsync(model);
+            if (guide != null)
+            {
+                guide.Status = !guide.Status;
+                var updateDto = new UpdateGuideDTO
+                {
+                    GuideId = guide.GuideId,
+                    Name = guide.Name,
+                    Title = guide.Title,
+                    Description = guide.Description,
+                    ImageUrl = guide.ImageUrl,
+                    Status = guide.Status
+                };
+                await _guideService.UpdateGuideAsync(updateDto);
+            }
+            return RedirectToAction("GuideList");
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> MakeGuide(string userId)
+        {
+            var user = await _userManager.FindByIdAsync(userId);
+            if (user == null)
+            {
+                TempData["GuideError"] = "Kullanıcı bulunamadı.";
+                return RedirectToAction("GuideList");
+            }
+
+            try
+            {
+                if (!await _userManager.IsInRoleAsync(user, "Guide"))
+                {
+                    await _userManager.AddToRoleAsync(user, "Guide");
+                }
+
+                var createGuideDTO = new CreateGuideDTO
+                {
+                    UserId = user.Id.ToString(), 
+                    Name = user.FullName,
+                    Status = true,
+                    About = "Yeni rehber profili.",
+                    Specialization = "Belirtilmedi"
+                };
+
+                await _guideService.CreateGuideAsync(createGuideDTO);
+
+                TempData["GuideSuccess"] = $"{user.FullName} başarıyla rehber yapıldı.";
+            }
+            catch (Exception ex)
+            {
+                TempData["GuideError"] = "İşlem sırasında bir hata oluştu: " + ex.Message;
+            }
+
+            return RedirectToAction("GuideList");
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> RemoveGuideRole(string userId)
+        {
+            var user = await _userManager.FindByIdAsync(userId);
+            if (user == null) return RedirectToAction("GuideList");
+
+            try
+            {
+                await _userManager.RemoveFromRoleAsync(user, "Guide");
+
+                TempData["GuideSuccess"] = "Rehberlik yetkisi kaldırıldı.";
+            }
+            catch (Exception ex)
+            {
+                TempData["GuideError"] = "Hata: " + ex.Message;
+            }
+
             return RedirectToAction("GuideList");
         }
     }

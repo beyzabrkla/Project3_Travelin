@@ -32,31 +32,42 @@
                     <!-- Collect the nav links, forms, and other content for toggling -->
                     <div class="navbar-collapse1 d-flex align-items-center" id="bs-example-navbar-collapse-1">
                         <ul class="nav navbar-nav" id="responsive-menu">
-
                             <li><a href="/Home/Index">Ana Sayfa</a></li>
                             <li><a href="/Tour/TourList">Tur Lİstesİ</a></li>
                             <li><a href="/Tour/TourRoutes">Tur Rotaları</a></li>
                             <li><a href="about.html">VİZESİZ Turlar</a></li>
                             <li><a href="about.html">Yurt İçİ Turları</a></li>
-
-
                             <li class="search-main"><a href="#search1" class="mt_search"><i class="fa fa-search"></i></a></li>
                         </ul>
                     </div><!-- /.navbar-collapse -->
-                    <div class="register-login d-flex align-items-center">
+                    <div class="register-login d-flex align-items-center gap-3">
                         @if (User.Identity.IsAuthenticated)
                         {
-                            <a href="/Customer/Dashboard" class="me-3">
+                            <a href="/Customer/Dashboard" class="me-2">
                                 <i class="icon-user"></i> @User.Identity.Name
                             </a>
-                            <a href="/Login/Logout" class="me-3 text-danger">
+                            <a href="/Login/Logout" class="me-2 text-danger">
                                 <i class="fa fa-sign-out-alt"></i> Çıkış Yap
                             </a>
                         }
                         else
                         {
-                            <a href="#" data-bs-toggle="modal" data-bs-target="#exampleModal" class="me-3">
-                                <i class="icon-user"></i> Giriş Yap / Kayıt Ol
+                            <!-- Kullanıcı İkonu -->
+                            <a href="#"
+                               data-bs-toggle="modal"
+                               data-bs-target="#exampleModal"
+                               class="me-3"
+                               title="Kullanıcı Giriş">
+                                <i class="icon-user" style="font-size: 20px;"></i>
+                            </a>
+
+                            <!-- Admin İkonu -->
+                            <a href="#"
+                               data-bs-toggle="modal"
+                               data-bs-target="#adminModal"
+                               class="me-3"
+                               title="Admin Giriş">
+                                <i class="fa fa-shield-alt text-danger" style="font-size: 20px;"></i>
                             </a>
                         }
 
@@ -66,7 +77,10 @@
                         }
                         else
                         {
-                            <a href="#" data-bs-toggle="modal" data-bs-target="#exampleModal" class="nir-btn white">Rezervasyon Yap</a>
+                            <a href="#"
+                               data-bs-toggle="modal"
+                               data-bs-target="#exampleModal"
+                               class="nir-btn white">Rezervasyon Yap</a>
                         }
                     </div>
 
@@ -77,4 +91,3 @@
     </div>
     <!-- Navigation Bar Ends -->
 </header>
-
