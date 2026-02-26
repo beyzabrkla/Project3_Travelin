@@ -13,7 +13,6 @@ var builder = WebApplication.CreateBuilder(args);
 
 //  DataAccessLayer (Dal) Kayýtlarý ---
 builder.Services.AddScoped<ICommentDal, MongoCommentDal>();
-builder.Services.AddScoped<ICategoryDal, MongoCategoryDal>();
 builder.Services.AddScoped<ITourDal, MongoTourDal>();
 builder.Services.AddScoped<IGuideDal, MongoGuideDal>();
 builder.Services.AddScoped<IReservationDal, MongoReservationDal>();
@@ -81,7 +80,6 @@ builder.Services.ConfigureApplicationCookie(options =>
 });
 
 // BusinessLayer (Service) Kayýtlarý ---
-builder.Services.AddScoped<ICategoryService, CategoryManager>();
 builder.Services.AddScoped<ITourService, TourManager>();
 builder.Services.AddScoped<IGuideService, GuideManager>();
 builder.Services.AddScoped<ICommentService, CommentManager>();

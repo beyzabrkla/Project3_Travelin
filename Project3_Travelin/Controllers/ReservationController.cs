@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace Project3_Travelin.Controllers
 {
-    [Authorize(Roles = "Customer")]
+    [Authorize]
     public class ReservationController : Controller
     {
         private readonly ITourService _tourService;
@@ -26,9 +26,7 @@ namespace Project3_Travelin.Controllers
         public async Task<IActionResult> NewReservation(string id = null)
         {
             var user = await _userManager.FindByNameAsync(User.Identity.Name);
-
             var allTours = await _tourService.GetAllTourAsync();
-
             var activeTours = allTours.Where(x => x.IsStatus == true && x.IsDrafts == false).ToList();
 
             ViewBag.TourList = activeTours.Select(x => new Microsoft.AspNetCore.Mvc.Rendering.SelectListItem
@@ -68,7 +66,6 @@ namespace Project3_Travelin.Controllers
             }
 
             await _reservationService.CreateReservationAsync(createReservationDTO);
-
             return RedirectToAction("MyReservations");
         }
 
@@ -81,6 +78,35 @@ namespace Project3_Travelin.Controllers
             var userReservations = allReservations.Where(x => x.CustomerEmail == user.Email).ToList();
 
             return View(userReservations);
+        }
+
+        // --- DİJİTAL BİLET VERİSİ ---
+        [HttpGet]
+        public async Task<IActionResult> GetReservationDetails(string id)
+        {
+            var allReservations = await _reservationService.GetAllReservationAsync();
+            var res = allReservations.FirstOrDefault(x => x.ReservationId == id);
+
+            if (res == null) return NotFound();
+
+            var allTours = await _tourService.GetAllTourAsync();
+            var tour = allTours.FirstOrDefault(x => x.TourId == res.TourId);
+
+            decimal unitPrice = tour?.TourPrice ?? 0;
+            decimal totalPrice = res.PersonCount * unitPrice;
+
+            return Json(new
+            {
+                title = res.TourTitle,
+                date = res.ReservationDate.ToString("dd MMMM yyyy"),
+                person = res.PersonCount,
+                customer = res.CustomerName,
+                status = res.Status,
+                guide = res.GuideName,
+                guideImage = res.GuideImageUrl ?? "/images/default-guide.png",
+                unitPrice = unitPrice.ToString("C0"),
+                totalPrice = totalPrice.ToString("C0")
+            });
         }
     }
 }
