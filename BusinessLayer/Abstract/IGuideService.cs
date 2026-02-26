@@ -14,5 +14,6 @@ namespace BusinessLayer.Abstract
         Task UpdateGuideAsync(UpdateGuideDTO updateGuideDTO);
         Task<GetGuideByIdDTO> GetGuideByIdAsync(string id);
         Task ChangeGuideStatusAsync(string id);
+        Task DeleteGuideAsync(string id);
     }
 }

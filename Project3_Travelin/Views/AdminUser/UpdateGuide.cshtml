@@ -1,0 +1,293 @@
+﻿@model UpdateGuideDTO
+@{
+    ViewData["Title"] = "Rehber Düzenle";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+}
+
+@if (ViewBag.Errors != null)
+{
+    <div class="alert alert-danger shadow-sm border-0 mb-4" style="border-radius:12px;">
+        <div class="d-flex align-items-center mb-2">
+            <i class="bi bi-exclamation-triangle-fill me-2"></i>
+            <strong>Lütfen hataları düzeltin:</strong>
+        </div>
+        <ul class="mb-0">
+            @foreach (var error in ViewBag.Errors)
+            {
+                <li>@error</li>
+            }
+        </ul>
+    </div>
+}
+
+<div class="page-header mb-4">
+    <div>
+        <h1 class="page-title text-dark fw-bold">Rehber Düzenle</h1>
+        <nav aria-label="breadcrumb" class="mt-2">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="#" class="text-decoration-none">Admin</a></li>
+                <li class="breadcrumb-item"><a asp-action="GuideList" class="text-decoration-none">Rehberler</a></li>
+                <li class="breadcrumb-item active" aria-current="page">@Model.Name</li>
+            </ol>
+        </nav>
+    </div>
+    <a asp-action="GuideList" class="btn btn-outline-secondary d-flex align-items-center gap-2"
+       style="border-radius:10px;font-size:.875rem;font-weight:500;padding:.55rem 1.1rem;">
+        <i class="bi bi-arrow-left"></i> Listeye Dön
+    </a>
+</div>
+
+<form asp-action="UpdateGuide" asp-controller="AdminUser" method="post" id="updateGuideForm">
+    @Html.AntiForgeryToken()
+    <input type="hidden" asp-for="GuideId" />
+    <input type="hidden" asp-for="UserId" />
+    <input type="hidden" asp-for="AvailabilityStatus" />
+    <input type="hidden" asp-for="CreatedAt" />
+    <input type="hidden" asp-for="Rating" />
+    <input type="hidden" asp-for="TotalTours" />
+
+    <div class="form-grid">
+        <div class="form-main">
+
+            <div class="form-section mb-4">
+                <div class="section-header">
+                    <div class="section-icon blue"><i class="bi bi-person-badge"></i></div>
+                    <div>
+                        <div class="section-title">Temel & Mesleki Bilgiler</div>
+                        <div class="section-subtitle">Görünür profil bilgileri</div>
+                    </div>
+                </div>
+                <div class="section-body">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <div class="field-group">
+                                <label asp-for="Name" class="field-label">Ad Soyad <span class="required">*</span></label>
+                                <input asp-for="Name" class="form-control" placeholder="Örn: Ali Yılmaz" />
+                                <span asp-validation-for="Name" class="text-danger-field text-danger small"></span>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="field-group">
+                                <label asp-for="Title" class="field-label">Unvan <span class="required">*</span></label>
+                                <input asp-for="Title" class="form-control" placeholder="Örn: Doğa ve Macera Rehberi" />
+                                <span asp-validation-for="Title" class="text-danger-field text-danger small"></span>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="field-group">
+                                <label asp-for="Specialization" class="field-label">Uzmanlık Alanı</label>
+                                <input asp-for="Specialization" class="form-control" placeholder="Örn: Dağcılık, Tarih" />
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="field-group">
+                                <label asp-for="Languages" class="field-label">Diller</label>
+                                <input asp-for="Languages" class="form-control" placeholder="Örn: Türkçe, İngilizce" />
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="field-group">
+                                <label asp-for="Experience" class="field-label">Deneyim (Yıl)</label>
+                                <input asp-for="Experience" type="number" class="form-control" placeholder="Örn: 5" />
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="field-group mt-3">
+                        <label asp-for="Description" class="field-label">Kısa Tanıtım <span class="required">*</span></label>
+                        <textarea asp-for="Description" class="form-control" rows="3"
+                                  placeholder="Liste sayfasında görünecek kısa açıklama..." maxlength="1000" id="descInput"></textarea>
+                        <div class="char-counter" id="descCounter">0 / 1000</div>
+                        <span asp-validation-for="Description" class="text-danger-field text-danger small"></span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-section mb-4">
+                <div class="section-header">
+                    <div class="section-icon orange"><i class="bi bi-file-text"></i></div>
+                    <div>
+                        <div class="section-title">Hakkında & İletişim</div>
+                        <div class="section-subtitle">Detaylı biyografi ve iletişim bilgileri</div>
+                    </div>
+                </div>
+                <div class="section-body">
+                    <div class="row g-3 mb-3">
+                        <div class="col-md-6">
+                            <div class="field-group">
+                                <label asp-for="Phone" class="field-label">Telefon</label>
+                                <input asp-for="Phone" class="form-control" placeholder="05xx xxx xx xx" />
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="field-group">
+                                <label asp-for="AvailableHours" class="field-label">Çalışma Saatleri</label>
+                                <input asp-for="AvailableHours" class="form-control" placeholder="Örn: 09:00 - 18:00" />
+                            </div>
+                        </div>
+                    </div>
+                    <div class="field-group">
+                        <label asp-for="About" class="field-label">Detaylı Biyografi</label>
+                        <textarea asp-for="About" class="form-control" rows="6" placeholder="Rehberin detaylı özgeçmişi..."></textarea>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-section">
+                <div class="section-header">
+                    <div class="section-icon purple"><i class="bi bi-image"></i></div>
+                    <div>
+                        <div class="section-title">Profil Görseli</div>
+                        <div class="section-subtitle">Görsel URL adresini girin</div>
+                    </div>
+                </div>
+                <div class="section-body text-center">
+                    <div class="field-group text-start">
+                        <label asp-for="ImageUrl" class="field-label">Görsel URL</label>
+                        <div class="input-with-icon">
+                            <i class="bi bi-link-45deg input-icon"></i>
+                            <input asp-for="ImageUrl" type="url" class="form-control"
+                                   placeholder="https://..." id="imageUrlInput" />
+                        </div>
+                        <span asp-validation-for="ImageUrl" class="text-danger-field text-danger small"></span>
+                    </div>
+
+                    <div class="preview-container mt-3 p-3 border border-dashed rounded" style="background: #f8fafc;">
+                        <img src="@(string.IsNullOrEmpty(Model.ImageUrl) ? "" : Model.ImageUrl)"
+                             alt="Önizleme" id="urlPreviewImg"
+                             style="@(string.IsNullOrEmpty(Model.ImageUrl) ? "display:none;" : "display:inline-block;") width:150px;height:150px;object-fit:cover;border-radius:50%;border:4px solid #fff;box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);" />
+                        <div id="previewPlaceholder" style="@(string.IsNullOrEmpty(Model.ImageUrl) ? "display:block;" : "display:none;")">
+                            <i class="bi bi-person-circle text-muted" style="font-size: 4rem;"></i>
+                            <p class="text-muted small mt-2">Geçerli bir URL girdiğinizde önizleme burada görünecektir.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <div class="sidebar-panel">
+            <div class="form-section mb-4">
+                <div class="section-header">
+                    <div class="section-icon green"><i class="bi bi-gear"></i></div>
+                    <div>
+                        <div class="section-title">Yayın Durumu</div>
+                        <div class="section-subtitle">Görünürlük ayarı</div>
+                    </div>
+                </div>
+                <div class="section-body">
+                    <label class="status-option mb-2" id="statusActive">
+                        <input type="radio" name="StatusRadio" value="true" @(Model.Status ? "checked" : "") onchange="setStatus(this)" />
+                        <span class="status-dot dot-active"></span>
+                        <div class="status-text">
+                            <div class="stitle text-success">Aktif</div>
+                            <div class="ssub small">Sitede yayınlanır</div>
+                        </div>
+                    </label>
+                    <label class="status-option" id="statusPassive">
+                        <input type="radio" name="StatusRadio" value="false" @(!Model.Status ? "checked" : "") onchange="setStatus(this)" />
+                        <span class="status-dot dot-passive"></span>
+                        <div class="status-text">
+                            <div class="stitle text-danger">Pasif</div>
+                            <div class="ssub small">Siteden gizlenir</div>
+                        </div>
+                    </label>
+                    <input type="hidden" asp-for="Status" id="statusHidden" />
+                </div>
+            </div>
+
+            <div class="form-section sticky-top" style="top: 20px; z-index: 10;">
+                <div class="section-body">
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-brand py-2 fw-bold" id="submitBtn">
+                            <i class="bi bi-floppy-fill me-2"></i> Değişiklikleri Kaydet
+                        </button>
+                        <a asp-action="GuideList" class="btn btn-light py-2 text-muted border">
+                            İptal Et
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</form>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            // İlk Durumu İşaretle
+            const checkedRadio = document.querySelector('input[name="StatusRadio"]:checked');
+            if (checkedRadio) setStatus(checkedRadio);
+
+            // Karakter Sayacı Başlat
+            updateCounter();
+        });
+
+        // Karakter Sayacı
+        const descEl = document.getElementById('descInput');
+        const descCounter = document.getElementById('descCounter');
+        function updateCounter() {
+            if(!descEl || !descCounter) return;
+            const len = descEl.value.length;
+            descCounter.textContent = `${len} / 1000`;
+            descCounter.style.color = len > 900 ? "#e11d48" : "#64748b";
+        }
+        descEl.addEventListener('input', updateCounter);
+
+        // Görsel Önizleme Gelişmiş
+        const imageUrlInput = document.getElementById('imageUrlInput');
+        const urlPreviewImg = document.getElementById('urlPreviewImg');
+        const previewPlaceholder = document.getElementById('previewPlaceholder');
+
+        let debounce;
+        imageUrlInput.addEventListener('input', function () {
+            clearTimeout(debounce);
+            debounce = setTimeout(function () {
+                const url = imageUrlInput.value.trim();
+                if (url && url.length > 10) {
+                    urlPreviewImg.src = url;
+                    urlPreviewImg.style.display = 'inline-block';
+                    previewPlaceholder.style.display = 'none';
+                    urlPreviewImg.onerror = function () {
+                        this.style.display = 'none';
+                        previewPlaceholder.style.display = 'block';
+                    };
+                } else {
+                    urlPreviewImg.style.display = 'none';
+                    previewPlaceholder.style.display = 'block';
+                }
+            }, 600);
+        });
+
+        function setStatus(radio) {
+            // Görsel sınıfları temizle
+            document.querySelectorAll('.status-option').forEach(el => {
+                el.classList.remove('selected-active', 'selected-passive');
+            });
+
+            const parent = radio.closest('.status-option');
+            const hiddenInput = document.getElementById('statusHidden');
+
+            // Radio'dan gelen "true" veya "false" stringini doğrudan bas
+            hiddenInput.value = radio.value;
+
+            if (radio.value === "true") {
+                parent.classList.add('selected-active');
+            } else {
+                parent.classList.add('selected-passive');
+            }
+        }
+
+        // Form Submit
+        $(document).ready(function () {
+            $('#updateGuideForm').on('submit', function () {
+                if (!$(this).valid()) return false;
+                const btn = $('#submitBtn');
+                btn.prop('disabled', true);
+                btn.html('<span class="spinner-border spinner-border-sm me-2"></span>Güncelleniyor...');
+                return true;
+            });
+        });
+    </script>
+}

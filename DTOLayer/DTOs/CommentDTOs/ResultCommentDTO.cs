@@ -3,6 +3,8 @@
     public class ResultCommentDTO
     {
         public string CommentId { get; set; }
+        public string TourId { get; set; }
+        public string TourName { get; set; }
         public string Headline { get; set; }
         public string CommentDetail { get; set; }
         public int Score { get; set; }

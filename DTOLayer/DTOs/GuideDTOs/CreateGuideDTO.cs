@@ -19,11 +19,12 @@
         public string Phone { get; set; }
 
         /// Uygun çalışma saatleri
-        public string AvailableHours { get; set; }
+        public string? AvailableHours { get; set; }
+        public string? AvailabilityStatus { get; set; }
 
         /// Hakkında bilgi (Başvuru formundan gelen)
         public string About { get; set; }
-        public string CreatedAt { get; set; }
-    
+        public string? CreatedAt { get; set; }
+
     }
 }

@@ -1568,3 +1568,266 @@ textarea.form-control {
     font-size: .73rem;
     margin-top: .35rem;
 }
+/* ============================================================
+   ADMIN.CSS — UserList & Shared Kullanıcı Bileşenleri Eklentisi
+   Bu bloğu mevcut Admin.css dosyanızın SONUNA ekleyin
+   ============================================================ */
+
+/* ── Stat Pills (UserList / ReviewList / CommentList) ── */
+.stat-pills {
+    display: flex;
+    gap: 14px;
+    flex-wrap: wrap;
+    margin-bottom: 24px;
+}
+
+.stat-pill {
+    background: #fff;
+    border-radius: 12px;
+    padding: 16px 20px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    box-shadow: 0 2px 12px rgba(0,0,0,.07);
+    flex: 1;
+    min-width: 140px;
+}
+
+.stat-pill-icon {
+    width: 44px;
+    height: 44px;
+    border-radius: 11px;
+    display: grid;
+    place-items: center;
+    font-size: 20px;
+    flex-shrink: 0;
+}
+
+.pill-purple {
+    background: #f5eaf8;
+    color: #5d0473;
+}
+
+.pill-green {
+    background: #f0fdf4;
+    color: #16a34a;
+}
+
+.pill-amber {
+    background: #fffbea;
+    color: #b45309;
+}
+
+.pill-yellow {
+    background: #fffbea;
+    color: #92660a;
+}
+
+.stat-pill-val {
+    font-size: 24px;
+    font-weight: 700;
+    color: #1a202c;
+    line-height: 1;
+}
+
+.stat-pill-lbl {
+    font-size: 12px;
+    color: #718096;
+    margin-top: 2px;
+}
+
+/* ── Sidebar status nav (Kullanıcılar / Yorumlar) ── */
+.sidebar-section-title {
+    font-size: 11px;
+    font-weight: 700;
+    color: #a0aec0;
+    text-transform: uppercase;
+    letter-spacing: .06em;
+    margin-bottom: 8px;
+}
+
+.status-sidebar {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.status-link {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 9px 14px;
+    border-radius: 9px;
+    font-size: 14px;
+    font-weight: 500;
+    color: #4a5568;
+    text-decoration: none;
+    transition: all .2s;
+}
+
+    .status-link:hover {
+        background: #f8fafc;
+        color: #5d0473;
+    }
+
+    .status-link.active {
+        background: #f5eaf8;
+        color: #5d0473;
+        font-weight: 600;
+    }
+
+    .status-link .count-dot {
+        margin-left: auto;
+        min-width: 22px;
+        height: 22px;
+        background: #e2e8f0;
+        color: #718096;
+        border-radius: 100px;
+        font-size: 11px;
+        font-weight: 700;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 0 6px;
+    }
+
+    .status-link.active .count-dot {
+        background: #5d0473;
+        color: #fff;
+    }
+
+/* ── User Avatar ── */
+.user-avatar {
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #5d0473, #9b1db5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 13px;
+    font-weight: 700;
+    color: #fdc703;
+    flex-shrink: 0;
+}
+
+/* ── Rol Badge'leri ── */
+.role-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    border-radius: 7px;
+    font-size: 12px;
+    font-weight: 600;
+    padding: 4px 10px;
+}
+
+.role-admin {
+    background: #f5eaf8;
+    color: #5d0473;
+    border: 1px solid #d8a8e8;
+}
+
+.role-guide {
+    background: #fffbea;
+    color: #92660a;
+    border: 1px solid #fdc703;
+}
+
+.role-customer {
+    background: #eff6ff;
+    color: #2563eb;
+    border: 1px solid #bfdbfe;
+}
+
+/* ── Durum Badge'leri (UserList) ── */
+.badge-active {
+    background: #f0fdf4;
+    color: #16a34a;
+    border: 1px solid #86efac;
+    border-radius: 6px;
+    font-size: 11px;
+    font-weight: 600;
+    padding: 3px 10px;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.badge-passive {
+    background: #f1f5f9;
+    color: #64748b;
+    border: 1px solid #cbd5e0;
+    border-radius: 6px;
+    font-size: 11px;
+    font-weight: 600;
+    padding: 3px 10px;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+}
+
+/* ── Kullanıcı İşlem Butonları ── */
+.btn-make-guide {
+    background: #fffbea !important;
+    color: #92660a !important;
+}
+
+    .btn-make-guide:hover {
+        background: #fdc703 !important;
+        color: #3b1a00 !important;
+    }
+
+.btn-remove-guide {
+    background: #fff5f5 !important;
+    color: #e53e3e !important;
+}
+
+    .btn-remove-guide:hover {
+        background: #e53e3e !important;
+        color: #fff !important;
+    }
+
+.btn-activate {
+    background: #f0fdf4 !important;
+    color: #16a34a !important;
+}
+
+    .btn-activate:hover {
+        background: #16a34a !important;
+        color: #fff !important;
+    }
+
+.btn-deactivate {
+    background: #f1f5f9 !important;
+    color: #64748b !important;
+}
+
+    .btn-deactivate:hover {
+        background: #64748b !important;
+        color: #fff !important;
+    }
+
+/* ── tour-count-badge override (mor tema için) ── */
+.tour-count-badge {
+    background: #f5eaf8 !important;
+    color: #5d0473 !important;
+    border: 1px solid #d8a8e8 !important;
+    border-radius: 100px;
+    font-size: 12px;
+    font-weight: 600;
+    padding: 3px 12px;
+    margin-left: 10px;
+}
+
+/* ── Pagination mor tema ── */
+.page-item.active .page-link {
+    background: #5d0473 !important;
+    border-color: #5d0473 !important;
+    color: #fff !important;
+}
+
+.page-link {
+    color: #5d0473 !important;
+}
+

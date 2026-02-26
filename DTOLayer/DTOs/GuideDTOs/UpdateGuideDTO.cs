@@ -11,7 +11,7 @@
         public bool Status { get; set; }
 
         /// Rehberin UserId'si (AppUser.Id)
-        public string UserId { get; set; }
+        public string? UserId { get; set; }
 
         /// Uzmanlaştığı bölgeler/konular
         public string Specialization { get; set; }
@@ -36,7 +36,7 @@
         public int? TotalTours { get; set; }
 
         /// Uygunluk durumu: Available, Busy, OnLeave
-        public string AvailabilityStatus { get; set; }
+        public string? AvailabilityStatus { get; set; }
 
         /// Rehber aktif mi
         public bool? IsActive { get; set; }

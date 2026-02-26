@@ -1,4 +1,7 @@
-﻿using EntityLayer;
+﻿using AutoMapper;
+using BusinessLayer.Abstract;
+using DTOLayer.DTOs.GuideDTOs;
+using EntityLayer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -9,42 +12,81 @@ using System.Threading.Tasks;
 
 namespace Project3_Travelin.Controllers
 {
-    [Authorize(Roles = "Admin")]  // Sadece Admin erişebilir
+    [Authorize(Roles = "Admin")]
     public class AdminUserController : Controller
     {
         private readonly UserManager<AppUser> _userManager;
+        private readonly RoleManager<AppRole> _roleManager;
+        private readonly IGuideService _guideService;
+        private readonly IMapper _mapper;
 
-        public AdminUserController(UserManager<AppUser> userManager)
+        public AdminUserController(
+            UserManager<AppUser> userManager,
+            RoleManager<AppRole> roleManager,
+            IGuideService guideService,
+            IMapper mapper)
         {
             _userManager = userManager;
+            _roleManager = roleManager;
+            _guideService = guideService;
+            _mapper = mapper;
         }
 
-        // ==================== TÜM KULLANICILARI LİSTELE ====================
+        #region Kullanıcı Listeleme ve Detay
         [HttpGet]
         public async Task<IActionResult> UserList()
         {
             var users = _userManager.Users.ToList();
+
+            foreach (var user in users)
+            {
+                var roles = await _userManager.GetRolesAsync(user);
+                user.Role = roles.FirstOrDefault() ?? "Customer";
+            }
             return View(users);
         }
 
-        // ==================== ROL'E GÖRE KULLANICILARI FİLTRELE ====================
         [HttpGet]
-        public async Task<IActionResult> UsersByRole(string roleName)
+        public async Task<IActionResult> GuideList(string q, int page = 1)
         {
-            var users = await _userManager.GetUsersInRoleAsync(roleName);
-            ViewBag.RoleName = roleName;
-            return View("UserList", users);
+            var guides = await _guideService.GetAllGuideAsync();
+
+            if (!string.IsNullOrEmpty(q))
+            {
+                guides = guides.Where(x => x.Name.Contains(q) || x.Title.Contains(q)).ToList();
+            }
+
+            ViewBag.TotalCount = guides.Count;
+            ViewBag.SearchQuery = q;
+            ViewBag.TotalPages = 1;
+            ViewBag.CurrentPage = 1;
+
+            return View(guides);
         }
 
-        // ==================== KULLANICI DETAYLARI ====================
         [HttpGet]
-        public async Task<IActionResult> UserDetails(string userId)
+        public async Task<IActionResult> UserDetails(string userId, int? guideId)
         {
-            var user = await _userManager.FindByIdAsync(userId);
+            AppUser user = null;
+
+            if (!string.IsNullOrEmpty(userId))
+            {
+                user = await _userManager.FindByIdAsync(userId);
+            }
+            else if (guideId.HasValue)
+            {
+                var guide = await _guideService.GetGuideByIdAsync(guideId.Value.ToString());
+
+                if (guide != null)
+                {
+                    user = _userManager.Users.FirstOrDefault(x => x.FullName == guide.Name || x.UserName == guide.Name);
+                }
+            }
+
             if (user == null)
             {
-                TempData["Error"] = "Kullanıcı bulunamadı.";
-                return RedirectToAction("UserList");
+                TempData["Error"] = "İlgili rehberin kullanıcı hesabı sistemde bulunamadı.";
+                return RedirectToAction("GuideList");
             }
 
             var roles = await _userManager.GetRolesAsync(user);
@@ -52,296 +94,180 @@ namespace Project3_Travelin.Controllers
             return View(user);
         }
 
-        // ==================== KULLANICI DÜZENLE ====================
         [HttpGet]
-        public async Task<IActionResult> EditUser(string userId)
+        public async Task<IActionResult> GuideDetails(string id)
         {
-            var user = await _userManager.FindByIdAsync(userId);
-            if (user == null)
+            if (string.IsNullOrEmpty(id)) return NotFound();
+
+            // 1. Rehberin MongoDB bilgilerini getir
+            var guide = await _guideService.GetGuideByIdAsync(id);
+            if (guide == null) return NotFound();
+
+            // 2. Bu rehberle ilişkili Identity kullanıcısını (AppUser) bul
+            // (İsim üzerinden eşleştirme yapıyoruz)
+            var user = _userManager.Users.FirstOrDefault(x =>
+                x.FullName == guide.Name || x.UserName == guide.Name);
+
+            // 3. Rehber bilgilerini View'a taşımak için ViewBag kullanabiliriz
+            ViewBag.GuideInfo = guide;
+
+            if (user != null)
             {
-                TempData["Error"] = "Kullanıcı bulunamadı.";
-                return RedirectToAction("UserList");
+                var roles = await _userManager.GetRolesAsync(user);
+                ViewBag.UserRoles = roles;
+                return View(user); // View'da @model AppUser bekleyeceğiz
             }
 
-            var roles = await _userManager.GetRolesAsync(user);
-            ViewBag.UserRoles = roles;
-            return View(user);
+            // Kullanıcı hesabı bulunamazsa sadece rehber ismiyle boş bir model gönder
+            TempData["Warning"] = "Bu rehberin eşleşmiş bir kullanıcı hesabı bulunamadı.";
+            return View(new AppUser { FullName = guide.Name });
         }
 
-        // ==================== KULLANICI GÜNCELLE ====================
-        [HttpPost]
-        public async Task<IActionResult> EditUser(string userId, string fullName, string email)
+        [HttpGet]
+        public async Task<IActionResult> RedirectToGuideUpdate(string fullName)
         {
-            var user = await _userManager.FindByIdAsync(userId);
-            if (user == null)
+            var allGuides = await _guideService.GetAllGuideAsync();
+            var guide = allGuides.FirstOrDefault(x => x.Name == fullName);
+
+            if (guide != null)
             {
-                TempData["Error"] = "Kullanıcı bulunamadı.";
-                return RedirectToAction("UserList");
+                // Rehber bulunduysa UpdateGuide sayfasına git
+                return RedirectToAction("UpdateGuide", new { id = guide.GuideId });
             }
 
-            user.FullName = fullName;
-            user.Email = email;
-
-            var result = await _userManager.UpdateAsync(user);
-            if (result.Succeeded)
-            {
-                TempData["Success"] = "Kullanıcı bilgileri güncellendi.";
-                return RedirectToAction("UserList");
-            }
-
-            TempData["Error"] = "Kullanıcı güncellenirken hata oluştu.";
-            return View(user);
+            // Eğer rehber kaydı henüz MongoDB'de oluşmadıysa hata ver veya UserList'e dön
+            TempData["Error"] = "Bu kullanıcının rehber profil kaydı bulunamadı.";
+            return RedirectToAction("UserList");
         }
 
-        // ==================== KULLANICIYA ROL EKLE ====================
+        #endregion
+
+
+        #region Rol İşlemleri
+
         [HttpPost]
         public async Task<IActionResult> AddRole(string userId, string roleName)
         {
             var user = await _userManager.FindByIdAsync(userId);
-            if (user == null)
-            {
-                TempData["Error"] = "Kullanıcı bulunamadı.";
-                return RedirectToAction("UserList");
-            }
+            if (user == null) return NotFound();
+
+            var currentRoles = await _userManager.GetRolesAsync(user);
+            await _userManager.RemoveFromRolesAsync(user, currentRoles);
 
             var result = await _userManager.AddToRoleAsync(user, roleName);
             if (result.Succeeded)
             {
-                TempData["Success"] = $"{roleName} rolü kullanıcıya eklendi.";
-            }
-            else
-            {
-                TempData["Error"] = "Rol eklenirken hata oluştu.";
-            }
+                user.Role = roleName;
+                await _userManager.UpdateAsync(user);
 
-            return RedirectToAction("UserDetails", new { userId = userId });
+                if (roleName == "Guide")
+                {
+                    await _guideService.CreateGuideAsync(new CreateGuideDTO
+                    {
+                        Name = user.FullName ?? user.UserName,
+                        Status = true,
+                        ImageUrl = "/images/default-guide.png",
+                        CreatedAt = DateTime.Now.ToString("o")
+                    });
+                }
+                TempData["Success"] = "Yetki başarıyla güncellendi.";
+            }
+            return RedirectToAction("UserList");
         }
 
-        // ==================== KULLANICIDAN ROL SİL ====================
         [HttpPost]
         public async Task<IActionResult> RemoveRole(string userId, string roleName)
         {
             var user = await _userManager.FindByIdAsync(userId);
-            if (user == null)
+            if (user != null)
             {
-                TempData["Error"] = "Kullanıcı bulunamadı.";
-                return RedirectToAction("UserList");
-            }
+                await _userManager.RemoveFromRoleAsync(user, roleName);
 
-            var result = await _userManager.RemoveFromRoleAsync(user, roleName);
-            if (result.Succeeded)
-            {
-                TempData["Success"] = $"{roleName} rolü kullanıcıdan kaldırıldı.";
+                user.Role = "Customer";
+                await _userManager.UpdateAsync(user);
             }
-            else
-            {
-                TempData["Error"] = "Rol kaldırılırken hata oluştu.";
-            }
-
-            return RedirectToAction("UserDetails", new { userId = userId });
+            return RedirectToAction("UserList");
         }
+        #endregion
 
-        // ==================== KULLANICILARI AKTİFLEŞTİR ====================
+
+        #region Aktivasyon ve Silme İşlemleri
         [HttpPost]
         public async Task<IActionResult> ActivateUser(string userId)
         {
             var user = await _userManager.FindByIdAsync(userId);
-            if (user == null)
-            {
-                TempData["Error"] = "Kullanıcı bulunamadı.";
-                return RedirectToAction("UserList");
-            }
-
-            user.IsActive = true;
-            var result = await _userManager.UpdateAsync(user);
-
-            if (result.Succeeded)
-            {
-                TempData["Success"] = "Kullanıcı aktivleştirildi.";
-            }
-            else
-            {
-                TempData["Error"] = "Kullanıcı aktivleştirilemedi.";
-            }
-
+            if (user != null) { user.IsActive = true; await _userManager.UpdateAsync(user); }
             return RedirectToAction("UserList");
         }
 
-        // ==================== KULLANICILARI PASİFLEŞTİR ====================
         [HttpPost]
         public async Task<IActionResult> DeactivateUser(string userId)
         {
             var user = await _userManager.FindByIdAsync(userId);
-            if (user == null)
-            {
-                TempData["Error"] = "Kullanıcı bulunamadı.";
-                return RedirectToAction("UserList");
-            }
-
-            user.IsActive = false;
-            var result = await _userManager.UpdateAsync(user);
-
-            if (result.Succeeded)
-            {
-                TempData["Success"] = "Kullanıcı pasifleştirildi.";
-            }
-            else
-            {
-                TempData["Error"] = "Kullanıcı pasifleştirilemedi.";
-            }
-
+            if (user != null) { user.IsActive = false; await _userManager.UpdateAsync(user); }
             return RedirectToAction("UserList");
         }
 
-        // ==================== KULLANICI SİL ====================
         [HttpPost]
         public async Task<IActionResult> DeleteUser(string userId)
         {
+            var currentUser = await _userManager.GetUserAsync(User);
+            if (currentUser.Id.ToString() == userId)
+            {
+                TempData["Error"] = "Kendi hesabınızı silemezsiniz!";
+                return RedirectToAction("UserList");
+            }
+
             var user = await _userManager.FindByIdAsync(userId);
-            if (user == null)
-            {
-                TempData["Error"] = "Kullanıcı bulunamadı.";
-                return RedirectToAction("UserList");
-            }
-
-            // Admin kendisini silemez
-            if (await _userManager.IsInRoleAsync(user, "Admin") && user.Id == _userManager.GetUserAsync(User).Result?.Id)
-            {
-                TempData["Error"] = "Kendi hesabınızı silemezsiniz.";
-                return RedirectToAction("UserList");
-            }
-
-            var result = await _userManager.DeleteAsync(user);
-
-            if (result.Succeeded)
-            {
-                TempData["Success"] = "Kullanıcı başarıyla silindi.";
-            }
-            else
-            {
-                TempData["Error"] = "Kullanıcı silinirken hata oluştu.";
-            }
+            if (user != null) await _userManager.DeleteAsync(user);
 
             return RedirectToAction("UserList");
         }
+        #endregion
 
-        // ==================== KULLANICI İSTATİSTİKLERİ ====================
+
+        #region Rehber Yönetim İşlemleri
+
         [HttpGet]
-        public async Task<IActionResult> UserStatistics()
+        public async Task<IActionResult> UpdateGuide(string id)
         {
-            var allUsers = _userManager.Users.ToList();
-            var admins = await _userManager.GetUsersInRoleAsync("Admin");
-            var guides = await _userManager.GetUsersInRoleAsync("Guide");
-            var customers = await _userManager.GetUsersInRoleAsync("Customer");
+            if (string.IsNullOrEmpty(id)) return NotFound();
 
-            var stats = new Dictionary<string, object>
-            {
-                { "TotalUsers", allUsers.Count },
-                { "TotalAdmins", admins.Count },
-                { "TotalGuides", guides.Count },
-                { "TotalCustomers", customers.Count },
-                { "ActiveUsers", allUsers.Count(u => u.IsActive) },
-                { "InactiveUsers", allUsers.Count(u => !u.IsActive) }
-            };
+            var guide = await _guideService.GetGuideByIdAsync(id);
+            if (guide == null) return NotFound();
 
-            return View(stats);
+            var model = _mapper.Map<UpdateGuideDTO>(guide);
+
+            return View(model);
         }
 
-        // ==================== ARAMA ====================
         [HttpPost]
-        public async Task<IActionResult> SearchUser(string searchTerm)
+        public async Task<IActionResult> ToggleStatus(string id)
         {
-            if (string.IsNullOrWhiteSpace(searchTerm))
+            if (string.IsNullOrEmpty(id)) return RedirectToAction("GuideList");
+
+            var guide = await _guideService.GetGuideByIdAsync(id);
+            if (guide != null)
             {
-                return RedirectToAction("UserList");
+                guide.Status = !guide.Status;
+
+                var updateModel = _mapper.Map<UpdateGuideDTO>(guide);
+
+                await _guideService.UpdateGuideAsync(updateModel);
             }
-
-            var users = _userManager.Users
-                .Where(u => u.UserName.Contains(searchTerm) ||
-                            u.Email.Contains(searchTerm) ||
-                            u.FullName.Contains(searchTerm))
-                .ToList();
-
-            ViewBag.SearchTerm = searchTerm;
-            return View("UserList", users);
+            return RedirectToAction("GuideList");
         }
 
-        // ==================== ŞİFRE RESETLE (ADMIN) ====================
         [HttpPost]
-        public async Task<IActionResult> ResetPassword(string userId, string newPassword)
+        public async Task<IActionResult> DeleteGuide(string id)
         {
-            var user = await _userManager.FindByIdAsync(userId);
-            if (user == null)
+            if (!string.IsNullOrEmpty(id))
             {
-                TempData["Error"] = "Kullanıcı bulunamadı.";
-                return RedirectToAction("UserList");
+                await _guideService.DeleteGuideAsync(id);
             }
-
-            var token = await _userManager.GeneratePasswordResetTokenAsync(user);
-            var result = await _userManager.ResetPasswordAsync(user, token, newPassword);
-
-            if (result.Succeeded)
-            {
-                TempData["Success"] = "Şifre başarıyla sıfırlandı.";
-            }
-            else
-            {
-                TempData["Error"] = "Şifre sıfırlanırken hata oluştu.";
-            }
-
-            return RedirectToAction("UserDetails", new { userId = userId });
+            return RedirectToAction("GuideList");
         }
 
-        // ==================== TOPLU İŞLEMLER ====================
-        [HttpPost]
-        public async Task<IActionResult> BulkActivate(List<string> userIds)
-        {
-            if (userIds == null || userIds.Count == 0)
-            {
-                TempData["Error"] = "Lütfen en az bir kullanıcı seçin.";
-                return RedirectToAction("UserList");
-            }
-
-            int successCount = 0;
-            foreach (var userId in userIds)
-            {
-                var user = await _userManager.FindByIdAsync(userId);
-                if (user != null)
-                {
-                    user.IsActive = true;
-                    await _userManager.UpdateAsync(user);
-                    successCount++;
-                }
-            }
-
-            TempData["Success"] = $"{successCount} kullanıcı aktivleştirildi.";
-            return RedirectToAction("UserList");
-        }
-
-        // ==================== TOPLU İŞLEMLER - DEAKTİVASYON ====================
-        [HttpPost]
-        public async Task<IActionResult> BulkDeactivate(List<string> userIds)
-        {
-            if (userIds == null || userIds.Count == 0)
-            {
-                TempData["Error"] = "Lütfen en az bir kullanıcı seçin.";
-                return RedirectToAction("UserList");
-            }
-
-            int successCount = 0;
-            foreach (var userId in userIds)
-            {
-                var user = await _userManager.FindByIdAsync(userId);
-                if (user != null)
-                {
-                    user.IsActive = false;
-                    await _userManager.UpdateAsync(user);
-                    successCount++;
-                }
-            }
-
-            TempData["Success"] = $"{successCount} kullanıcı pasifleştirildi.";
-            return RedirectToAction("UserList");
-        }
+        #endregion
     }
 }

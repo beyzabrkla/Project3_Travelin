@@ -214,7 +214,7 @@
                                     Tur Rehberi
                                 </label>
                                 <select asp-for="GuideId" class="form-select"
-                                        asp-items="@(new SelectList(ViewBag.Guides, "Id", "FullName"))">
+                                        asp-items="@(ViewBag.Guides as List<SelectListItem>)">
                                     <option value="">Rehber Seçiniz...</option>
                                 </select>
                             </div>

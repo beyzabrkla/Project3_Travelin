@@ -50,5 +50,11 @@ namespace BusinessLayer.Concrete
             var value = await _commentDal.GetByIdAsync(id);
             return _mapper.Map<GetCommentByIdDTO>(value);
         }
+
+        public async Task<List<ResultCommentDTO>> GetCommentsByTourIdAsync(string id)
+        {
+            var values = await _commentDal.GetByFilterAsync(x => x.TourId == id);
+            return _mapper.Map<List<ResultCommentDTO>>(values);
+        }
     }
 }
