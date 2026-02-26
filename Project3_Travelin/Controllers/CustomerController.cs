@@ -1,5 +1,6 @@
 ﻿using BusinessLayer.Abstract;
-using DTOLayer.DTOs.ReservationDTOs; 
+using DTOLayer.DTOs.ReservationDTOs;
+using DTOLayer.DTOs.UserDTOs;
 using EntityLayer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
@@ -9,7 +10,7 @@ using System.Threading.Tasks;
 
 namespace Project3_Travelin.Controllers
 {
-    [Authorize(Roles = "Customer")]
+    [Authorize]
     public class CustomerController : Controller
     {
         private readonly IReservationService _reservationService;
@@ -69,7 +70,6 @@ namespace Project3_Travelin.Controllers
 
             var tour = await _tourService.GetTourByIdAsync(res.TourId);
 
-            // Rehberi kendi tablosundan ID ile çekiyoruz
             var guide = (tour != null && !string.IsNullOrEmpty(tour.GuideId))
                         ? await _guideService.GetGuideByIdAsync(tour.GuideId)
                         : null;
@@ -83,7 +83,6 @@ namespace Project3_Travelin.Controllers
                 customerName = res.CustomerName,
                 customerPhone = res.CustomerPhone,
 
-                // Rehber bilgileri (guide nesnesinden geliyor)
                 guideName = guide?.Name ?? "Rehber Atanmadı",
                 guideTitle = guide?.Title ?? "Tur Rehberi",
                 guideImage = guide?.ImageUrl ?? "/images/default-guide.png"
@@ -91,10 +90,38 @@ namespace Project3_Travelin.Controllers
             return Json(result);
 
         }
+
+        [HttpGet]
         public async Task<IActionResult> Profile()
         {
             var user = await _userManager.FindByNameAsync(User.Identity.Name);
-            return View(user);
+            var updateUserDto = new UpdateUserDTO
+            {
+                FullName = user.FullName,
+                UserName = user.UserName,
+                Email = user.Email,
+                PhoneNumber = user.PhoneNumber
+            };
+            return View(updateUserDto);
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> Profile(UpdateUserDTO p)
+        {
+            var user = await _userManager.FindByNameAsync(User.Identity.Name);
+
+            user.FullName = p.FullName;
+            user.Email = p.Email;
+            user.PhoneNumber = p.PhoneNumber;
+
+            var result = await _userManager.UpdateAsync(user);
+            if (result.Succeeded)
+            {
+                TempData["ProfileUpdateSuccess"] = "true";
+                return RedirectToAction("Profile");
+            }
+
+            return View(p);
         }
 
         public IActionResult MyReviews()

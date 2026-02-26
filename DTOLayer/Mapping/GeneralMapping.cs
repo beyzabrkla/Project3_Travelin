@@ -1,5 +1,4 @@
 ﻿using AutoMapper;
-using DTOLayer.DTOs.CategoryDTOs;
 using DTOLayer.DTOs.CommentDTOs;
 using DTOLayer.DTOs.GuideDTOs;
 using DTOLayer.DTOs.ReservationDTOs;
@@ -13,11 +12,6 @@ namespace DTOLayer.Mapping
     {
         public GeneralMapping() //mapleme işlemi için constructor
         {
-            //Category
-            CreateMap<Category,CreateCategoryDTO>().ReverseMap(); 
-            CreateMap<Category,ResultCategoryDTO>().ReverseMap();
-            CreateMap<Category,UpdateCategoryDTO>().ReverseMap();
-            CreateMap<Category,GetCategoryByIdDTO>().ReverseMap();
 
             //Tour
             CreateMap<Tour, CreateTourDTO>().ReverseMap();

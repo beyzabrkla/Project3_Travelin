@@ -4,106 +4,118 @@
     Layout = "~/Views/Shared/_CustomerLayout.cshtml";
 }
 
-<div class="page-header d-flex justify-content-between align-items-center mb-4">
+<div class="page-header d-flex flex-wrap justify-content-between align-items-center mb-4 gap-3">
     <div>
-        <h1 class="page-title fs-3 fw-bold">Rezervasyonlarım</h1>
+        <h1 class="page-title fs-3 fw-bold mb-0">Rezervasyonlarım</h1>
         <nav aria-label="breadcrumb">
-            <ol class="breadcrumb">
-                <li class="breadcrumb-item"><a href="/Customer/Dashboard">Panel</a></li>
-                <li class="breadcrumb-item active" aria-current="page">Rezervasyonlarım</li>
+            <ol class="breadcrumb mb-0">
+                <li class="breadcrumb-item"><a href="/Customer/Dashboard" class="text-decoration-none">Panel</a></li>
+                <li class="breadcrumb-item active text-white" aria-current="page">Rezervasyonlarım</li>
             </ol>
         </nav>
     </div>
-    <a href="/Reservation/NewReservation" class="btn btn-brand d-flex align-items-center gap-2" style="background-color: #6366f1; border:none; border-radius: 8px; padding: 10px 20px;">
-        <i class="bi bi-plus-lg me-2"></i>Yeni Rezervasyon
-    </a>
+
+    <div class="d-flex align-items-center gap-3">
+        <div class="filter-wrapper d-flex p-1" style="background: rgba(255,255,255,0.05); border-radius: 12px; border: 1px solid rgba(255,255,255,0.1);">
+            <button type="button" class="filter-btn active" onclick="filterTable('all', this)">
+                <i class="bi bi-grid-fill me-1"></i> Hepsi
+            </button>
+            <button type="button" class="filter-btn" onclick="filterTable('approved', this)">
+                <i class="bi bi-check-circle-fill me-1"></i> Onaylananlar
+            </button>
+            <button type="button" class="filter-btn" onclick="filterTable('pending', this)">
+                <i class="bi bi-hourglass-split me-1"></i> Bekleyenler
+            </button>
+        </div>
+
+        <a href="/Reservation/NewReservation" class="btn btn-brand btn-new-res">
+            <i class="bi bi-plus-lg me-2"></i>Yeni Rezervasyon
+        </a>
+    </div>
 </div>
 
-<div class="card border-0 shadow-sm" style="border-radius: 16px; overflow: hidden;">
-    <div class="card-header bg-white py-3 border-bottom border-light">
+<div class="card border-0 shadow-sm" style="border-radius: 16px; overflow: hidden; background: #1a1a1a;">
+    <div class="card-header bg-transparent py-3 border-bottom border-secondary">
         <div class="d-flex align-items-center justify-content-between">
-            <h5 class="mb-0 fw-bold" style="color: #1a202c;">
-                <i class="bi bi- luggage-fill me-2 text-primary"></i>Güncel Talepleriniz
+            <h5 class="mb-0 fw-bold text-white">
+                <i class="bi bi-luggage-fill me-2" style="color: var(--theme-pink);"></i>Güncel Talepleriniz
             </h5>
-            <span class="badge bg-light text-dark rounded-pill px-3">Toplam @Model.Count Kayıt</span>
+            <span class="badge rounded-pill px-3" id="recordCount" style="background: rgba(217, 70, 239, 0.2); color: var(--theme-pink);">
+                Toplam @Model.Count Kayıt
+            </span>
         </div>
     </div>
 
     @if (Model == null || !Model.Any())
     {
         <div class="text-center py-5">
-            <div class="mb-3">
-                <i class="bi bi-calendar-x text-muted" style="font-size: 4rem; opacity: 0.3;"></i>
-            </div>
-            <h5 class="text-muted">Henüz bir rezervasyonunuz bulunmuyor.</h5>
-            <p class="small text-muted mb-4">Dünyayı keşfetmek için ilk adımınızı atın!</p>
-            <a href="/Home/Index" class="btn btn-outline-primary rounded-pill px-4">Turları İncele</a>
+            <i class="bi bi-calendar-x text-muted" style="font-size: 4rem; opacity: 0.3;"></i>
+            <h5 class="text-muted mt-3">Henüz bir rezervasyonunuz bulunmuyor.</h5>
+            <a href="/Home/Index" class="btn btn-outline-light rounded-pill px-4 mt-3">Turları İncele</a>
         </div>
     }
     else
     {
         <div class="table-responsive">
-            <table class="table table-hover align-middle mb-0">
-                <thead class="bg-light">
-                    <tr>
-                        <th class="ps-4 border-0 text-uppercase small fw-bold text-muted">Tur Bilgisi</th>
-                        <th class="border-0 text-uppercase small fw-bold text-muted">Kişi</th>
-                        <th class="border-0 text-uppercase small fw-bold text-muted">İletişim</th>
-                        <th class="border-0 text-uppercase small fw-bold text-muted">Durum</th>
-                        <th class="text-end pe-4 border-0 text-uppercase small fw-bold text-muted">İşlem</th>
+            <table class="table table-dark table-hover align-middle mb-0" id="reservationTable">
+                <thead>
+                    <tr class="text-muted small text-uppercase">
+                        <th class="ps-4 border-0">Tur Bilgisi</th>
+                        <th class="border-0">Kişi</th>
+                        <th class="border-0">Durum</th>
+                        <th class="text-end pe-4 border-0">İşlem / Belge</th>
                     </tr>
                 </thead>
                 <tbody>
                     @foreach (var item in Model)
                     {
-                        <tr>
+                        <tr class="res-row" data-status="@item.Status?.ToLower()">
                             <td class="ps-4">
                                 <div class="d-flex align-items-center">
-                                    <div class="icon-box me-3" style="width:45px; height:45px; background: rgba(99, 102, 241, 0.1); border-radius:10px; display:grid; place-items:center; color:#6366f1;">
-                                        <i class="bi bi-map-fill"></i>
+                                    <div class="icon-box me-3">
+                                        <i class="bi bi-geo-alt-fill"></i>
                                     </div>
                                     <div>
-                                        <div class="fw-bold text-dark">@item.TourTitle</div>
-                                        <div class="small text-muted">Tur ID: @item.TourId.ToString().Substring(0, 8)...</div>
+                                        <div class="fw-bold text-white">@item.TourTitle</div>
+                                        @* Tablo içi tarih rengi iyileştirildi *@
+                                        <div class="small text-white-50">@item.ReservationDate.ToString("dd MMM yyyy")</div>
                                     </div>
                                 </div>
                             </td>
                             <td>
-                                <span class="badge bg-light text-dark border px-3 py-2" style="border-radius:8px;">
-                                    <i class="bi bi-people-fill me-2"></i>@item.PersonCount Kişi
-                                </span>
+                                <span class="badge bg-dark text-light border border-secondary px-2 py-1">@item.PersonCount Kişi</span>
                             </td>
                             <td>
-                                <div class="small fw-semibold">@item.CustomerPhone</div>
-                                <div class="small text-muted">@item.CustomerEmail</div>
-                            </td>
-                            <td>
-                                @if (item.Status?.ToLower() == "pending" || string.IsNullOrEmpty(item.Status))
+                                @if (item.Status?.ToLower() == "approved")
                                 {
-                                    <span class="badge px-3 py-2" style="background: rgba(245, 158, 11, 0.1); color: #f59e0b; border-radius: 8px;">
-                                        <i class="bi bi-clock-history me-1"></i>Onay Bekliyor
+                                    <span class="status-badge status-approved">
+                                        <i class="bi bi-check-circle-fill me-1"></i> Onaylandı
                                     </span>
                                 }
-                                else if (item.Status?.ToLower() == "approved")
+                                else if (item.Status?.ToLower() == "pending")
                                 {
-                                    <span class="badge px-3 py-2" style="background: rgba(16, 185, 129, 0.1); color: #10b981; border-radius: 8px;">
-                                        <i class="bi bi-check2-circle me-1"></i>Onaylandı
+                                    <span class="status-badge status-pending">
+                                        <i class="bi bi-hourglass-split me-1"></i> Beklemede
                                     </span>
                                 }
                                 else
                                 {
-                                    <span class="badge px-3 py-2" style="background: rgba(239, 68, 68, 0.1); color: #ef4444; border-radius: 8px;">
-                                        <i class="bi bi-x-circle me-1"></i>İptal Edildi
+                                    <span class="status-badge status-rejected">
+                                        <i class="bi bi-x-circle-fill me-1"></i> İptal
                                     </span>
                                 }
                             </td>
                             <td class="text-end pe-4">
-                                <div class="btn-group shadow-sm" style="border-radius: 8px; overflow: hidden;">
-                                    <a href="/Reservation/Details/@item.ReservationId" class="btn btn-white btn-sm border-end" title="Detay">
-                                        <i class="bi bi-info-circle text-primary"></i>
-                                    </a>
-                                    <button type="button" class="btn btn-white btn-sm" onclick="cancelReservation('@item.ReservationId')" title="İptal Et" @(item.Status == "Approved" ? "disabled" : "")>
-                                        <i class="bi bi-trash text-danger"></i>
+                                @if (item.Status?.ToLower() == "approved")
+                                {
+                                    @* PDF yerine Şık Dijital Bilet Modalı *@
+                                    <button onclick="showDigitalTicket('@item.ReservationId')" class="btn btn-sm btn-pdf me-2">
+                                        <i class="bi bi-ticket-perforated-fill me-1"></i> Bileti Gör
+                                    </button>
+                                }
+                                <div class="btn-group">
+                                    <button class="btn btn-outline-danger btn-sm" onclick="cancelReservation('@item.ReservationId')" @(item.Status?.ToLower() == "approved" ? "disabled" : "")>
+                                        <i class="bi bi-trash"></i>
                                     </button>
                                 </div>
                             </td>
@@ -116,12 +128,187 @@
 </div>
 
 @section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>
+        function showDigitalTicket(id) {
+            // Yükleniyor bildirimi
+            Swal.fire({
+                title: 'Biletiniz Hazırlanıyor',
+                html: 'Bilgiler getiriliyor...',
+                allowOutsideClick: false,
+                didOpen: () => { Swal.showLoading(); }
+            });
+
+            fetch(`/Reservation/GetReservationDetails/${id}`)
+                .then(response => response.json())
+                .then(data => {
+                    Swal.fire({
+                        background: '#1a1a1a',
+                        showConfirmButton: true,
+                        confirmButtonText: 'Kapat',
+                        confirmButtonColor: '#d946ef',
+                        width: '450px',
+                        html: `
+                            <div style="text-align: left; border: 2px dashed #d946ef; padding: 25px; border-radius: 20px; color: white;">
+                                <div style="text-align: center; margin-bottom: 20px;">
+                                    <h4 style="color: #d946ef; font-weight: 800; letter-spacing: 2px; margin: 0;">TRAVELIN TICKET</h4>
+                                    <small style="color: #fff; opacity: 0.6;">Dijital Onay Belgesi</small>
+                                </div>
+
+                                <div style="margin-bottom: 20px;">
+                                    <small style="color: #d946ef; font-weight: bold;">📍 TUR ADI</small><br>
+                                    <span style="font-size: 1.1rem; font-weight: bold; color: #fff;">${data.title}</span>
+                                </div>
+
+                                <div style="display: flex; justify-content: space-between; margin-bottom: 20px; background: rgba(255,255,255,0.05); padding: 15px; border-radius: 12px;">
+                                    <div>
+                                        <small style="color: #d946ef; font-weight: bold;">📅 TARİH</small><br>
+                                        <span style="color: #ffffff; font-weight: bold; font-size: 1rem;">${data.date}</span>
+                                    </div>
+                                    <div style="text-align: right;">
+                                        <small style="color: #d946ef; font-weight: bold;">👥 MİSAFİR</small><br>
+                                        <span style="color: #ffffff; font-weight: bold; font-size: 1rem;">${data.person} Kişi</span>
+                                    </div>
+                                </div>
+
+                                <div style="margin-bottom: 20px; padding: 0 5px;">
+                                    <small style="color: #d946ef; font-weight: bold;">👤 YOLCU</small><br>
+                                    <span style="color: #fff; font-size: 1rem;">${data.customer}</span>
+                                </div>
+
+                                <div style="background: rgba(217, 70, 239, 0.1); border: 1px solid rgba(217, 70, 239, 0.3); padding: 12px; border-radius: 12px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center;">
+                                    <div>
+                                        <small style="color: #fff; opacity: 0.8; display: block; line-height: 1;">TOPLAM ÖDEME</small>
+                                        <small style="font-size: 0.7rem; color: #d946ef;">${data.unitPrice} x ${data.person}</small>
+                                    </div>
+                                    <span style="font-size: 1.4rem; font-weight: 800; color: #d946ef;">${data.totalPrice}</span>
+                                </div>
+
+                                <div style="display: flex; align-items: center; background: rgba(255,255,255,0.03); padding: 12px; border-radius: 15px; margin-bottom: 20px;">
+                                    <img src="${data.guideImage}" style="width: 45px; height: 45px; border-radius: 50%; border: 2px solid #d946ef; margin-right: 15px; object-fit: cover;" />
+                                    <div>
+                                        <small style="color: #d946ef; font-weight: bold; font-size: 0.7rem;">TUR REHBERİ</small><br>
+                                        <span style="color: #fff; font-weight: 600;">${data.guide}</span>
+                                    </div>
+                                </div>
+
+                                <div style="text-align: center; border-top: 1px solid rgba(255,255,255,0.1); pt-3">
+                                    <img src="https://api.qrserver.com/v1/create-qr-code/?size=100x100&data=${id}&color=d946ef&bgcolor=1a1a1a" style="margin: 15px 0; border: 2px solid #d946ef; padding: 5px; border-radius: 10px;" />
+                                    <p style="font-size: 0.6rem; color: #666; margin: 0;">PNR: ${id.toUpperCase()}</p>
+                                </div>
+                            </div>
+                        `
+                    });
+                });
+        }
+
+        function filterTable(status, btn) {
+            const rows = document.querySelectorAll('.res-row');
+            let count = 0;
+            rows.forEach(row => {
+                const rowStatus = row.getAttribute('data-status');
+                if (status === 'all' || rowStatus === status) {
+                    row.style.display = '';
+                    count++;
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+            document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            document.getElementById('recordCount').innerText = `Filtrelendi: ${count} Kayıt`;
+        }
+
         function cancelReservation(id) {
-            // Buraya tatlı bir SweetAlert veya confirm kutusu ekleyebilirsin
-            if(confirm("Bu rezervasyon talebini iptal etmek istediğinize emin misiniz?")) {
-                window.location.href = "/Reservation/Cancel/" + id;
-            }
+            Swal.fire({
+                title: 'Emin misiniz?',
+                text: "Bu rezervasyon iptal edilecek!",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                cancelButtonColor: '#3085d6',
+                confirmButtonText: 'Evet, iptal et!',
+                cancelButtonText: 'Vazgeç'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    window.location.href = "/Reservation/Cancel/" + id;
+                }
+            });
         }
     </script>
 }
+
+<style>
+    :root {
+        --theme-pink: #d946ef;
+    }
+
+    .filter-btn {
+        background: transparent;
+        border: none;
+        color: #a0aec0;
+        padding: 8px 16px;
+        border-radius: 10px;
+        font-weight: 600;
+        font-size: 0.85rem;
+        transition: all 0.3s ease;
+    }
+
+        .filter-btn.active {
+            background: var(--theme-pink) !important;
+            color: white !important;
+            box-shadow: 0 4px 12px rgba(217, 70, 239, 0.3);
+        }
+
+    .btn-new-res {
+        background-color: var(--theme-pink);
+        color: white;
+        border-radius: 10px;
+        padding: 10px 20px;
+        font-weight: 700;
+    }
+
+    .icon-box {
+        width: 40px;
+        height: 40px;
+        background: rgba(217, 70, 239, 0.1);
+        border-radius: 8px;
+        display: grid;
+        place-items: center;
+        color: var(--theme-pink);
+    }
+
+    .status-badge {
+        padding: 6px 12px;
+        border-radius: 8px;
+        font-size: 0.8rem;
+        font-weight: 600;
+    }
+
+    .status-approved {
+        background: rgba(16, 185, 129, 0.1);
+        color: #10b981;
+    }
+
+    .status-pending {
+        background: rgba(245, 158, 11, 0.1);
+        color: #f59e0b;
+    }
+
+    .status-rejected {
+        background: rgba(239, 68, 68, 0.1);
+        color: #ef4444;
+    }
+
+    .btn-pdf {
+        background: rgba(217, 70, 239, 0.1);
+        color: var(--theme-pink);
+        border: 1px solid rgba(217, 70, 239, 0.2);
+        font-weight: 600;
+    }
+
+        .btn-pdf:hover {
+            background: var(--theme-pink);
+            color: white;
+        }
+</style>
