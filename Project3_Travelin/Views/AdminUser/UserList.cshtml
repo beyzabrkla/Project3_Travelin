@@ -1,0 +1,263 @@
+﻿@using EntityLayer
+@model List<AppUser>
+@{
+    ViewData["Title"] = "Kullanıcılar";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+
+    var allUsers = Model ?? new List<AppUser>();
+    int totalCount = allUsers.Count;
+    int activeCount = allUsers.Count(u => u.IsActive);
+    int inactiveCount = allUsers.Count(u => !u.IsActive);
+    int guideCount = allUsers.Count(u => u.Role == "Guide");
+
+    string q = Context.Request.Query["q"];
+    string role = Context.Request.Query["role"];
+    string status = Context.Request.Query["status"];
+
+    var filtered = allUsers.AsEnumerable();
+    if (!string.IsNullOrEmpty(q))
+        filtered = filtered.Where(u =>
+            (u.FullName != null && u.FullName.Contains(q, StringComparison.OrdinalIgnoreCase)) ||
+            (u.Email != null && u.Email.Contains(q, StringComparison.OrdinalIgnoreCase)) ||
+            (u.UserName != null && u.UserName.Contains(q, StringComparison.OrdinalIgnoreCase)));
+
+    if (!string.IsNullOrEmpty(role))
+        filtered = filtered.Where(u => u.Role == role);
+   
+        if (status == "active")
+        filtered = filtered.Where(u => u.IsActive);
+    
+        else if (status == "passive")
+        filtered = filtered.Where(u => !u.IsActive);
+
+    var filteredList = filtered.OrderByDescending(u => u.CreatedAt).ToList();
+
+    if (!string.IsNullOrEmpty(role))
+        filtered = filtered.Where(u => u.Role == role);
+
+    if (status == "active")
+    {
+        filtered = filtered.Where(u => u.IsActive == true);
+    }
+    else if (status == "passive")
+    {
+        filtered = filtered.Where(u => u.IsActive == false);
+    }
+}
+
+<div class="page-header">
+    <div>
+        <h1 class="page-title">Kullanıcı Yönetimi</h1>
+        <nav aria-label="breadcrumb" class="mt-2">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="#">Admin</a></li>
+                <li class="breadcrumb-item active">Kullanıcılar</li>
+            </ol>
+        </nav>
+    </div>
+</div>
+
+<div class="stat-pills mb-4">
+    <div class="stat-pill">
+        <div class="stat-pill-icon pill-purple"><i class="bi bi-people"></i></div>
+        <div><div class="stat-pill-val">@totalCount</div><div class="stat-pill-lbl">Toplam</div></div>
+    </div>
+    <div class="stat-pill">
+        <div class="stat-pill-icon pill-green"><i class="bi bi-person-check"></i></div>
+        <div><div class="stat-pill-val">@activeCount</div><div class="stat-pill-lbl">Aktif</div></div>
+    </div>
+    <div class="stat-pill">
+        <div class="stat-pill-icon pill-yellow"><i class="bi bi-megaphone"></i></div>
+        <div><div class="stat-pill-val">@guideCount</div><div class="stat-pill-lbl">Rehber</div></div>
+    </div>
+</div>
+
+<div class="row g-3">
+    <div class="col-md-3 col-lg-2">
+        <div class="table-card p-3 mb-3">
+            <div class="sidebar-section-title" style="font-size: 0.75rem; color: #a0aec0; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 1rem; font-weight: 700;">Rol Filtresi</div>
+            <div class="status-sidebar">
+                <a href="?q=@q&role=&status=" class="status-link @(string.IsNullOrEmpty(role) ? "active" : "")">
+                    <i class="bi bi-grid"></i> Tümü
+                    <span class="badge rounded-pill bg-light text-dark float-end">@totalCount</span>
+                </a>
+                <a href="?q=@q&status=@status&role=Guide" class="status-link @(role == "Guide" ? "active" : "")">
+                    <i class="bi bi-award text-warning"></i> Rehberler
+                    <span class="badge rounded-pill bg-light text-dark float-end">@guideCount</span>
+                </a>
+                <a href="?q=@q&status=@status&role=Admin" class="status-link @(role == "Admin" ? "active" : "")">
+                    <i class="bi bi-shield-lock text-primary"></i> Adminler
+                    <span class="badge rounded-pill bg-light text-dark float-end">@allUsers.Count(u => u.Role == "Admin")</span>
+                </a>
+                <a href="?q=@q&status=@status&role=Customer" class="status-link @(role == "Customer" ? "active" : "")">
+                    <i class="bi bi-person"></i> Müşteriler
+                    <span class="badge rounded-pill bg-light text-dark float-end">@allUsers.Count(u => u.Role == "Customer")</span>
+                </a>
+            </div>
+
+            <div class="sidebar-section-title mt-4" style="font-size: 0.75rem; color: #a0aec0; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 1rem; font-weight: 700;">Durum</div>
+            <div class="status-sidebar">
+                <a href="?q=@q&role=@role&status=active" class="status-link @(status == "active" ? "active" : "")">
+                    <i class="bi bi-check-circle text-success"></i> Aktifler
+                </a>
+                <a href="?q=@q&role=@role&status=passive" class="status-link @(status == "passive" ? "active" : "")">
+                    <i class="bi bi-x-circle text-danger"></i> Pasifler
+                </a>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-9 col-lg-10">
+        <div class="table-card">
+            <div class="table-card-header d-flex justify-content-between align-items-center p-3">
+                <div class="title fw-bold">
+                    <i class="bi bi-list-stars me-2"></i>Kullanıcı Listesi
+                    <span class="badge bg-light text-dark ms-2">@filteredList.Count Kayıt</span>
+                </div>
+            </div>
+
+            <div class="table-responsive">
+                <table class="tours-table w-100">
+                    <thead>
+                        <tr>
+                            <th>Kullanıcı Bilgisi</th>
+                            <th>E-posta</th>
+                            <th>Rol</th>
+                            <th>Durum</th>
+                            <th class="text-end pe-4">İşlemler</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var user in filteredList)
+                        {
+                            var initials = user.FullName?.Length > 0
+                            ? string.Concat(user.FullName.Split(' ').Take(2).Select(w => w[0].ToString().ToUpper()))
+                            : user.UserName?.Substring(0, 1).ToUpper();
+
+                            <tr>
+                                <td>
+                                    <div class="d-flex align-items-center gap-3">
+                                        <div class="user-avatar bg-primary text-white d-flex align-items-center justify-content-center"
+                                             style="width:38px; height:38px; border-radius:10px; font-weight:600; font-size:0.8rem;">
+                                            @initials
+                                        </div>
+                                        <div>
+                                            <div class="fw-bold" style="font-size:0.9rem; color:#2d3748;">@user.FullName</div>
+                                            <div class="text-muted" style="font-size:0.75rem;">@@@user.UserName</div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td><span style="font-size:0.85rem;">@user.Email</span></td>
+                                <td>
+                                    @if (user.Role == "Guide")
+                                    {
+                                        <span class="badge" style="background:#fffaf0; color:#9c4221; border:1px solid #feebc8;">
+                                            <i class="bi bi-megaphone-fill me-1"></i> REHBER
+                                        </span>
+                                    }
+                                    else if (user.Role == "Admin")
+                                    {
+                                        <span class="badge bg-soft-primary" style="background:#ebf8ff; color:#2b6cb0; border:1px solid #bee3f8;">
+                                            <i class="bi bi-shield-lock-fill me-1"></i> ADMİN
+                                        </span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-light text-secondary border">Müşteri</span>
+                                    }
+                                </td>
+                                <td>
+                                    @if (user.IsActive)
+                                    {
+                                        <span class="text-success small fw-bold"><i class="bi bi-circle-fill me-1" style="font-size:0.5rem;"></i> Aktif</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="text-danger small fw-bold"><i class="bi bi-circle-fill me-1" style="font-size:0.5rem;"></i> Pasif</span>
+                                    }
+                                </td>
+                                <td class="text-end pe-4">
+                                    <div class="d-flex justify-content-end gap-1">
+
+                                        @if (user.Role == "Customer")
+                                        {
+                                            <form method="post" asp-action="AddRole" asp-controller="AdminUser">
+                                                @Html.AntiForgeryToken()
+                                                <input type="hidden" name="userId" value="@user.Id" /><input type="hidden" name="roleName" value="Guide" />
+                                                <button type="submit" class="btn btn-sm btn-outline-warning" title="Rehber Yetkisi Ver"><i class="bi bi-award"></i></button>
+                                            </form>
+                                        }
+                                        else if (user.Role == "Guide")
+                                        {
+                                            <form method="post" asp-action="RemoveRole" asp-controller="AdminUser">
+                                                @Html.AntiForgeryToken()
+                                                <input type="hidden" name="userId" value="@user.Id" /><input type="hidden" name="roleName" value="Guide" />
+                                                <button type="submit" class="btn btn-sm btn-warning text-white" title="Rehber Yetkisini Al"><i class="bi bi-person-dash"></i></button>
+                                            </form>
+                                        }
+
+                                        <form method="post" asp-action="@(user.IsActive ? "DeactivateUser" : "ActivateUser")" asp-controller="AdminUser">
+                                            @Html.AntiForgeryToken()
+                                            <input type="hidden" name="userId" value="@user.Id" />
+                                            <button type="submit" class="btn btn-sm @(user.IsActive ? "btn-outline-success" : "btn-outline-secondary")"
+                                                    title="@(user.IsActive ? "Kullanıcıyı Durdur" : "Kullanıcıyı Başlat")">
+                                                <i class="bi @(user.IsActive ? "bi-toggle-on" : "bi-toggle-off")"></i>
+                                            </button>
+                                        </form>
+
+                                        @if (user.Role == "Guide")
+                                        {
+                                            <a asp-action="RedirectToGuideUpdate" asp-route-fullName="@user.FullName"
+                                               class="btn btn-sm btn-outline-warning" title="Rehber Detay">
+                                                <i class="bi bi-person-badge-fill"></i>
+                                            </a>
+                                        }
+                                        else
+                                        {
+                                            <a asp-action="UserDetails" asp-route-userId="@user.Id"
+                                               class="btn btn-sm btn-outline-info" title="Profil">
+                                                <i class="bi bi-eye"></i>
+                                            </a>
+                                        }
+                                        <button type="button" class="btn btn-sm btn-outline-danger"
+                                                onclick="confirmDelete('@user.Id','@Html.Raw(System.Web.HttpUtility.JavaScriptStringEncode(user.FullName ?? user.UserName))')" title="Kullanıcıyı Sil">
+                                            <i class="bi bi-trash3"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="deleteModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" style="max-width:400px">
+        <div class="modal-content border-0 shadow">
+            <div class="modal-body p-4 text-center">
+                <div class="mb-3 text-danger" style="font-size:3rem;"><i class="bi bi-exclamation-octagon"></i></div>
+                <h5 class="fw-bold">Emin misiniz?</h5>
+                <p class="text-muted small" id="deleteModalBody"></p>
+                <div class="d-flex gap-2 mt-4">
+                    <button type="button" class="btn btn-light w-100" data-bs-dismiss="modal">Vazgeç</button>
+                    <form id="deleteForm" method="post" class="w-100">
+                        @Html.AntiForgeryToken()
+                        <button type="submit" class="btn btn-danger w-100">Kullanıcıyı Sil</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        function confirmDelete(userId, name) {
+            document.getElementById('deleteModalBody').textContent = '"' + name + '" kullanıcısının tüm verileri silinecek.';
+            document.getElementById('deleteForm').action = '/AdminUser/DeleteUser/' + userId;
+            new bootstrap.Modal(document.getElementById('deleteModal')).show();
+        }
+    </script>
+}

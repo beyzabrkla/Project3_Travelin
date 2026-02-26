@@ -83,18 +83,15 @@ namespace Project3_Travelin.Controllers
             var result = await _userManager.CreateAsync(user, password_name);
             if (result.Succeeded)
             {
-                // Yeni kayıt olanı Customer rolüne ata
                 await _userManager.AddToRoleAsync(user, "Customer");
                 await _signInManager.SignInAsync(user, isPersistent: true);
                 TempData["RegisterSuccess"] = "Kayıt başarılı! Rezervasyon yapabilirsiniz.";
-                // Kayıttan sonra direkt dashboard'a gönderelim
                 return RedirectToAction("Dashboard", "Customer");
             }
             TempData["RegisterError"] = string.Join(" ", result.Errors.Select(e => e.Description));
             return RedirectToAction("Index", "Home");
         }
 
-        // ==================== ADMIN GİRİŞ ====================
         [HttpPost]
         public async Task<IActionResult> AdminLogin(string user_name, string password_name)
         {
@@ -108,17 +105,6 @@ namespace Project3_Travelin.Controllers
                 return RedirectToAction("Index", "Home");
             }
 
-            // Eğer senin kullanıcı adın buysa, veritabanında Admin rolü yoksa bile ekle.
-            if (user.UserName == "bbeym") // Buraya kendi kullanıcı adını yaz!
-            {
-                var roles = await _userManager.GetRolesAsync(user);
-                if (!roles.Contains("Admin"))
-                {
-                    await _userManager.AddToRoleAsync(user, "Admin");
-                }
-            }
-
-            // Rol kontrolünü MongoDB'deki olası hatalara karşı biraz daha esnetelim
             var isAdmin = await _userManager.IsInRoleAsync(user, "Admin");
             if (!isAdmin)
             {
@@ -133,7 +119,6 @@ namespace Project3_Travelin.Controllers
                 return RedirectToAction("Index", "Home");
             }
 
-            // lockoutOnFailure: false yaparak çok fazla denemede hesabın kilitlenmesini önlüyoruz
             var result = await _signInManager.PasswordSignInAsync(user, password_name, isPersistent: true, lockoutOnFailure: false);
 
             if (result.Succeeded)
@@ -141,7 +126,6 @@ namespace Project3_Travelin.Controllers
                 return RedirectToAction("TourList", "AdminTour");
             }
 
-            // Eğer şifre doğru ama yine de girmiyorsa (MongoDB SecurityStamp hatası olabilir)
             if (result.IsNotAllowed)
             {
                 TempData["AdminLoginError"] = "Giriş izni verilmedi (Email onayı gerekebilir veya hesap kilitli).";
@@ -154,7 +138,6 @@ namespace Project3_Travelin.Controllers
             return RedirectToAction("Index", "Home");
         }
 
-        // ==================== ADMIN KAYIT ====================
         [HttpPost]
         public async Task<IActionResult> AdminRegister(string user_name, string user_email, string password_name, string repassword_name)
         {
@@ -194,7 +177,6 @@ namespace Project3_Travelin.Controllers
             return RedirectToAction("Index", "Home");
         }
 
-        // ==================== LOGOUT ====================
         public async Task<IActionResult> Logout()
         {
             await _signInManager.SignOutAsync();

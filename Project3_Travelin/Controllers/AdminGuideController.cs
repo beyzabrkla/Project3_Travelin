@@ -46,7 +46,6 @@ namespace Project3_Travelin.Controllers
             return View(new CreateGuideDTO { Status = true});
         }
 
-        // ==================== YENİ REHBER EKLEME (POST) ====================
         [HttpPost]
         public async Task<IActionResult> CreateGuide(CreateGuideDTO createGuideDTO)
         {
@@ -67,7 +66,6 @@ namespace Project3_Travelin.Controllers
             var guide = await _guideService.GetGuideByIdAsync(id);
             if (guide == null) return NotFound();
 
-            // Senin UpdateGuideDTO yapına göre mapping yapıyoruz
             var updateDto = new UpdateGuideDTO
             {
                 GuideId = guide.GuideId,

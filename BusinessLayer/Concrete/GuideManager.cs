@@ -56,5 +56,14 @@ namespace BusinessLayer.Concrete
                 await _guideDal.UpdateAsync(guide);
             }
         }
+        public async Task DeleteGuideAsync(string id)
+        {
+            var values = await _guideDal.GetByIdAsync(id);
+
+            if (values != null)
+            {
+                await _guideDal.DeleteAsync(values.GuideId);
+            }
+        }
     }
 }

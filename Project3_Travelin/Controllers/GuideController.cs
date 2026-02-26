@@ -21,24 +21,6 @@ namespace Project3_Travelin.Controllers
             _userManager = userManager;
         }
 
-        // ==================== REHBER LİSTESİ (PUBLIC) ====================
-        [Authorize(Roles = "Admin")]
-        [HttpGet]
-        public async Task<IActionResult> GuideList()
-        {
-            try
-            {
-                var values = await _guideService.GetAllGuideAsync();
-                return View(values);
-            }
-            catch (Exception ex)
-            {
-                TempData["Error"] = "Rehber listesi yüklenemedi: " + ex.Message;
-                return RedirectToAction("Index", "Home");
-            }
-        }
-
-        // ==================== REHBER YAP (ADMIN) ====================
         [Authorize(Roles = "Admin")]
         [HttpPost]
         public async Task<IActionResult> AssignGuideRole(string userId)
@@ -52,7 +34,7 @@ namespace Project3_Travelin.Controllers
             {
                 var createGuideDTO = new CreateGuideDTO
                 {
-                    UserId = user.Id.ToString(), // Guid ise ToString() ekledik
+                    UserId = user.Id.ToString(),
                     Name = user.FullName,
                     Status = true,
                };

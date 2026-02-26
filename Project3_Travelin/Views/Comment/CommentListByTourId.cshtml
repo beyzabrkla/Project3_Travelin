@@ -1,0 +1,740 @@
+﻿@model List<ResultCommentListByTourIdDTO>
+@{
+    var tourName = ViewBag.TourName as string ?? "Tur Adı";
+    var tourId = ViewBag.TourId as string ?? "";
+
+    ViewData["Title"] = tourName;   // ← Topbar'da tur adı görünür
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+
+    var allComments = Model ?? new List<ResultCommentListByTourIdDTO>();
+    var approvedComments = allComments.Where(c => c.IsStatus).ToList();
+    var pendingComments = allComments.Where(c => !c.IsStatus).ToList();
+    var totalCount = approvedComments.Count;
+    var avgScore = totalCount > 0 ? approvedComments.Average(c => c.Score) : 0.0;
+
+    int[] distrib = new int[6];
+    foreach (var c in approvedComments)
+        if (c.Score >= 1 && c.Score <= 5) distrib[c.Score]++;
+}
+
+<style>
+    /* ── Renk Değişkenleri ── */
+    :root {
+        --purple: #5d0473;
+        --purple-dark: #430354;
+        --purple-soft: #f5eaf8;
+        --yellow: #fdc703;
+        --yellow-soft: #fffbea;
+    }
+
+    /* ── Score Hero ── */
+    .score-hero {
+        background: linear-gradient(135deg, var(--purple-dark) 0%, var(--purple) 100%);
+        border-radius: 16px;
+        padding: 28px 32px;
+        color: #fff;
+        margin-bottom: 22px;
+        position: relative;
+        overflow: hidden;
+    }
+
+        .score-hero::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: radial-gradient(ellipse at 80% 0%, rgba(253,199,3,.18) 0%, transparent 60%);
+            pointer-events: none;
+        }
+
+    .score-hero-pattern {
+        position: absolute;
+        inset: 0;
+        opacity: .05;
+        background-image: repeating-linear-gradient(45deg,#fff 0,#fff 1px,transparent 0,transparent 50%);
+        background-size: 18px 18px;
+    }
+
+    .score-hero-inner {
+        position: relative;
+        z-index: 1;
+        display: flex;
+        align-items: center;
+        gap: 28px;
+        flex-wrap: wrap;
+    }
+
+    .big-score-num {
+        font-size: 68px;
+        font-weight: 700;
+        line-height: 1;
+        color: #fff;
+        letter-spacing: -2px;
+    }
+
+    .big-score-label {
+        font-size: 11px;
+        color: rgba(255,255,255,.5);
+        margin-top: 4px;
+        letter-spacing: 1px;
+        text-transform: uppercase;
+    }
+
+    .score-divider {
+        width: 1px;
+        height: 64px;
+        background: rgba(255,255,255,.2);
+        flex-shrink: 0;
+    }
+
+    .star-row {
+        display: flex;
+        gap: 3px;
+        margin-bottom: 5px;
+    }
+
+    .star-fill {
+        color: var(--yellow);
+        font-size: 17px;
+    }
+
+    .star-empty {
+        color: rgba(253,199,3,.25);
+        font-size: 17px;
+    }
+
+    .score-total {
+        font-size: 12px;
+        color: rgba(255,255,255,.5);
+    }
+
+    .distrib {
+        flex: 1;
+        min-width: 180px;
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+    }
+
+    .distrib-row {
+        display: flex;
+        align-items: center;
+        gap: 9px;
+    }
+
+    .distrib-label {
+        font-size: 11px;
+        color: rgba(255,255,255,.5);
+        width: 12px;
+        text-align: right;
+        flex-shrink: 0;
+    }
+
+    .distrib-bar-wrap {
+        flex: 1;
+        height: 5px;
+        background: rgba(255,255,255,.15);
+        border-radius: 99px;
+        overflow: hidden;
+    }
+
+    .distrib-bar {
+        height: 100%;
+        background: linear-gradient(90deg, var(--yellow), #ffe55a);
+        border-radius: 99px;
+        transition: width 1s cubic-bezier(.4,0,.2,1);
+    }
+
+    .distrib-count {
+        font-size: 10px;
+        color: rgba(255,255,255,.4);
+        width: 18px;
+        flex-shrink: 0;
+    }
+
+    /* ── Stat Pills ── */
+    .stat-pills {
+        display: flex;
+        gap: 12px;
+        flex-wrap: wrap;
+        margin-bottom: 22px;
+    }
+
+    .stat-pill {
+        background: #fff;
+        border-radius: 12px;
+        padding: 14px 18px;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        box-shadow: 0 2px 12px rgba(0,0,0,.07);
+        flex: 1;
+        min-width: 130px;
+    }
+
+    .stat-pill-icon {
+        width: 40px;
+        height: 40px;
+        border-radius: 10px;
+        display: grid;
+        place-items: center;
+        font-size: 18px;
+        flex-shrink: 0;
+    }
+
+    .pill-purple {
+        background: var(--purple-soft);
+        color: var(--purple);
+    }
+
+    .pill-green {
+        background: #f0fdf4;
+        color: #16a34a;
+    }
+
+    .pill-amber {
+        background: var(--yellow-soft);
+        color: #b45309;
+    }
+
+    .pill-yellow {
+        background: var(--yellow-soft);
+        color: #92660a;
+    }
+
+    .stat-pill-val {
+        font-size: 22px;
+        font-weight: 700;
+        color: #1a202c;
+        line-height: 1;
+    }
+
+    .stat-pill-lbl {
+        font-size: 12px;
+        color: #718096;
+        margin-top: 2px;
+    }
+
+    /* ── Filter Bar ── */
+    .comment-filter-bar {
+        background: #fff;
+        border-radius: 12px;
+        padding: 12px 18px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        flex-wrap: wrap;
+        box-shadow: 0 2px 12px rgba(0,0,0,.07);
+        margin-bottom: 16px;
+    }
+
+    .filter-chips {
+        display: flex;
+        gap: 7px;
+        flex-wrap: wrap;
+    }
+
+    .chip {
+        padding: 5px 13px;
+        border-radius: 100px;
+        font-size: 13px;
+        font-weight: 500;
+        cursor: pointer;
+        border: 1.5px solid #e2e8f0;
+        background: transparent;
+        color: #718096;
+        transition: all .2s;
+    }
+
+        .chip.active, .chip:hover {
+            background: var(--purple);
+            border-color: var(--purple);
+            color: #fff;
+        }
+
+    .sort-select {
+        padding: 6px 30px 6px 11px;
+        font-size: 13px;
+        border: 1.5px solid #e2e8f0;
+        border-radius: 8px;
+        background: transparent url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath fill='%23718096' d='M0 0l6 8 6-8z'/%3E%3C/svg%3E") no-repeat right 10px center;
+        appearance: none;
+        color: #2d3748;
+        cursor: pointer;
+    }
+
+    /* ── Section Label ── */
+    .section-label {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        font-size: 12px;
+        font-weight: 700;
+        color: #a0aec0;
+        text-transform: uppercase;
+        letter-spacing: .06em;
+        margin: 24px 0 14px;
+    }
+
+        .section-label::before, .section-label::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: #e2e8f0;
+        }
+
+    /* ── Comment Cards ── */
+    .comment-list {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+    }
+
+    .comment-card {
+        background: #fff;
+        border-radius: 14px;
+        box-shadow: 0 2px 12px rgba(0,0,0,.07);
+        padding: 20px 22px;
+        border-left: 3px solid transparent;
+        transition: border-color .25s, transform .2s, box-shadow .2s;
+    }
+
+        .comment-card:hover {
+            border-left-color: var(--purple);
+            transform: translateX(3px);
+            box-shadow: 0 4px 20px rgba(93,4,115,.1);
+        }
+
+        .comment-card.pending-card {
+            border-left-color: var(--yellow);
+        }
+
+    .card-top {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 12px;
+        margin-bottom: 11px;
+        flex-wrap: wrap;
+    }
+
+    .avatar {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 15px;
+        font-weight: 700;
+        color: #fff;
+        flex-shrink: 0;
+    }
+
+    .avatar-group {
+        display: flex;
+        align-items: center;
+        gap: 11px;
+    }
+
+    .commenter-name {
+        font-size: 14px;
+        font-weight: 600;
+        color: #1a202c;
+    }
+
+    .comment-meta {
+        font-size: 12px;
+        color: #a0aec0;
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        margin-top: 2px;
+    }
+
+    /* Score badge → sarı arka plan, koyu yazı */
+    .score-badge {
+        display: flex;
+        align-items: center;
+        gap: 5px;
+        background: var(--yellow);
+        color: #3b1a00;
+        padding: 4px 11px;
+        border-radius: 100px;
+        font-size: 12px;
+        font-weight: 700;
+        flex-shrink: 0;
+    }
+
+        .score-badge i {
+            color: #92660a;
+            font-size: 9px;
+        }
+
+    .mini-stars {
+        display: flex;
+        gap: 2px;
+    }
+
+        .mini-stars .s {
+            font-size: 12px;
+            color: var(--yellow);
+        }
+
+            .mini-stars .s.e {
+                color: #e2d9cc;
+            }
+
+    .comment-headline {
+        font-size: 15px;
+        font-weight: 700;
+        color: #1a202c;
+        margin-bottom: 5px;
+    }
+
+    .comment-body {
+        font-size: 14px;
+        line-height: 1.7;
+        color: #4a5568;
+    }
+
+        .comment-body.collapsed {
+            display: -webkit-box;
+            -webkit-line-clamp: 3;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+    .read-more {
+        display: inline-block;
+        margin-top: 5px;
+        font-size: 13px;
+        font-weight: 500;
+        color: var(--purple);
+        cursor: pointer;
+        background: none;
+        border: none;
+        padding: 0;
+    }
+
+        .read-more:hover {
+            text-decoration: underline;
+        }
+
+    .badge-pending {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        background: var(--yellow-soft);
+        color: #92660a;
+        border: 1px solid var(--yellow);
+        border-radius: 6px;
+        font-size: 11px;
+        font-weight: 500;
+        padding: 2px 8px;
+        margin-top: 7px;
+    }
+
+    /* ── Empty ── */
+    .comment-empty {
+        background: #fff;
+        border-radius: 14px;
+        box-shadow: 0 2px 12px rgba(0,0,0,.07);
+        padding: 48px 24px;
+        text-align: center;
+    }
+
+        .comment-empty i {
+            font-size: 38px;
+            color: var(--purple);
+            display: block;
+            margin-bottom: 14px;
+        }
+
+        .comment-empty h5 {
+            font-weight: 700;
+            color: #1a202c;
+            margin-bottom: 5px;
+        }
+
+        .comment-empty p {
+            font-size: 14px;
+            color: #718096;
+            margin: 0;
+        }
+</style>
+
+<!-- PAGE HEADER — başlık tur adı -->
+<div class="page-header">
+    <div>
+        <h1 class="page-title">@tourName</h1>
+        <nav aria-label="breadcrumb" class="mt-2">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="#">Admin</a></li>
+                <li class="breadcrumb-item"><a asp-action="ReviewList" asp-controller="AdminReview">Yorumlar</a></li>
+                <li class="breadcrumb-item"><a asp-action="TourList" asp-controller="AdminTour">Turlar</a></li>
+                <li class="breadcrumb-item active" aria-current="page">@tourName</li>
+            </ol>
+        </nav>
+    </div>
+    <a asp-action="TourList" asp-controller="AdminTour"
+       class="btn btn-outline-secondary d-flex align-items-center gap-2"
+       style="border-radius:10px;font-size:.875rem;font-weight:500;padding:.55rem 1.1rem;">
+        <i class="bi bi-arrow-left"></i> Tur Listesine Dön
+    </a>
+</div>
+
+<!-- SCORE HERO -->
+<div class="score-hero">
+    <div class="score-hero-pattern"></div>
+    <div class="score-hero-inner">
+        <div>
+            <div class="big-score-num">@avgScore.ToString("F1")</div>
+            <div class="big-score-label">/ 5.0 puan</div>
+        </div>
+        <div class="score-divider"></div>
+        <div>
+            <div class="star-row">
+                @for (int i = 1; i <= 5; i++)
+                {
+                    <span class="@(i <= Math.Round(avgScore) ? "star-fill" : "star-empty")">★</span>
+                }
+            </div>
+            <div class="score-total">@totalCount onaylı yorum · @tourName</div>
+        </div>
+        <div class="score-divider"></div>
+        <div class="distrib">
+            @for (int star = 5; star >= 1; star--)
+            {
+                var pct = totalCount > 0 ? (distrib[star] * 100.0 / totalCount) : 0;
+                <div class="distrib-row">
+                    <span class="distrib-label">@star</span>
+                    <div class="distrib-bar-wrap">
+                        <div class="distrib-bar" style="width:@pct.ToString("F0")%"></div>
+                    </div>
+                    <span class="distrib-count">@distrib[star]</span>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+<!-- STAT PILLS -->
+<div class="stat-pills">
+    <div class="stat-pill">
+        <div class="stat-pill-icon pill-purple"><i class="bi bi-chat-dots"></i></div>
+        <div>
+            <div class="stat-pill-val">@allComments.Count</div>
+            <div class="stat-pill-lbl">Toplam Yorum</div>
+        </div>
+    </div>
+    <div class="stat-pill">
+        <div class="stat-pill-icon pill-green"><i class="bi bi-check-circle"></i></div>
+        <div>
+            <div class="stat-pill-val">@approvedComments.Count</div>
+            <div class="stat-pill-lbl">Onaylı</div>
+        </div>
+    </div>
+    <div class="stat-pill">
+        <div class="stat-pill-icon pill-amber"><i class="bi bi-hourglass-split"></i></div>
+        <div>
+            <div class="stat-pill-val">@pendingComments.Count</div>
+            <div class="stat-pill-lbl">Bekleyen</div>
+        </div>
+    </div>
+    <div class="stat-pill">
+        <div class="stat-pill-icon pill-yellow"><i class="bi bi-star-fill"></i></div>
+        <div>
+            <div class="stat-pill-val">@avgScore.ToString("F1")</div>
+            <div class="stat-pill-lbl">Ort. Puan</div>
+        </div>
+    </div>
+</div>
+
+<!-- ONAYLI YORUMLAR -->
+@if (!approvedComments.Any())
+{
+    <div class="comment-empty">
+        <i class="bi bi-chat-quote"></i>
+        <h5>Henüz onaylı yorum yok</h5>
+        <p>Bu tura ait onaylı yorum bulunmuyor.</p>
+    </div>
+}
+else
+{
+    <div class="comment-filter-bar">
+        <div class="filter-chips">
+            <button class="chip active" data-filter="all">Tümü</button>
+            <button class="chip" data-filter="5">5 ★</button>
+            <button class="chip" data-filter="4">4 ★</button>
+            <button class="chip" data-filter="3">3 ★</button>
+            <button class="chip" data-filter="1-2">1-2 ★</button>
+        </div>
+        <select class="sort-select" id="sortSelect">
+            <option value="newest">En Yeni</option>
+            <option value="oldest">En Eski</option>
+            <option value="highest">En Yüksek Puan</option>
+            <option value="lowest">En Düşük Puan</option>
+        </select>
+    </div>
+
+    string[] avatarColors = { "#5d0473", "#430354", "#7b1fa2", "#6a1b9a", "#4a148c", "#7c1097" };
+    int idx = 0;
+
+    <div class="comment-list" id="commentList">
+        @foreach (var comment in approvedComments.OrderByDescending(c => c.CommentDate))
+        {
+            var initial = comment.Headline?.Length > 0 ? comment.Headline[0].ToString().ToUpper() : "Y";
+            var color = avatarColors[idx % avatarColors.Length];
+            var dateStr = comment.CommentDate.ToString("dd MMM yyyy", new System.Globalization.CultureInfo("tr-TR"));
+            var bodyId = $"body-{idx}";
+            var isLong = comment.CommentDetail?.Length > 220;
+            idx++;
+
+            <div class="comment-card"
+                 data-score="@comment.Score"
+                 data-date="@comment.CommentDate.ToString("yyyyMMddHHmmss")">
+                <div class="card-top">
+                    <div class="avatar-group">
+                        <div class="avatar" style="background:@color;">@initial</div>
+                        <div>
+                            <div class="commenter-name">Gezgin #@idx</div>
+                            <div class="comment-meta"><i class="bi bi-calendar3"></i> @dateStr</div>
+                        </div>
+                    </div>
+                    <div class="d-flex align-items-center gap-2">
+                        <div class="mini-stars">
+                            @for (int s = 1; s <= 5; s++)
+                            {
+                                <span class="s @(s <= comment.Score ? "" : "e")">★</span>
+                            }
+                        </div>
+                        <div class="score-badge">
+                            <i class="bi bi-star-fill"></i> @comment.Score.ToString("F1")
+                        </div>
+                    </div>
+                </div>
+                <div class="comment-headline">@comment.Headline</div>
+                @if (!string.IsNullOrWhiteSpace(comment.CommentDetail))
+                {
+                    <p class="comment-body @(isLong ? "collapsed" : "")" id="@bodyId">@comment.CommentDetail</p>
+                    if (isLong)
+                    {
+                        <button class="read-more" onclick="toggleBody('@bodyId', this)">Devamını oku →</button>
+                    }
+                }
+            </div>
+        }
+    </div>
+}
+
+<!-- BEKLEYEN YORUMLAR -->
+@if (pendingComments.Any())
+{
+    <div class="section-label">
+        <span><i class="bi bi-hourglass-split me-1"></i> Onay Bekleyen (@pendingComments.Count)</span>
+    </div>
+
+    string[] avatarColors2 = { "#5d0473", "#430354", "#7b1fa2", "#6a1b9a", "#4a148c", "#7c1097" };
+    int pidx = 0;
+
+    <div class="comment-list">
+        @foreach (var comment in pendingComments.OrderByDescending(c => c.CommentDate))
+        {
+            var initial = comment.Headline?.Length > 0 ? comment.Headline[0].ToString().ToUpper() : "Y";
+            var color = avatarColors2[pidx % avatarColors2.Length];
+            var dateStr = comment.CommentDate.ToString("dd MMM yyyy", new System.Globalization.CultureInfo("tr-TR"));
+            pidx++;
+
+            <div class="comment-card pending-card">
+                <div class="card-top">
+                    <div class="avatar-group">
+                        <div class="avatar" style="background:@color;opacity:.7;">@initial</div>
+                        <div>
+                            <div class="commenter-name">Gezgin #@pidx</div>
+                            <div class="comment-meta"><i class="bi bi-calendar3"></i> @dateStr</div>
+                        </div>
+                    </div>
+                    <div class="d-flex align-items-center gap-2">
+                        <div class="mini-stars">
+                            @for (int s = 1; s <= 5; s++)
+                            {
+                                <span class="s @(s <= comment.Score ? "" : "e")">★</span>
+                            }
+                        </div>
+                        <div class="score-badge">
+                            <i class="bi bi-star-fill"></i> @comment.Score.ToString("F1")
+                        </div>
+                    </div>
+                </div>
+                <div class="comment-headline">@comment.Headline</div>
+                @if (!string.IsNullOrWhiteSpace(comment.CommentDetail))
+                {
+                    <p class="comment-body">@comment.CommentDetail</p>
+                }
+                <span class="badge-pending"><i class="bi bi-hourglass-split"></i> Onay Bekliyor</span>
+            </div>
+        }
+    </div>
+}
+
+@section Scripts {
+    <script>
+        function toggleBody(id, btn) {
+            const el = document.getElementById(id);
+            if (el.classList.contains('collapsed')) {
+                el.classList.remove('collapsed');
+                btn.textContent = '← Kısalt';
+            } else {
+                el.classList.add('collapsed');
+                btn.textContent = 'Devamını oku →';
+            }
+        }
+
+        document.querySelectorAll('.chip').forEach(chip => {
+            chip.addEventListener('click', () => {
+                document.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
+                chip.classList.add('active');
+                filterAndSort();
+            });
+        });
+        document.getElementById('sortSelect')?.addEventListener('change', filterAndSort);
+
+        function filterAndSort() {
+            const cards     = Array.from(document.querySelectorAll('#commentList .comment-card'));
+            const filterVal = document.querySelector('.chip.active')?.dataset.filter || 'all';
+            const sortVal   = document.getElementById('sortSelect')?.value || 'newest';
+
+            cards.forEach(card => {
+                const score = parseInt(card.dataset.score);
+                let show = true;
+                if      (filterVal === '5')   show = score === 5;
+                else if (filterVal === '4')   show = score === 4;
+                else if (filterVal === '3')   show = score === 3;
+                else if (filterVal === '1-2') show = score <= 2;
+                card.style.display = show ? '' : 'none';
+            });
+
+            const list    = document.getElementById('commentList');
+            const visible = cards.filter(c => c.style.display !== 'none');
+            visible.sort((a, b) => {
+                const da = parseInt(a.dataset.date), db = parseInt(b.dataset.date);
+                const sa = parseInt(a.dataset.score), sb = parseInt(b.dataset.score);
+                if (sortVal === 'newest')  return db - da;
+                if (sortVal === 'oldest')  return da - db;
+                if (sortVal === 'highest') return sb - sa;
+                if (sortVal === 'lowest')  return sa - sb;
+                return 0;
+            });
+            visible.forEach(card => list.appendChild(card));
+        }
+
+        window.addEventListener('load', () => {
+            document.querySelectorAll('.distrib-bar').forEach(bar => {
+                const target = bar.style.width;
+                bar.style.width = '0%';
+                setTimeout(() => { bar.style.width = target; }, 300);
+            });
+        });
+    </script>
+}

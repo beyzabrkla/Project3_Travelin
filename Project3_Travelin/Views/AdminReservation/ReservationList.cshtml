@@ -2,201 +2,203 @@
 @{
     ViewData["Title"] = "Rezervasyon Listesi";
     Layout = "~/Views/Shared/_AdminLayout.cshtml";
-    var currentStatus = Context.Request.Query["status"].ToString().ToLower();
+
+    // İstatistik Hesaplamaları (Kullanıcı listesindeki stat-pills mantığı)
+    int totalCount = Model.Count;
+    int pendingCount = Model.Count(x => x.Status?.ToLower() == "pending");
+    int approvedCount = Model.Count(x => x.Status?.ToLower() == "approved");
+
+    string q = Context.Request.Query["q"];
+    string status = Context.Request.Query["status"].ToString().ToLower();
+
+    // Filtreleme (Kullanıcı listesindeki C# bazlı filtreleme mantığı)
+    var filteredList = Model.AsEnumerable();
+    if (!string.IsNullOrEmpty(status))
+    {
+        filteredList = filteredList.Where(x => x.Status?.ToLower() == status);
+    }
+    var list = filteredList.ToList();
 }
 
-<div class="page-header mb-4">
-    <h1 class="page-title">
-        @if (currentStatus == "pending")
-        {
-            <span class="text-warning"><i class="bi bi-hourglass-split"></i> Onay Bekleyenler</span>
-        }
-        else if (currentStatus == "approved")
-        {
-
-            <span class="text-success"><i class="bi bi-check2-circle"></i> Onaylananlar</span>
-        }
-        else if (currentStatus == "rejected")
-        {
-
-            <span class="text-danger"><i class="bi bi-x-circle"></i> Reddedilenler</span>
-        }
-        else
-        {
-
-            <span><i class="bi bi-calendar2-check"></i> Tüm Rezervasyonlar</span>
-        }
-    </h1>
+<div class="page-header">
+    <div>
+        <h1 class="page-title">Rezervasyon Yönetimi</h1>
+        <nav aria-label="breadcrumb" class="mt-2">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="#">Admin</a></li>
+                <li class="breadcrumb-item active">Rezervasyonlar</li>
+            </ol>
+        </nav>
+    </div>
 </div>
 
-<div class="card shadow-sm border-0" style="border-radius: 15px;">
-    <div class="card-body p-0">
-        <div class="table-responsive">
-            <table class="table table-hover align-middle mb-0">
-                <thead class="bg-light text-secondary">
-                    <tr>
-                        <th class="ps-4" style="width: 25%;">Müşteri Bilgileri</th>
-                        <th style="width: 20%;">Tur Başlığı</th>
-                        <th class="text-center" style="width: 10%;">Kişi</th>
-                        <th style="width: 15%;">Tarih</th>
-                        <th style="width: 10%;">Durum</th>
-                        <th class="text-end pe-4" style="width: 20%;">İşlemler</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach (var item in Model)
-                    {
-                        var itemStatus = item.Status?.ToLower();
+@* Üst İstatistik Kutuları *@
+<div class="stat-pills mb-4">
+    <div class="stat-pill">
+        <div class="stat-pill-icon pill-purple"><i class="bi bi-calendar-event"></i></div>
+        <div><div class="stat-pill-val">@totalCount</div><div class="stat-pill-lbl">Toplam</div></div>
+    </div>
+    <div class="stat-pill">
+        <div class="stat-pill-icon pill-yellow"><i class="bi bi-hourglass-split"></i></div>
+        <div><div class="stat-pill-val">@pendingCount</div><div class="stat-pill-lbl">Bekleyen</div></div>
+    </div>
+    <div class="stat-pill">
+        <div class="stat-pill-icon pill-green"><i class="bi bi-check2-all"></i></div>
+        <div><div class="stat-pill-val">@approvedCount</div><div class="stat-pill-lbl">Onaylanan</div></div>
+    </div>
+</div>
+
+<div class="row g-3">
+    @* SOL PANEL: Filtreleme *@
+    <div class="col-md-3 col-lg-2">
+        <div class="table-card p-3 mb-3">
+            <div class="sidebar-section-title" style="font-size: 0.75rem; color: #a0aec0; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 1rem; font-weight: 700;">Durum Filtresi</div>
+            <div class="status-sidebar">
+                <a href="?status=" class="status-link @(string.IsNullOrEmpty(status) ? "active" : "")">
+                    <i class="bi bi-grid"></i> Tümü
+                    <span class="badge rounded-pill bg-light text-dark float-end">@totalCount</span>
+                </a>
+                <a href="?status=pending" class="status-link @(status == "pending" ? "active" : "")">
+                    <i class="bi bi-hourglass text-warning"></i> Bekleyenler
+                    <span class="badge rounded-pill bg-light text-dark float-end">@pendingCount</span>
+                </a>
+                <a href="?status=approved" class="status-link @(status == "approved" ? "active" : "")">
+                    <i class="bi bi-check-circle text-success"></i> Onaylananlar
+                    <span class="badge rounded-pill bg-light text-dark float-end">@approvedCount</span>
+                </a>
+                <a href="?status=rejected" class="status-link @(status == "rejected" ? "active" : "")">
+                    <i class="bi bi-x-circle text-danger"></i> Reddedilenler
+                </a>
+            </div>
+
+            <div class="sidebar-section-title mt-4" style="font-size: 0.75rem; color: #a0aec0; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 1rem; font-weight: 700;">Raporlama</div>
+            <div class="d-grid gap-2">
+                <button onclick="exportTableToExcel()" class="btn btn-sm btn-outline-success text-start">
+                    <i class="bi bi-file-earmark-excel me-2"></i> Excel Al
+                </button>
+                <button onclick="exportTableToPDF()" class="btn btn-sm btn-outline-danger text-start">
+                    <i class="bi bi-file-earmark-pdf me-2"></i> PDF Al
+                </button>
+            </div>
+        </div>
+    </div>
+
+    @* SAĞ PANEL: Tablo *@
+    <div class="col-md-9 col-lg-10">
+        <div class="table-card">
+            <div class="table-card-header d-flex justify-content-between align-items-center p-3">
+                <div class="title fw-bold">
+                    <i class="bi bi-list-check me-2"></i>Rezervasyon Listesi
+                    <span class="badge bg-light text-dark ms-2">@list.Count Kayıt</span>
+                </div>
+            </div>
+
+            <div class="table-responsive">
+                <table class="tours-table w-100" id="resTable">
+                    <thead>
                         <tr>
-                            <td class="ps-4">
-                                <div class="d-flex flex-column">
-                                    <span class="fw-bold text-dark">@item.CustomerName</span>
-                                    <small class="text-muted" style="font-size: 0.75rem;">@item.CustomerEmail</small>
-                                </div>
-                            </td>
-                            <td class="fw-medium text-dark">@item.TourTitle</td>
-                            <td class="text-center">
-                                <span class="badge rounded-pill bg-light text-dark border px-3">@item.PersonCount Kişi</span>
-                            </td>
-                            <td><span class="text-muted">@item.ReservationDate.ToString("dd.MM.yyyy")</span></td>
-                            <td>
-                                @if (itemStatus == "pending")
-                                {
-                                    <span class="status-badge status-pending">Bekliyor</span>
-                                }
-                                else if (itemStatus == "approved")
-                                {
-
-                                    <span class="status-badge status-approved">Onaylandı</span>
-                                }
-                                else
-                                {
-
-                                    <span class="status-badge status-rejected">Reddedildi</span>
-                                }
-                            </td>
-                            <td class="text-end pe-4">
-                                @if (itemStatus == "pending")
-                                {
-                                    <div class="d-flex justify-content-end gap-2">
-                                        <a asp-action="ApproveReservation" asp-route-id="@item.ReservationId"
-                                           class="btn-action-modern approve">
-                                            <i class="bi bi-check-circle-fill"></i>
-                                            <span>Onayla</span>
-                                        </a>
-                                        <a asp-action="RejectReservation" asp-route-id="@item.ReservationId"
-                                           class="btn-action-modern reject">
-                                            <i class="bi bi-x-circle-fill"></i>
-                                            <span>Reddet</span>
-                                        </a>
-                                    </div>
-                                }
-                                else
-                                {
-                                    <div class="badge-completed-modern">
-                                        <i class="bi bi-shield-check"></i>
-                                        <span>İşlem Yapıldı</span>
-                                    </div>
-                                }
-                            </td>
+                            <th>Müşteri</th>
+                            <th>Tur Detayı</th>
+                            <th class="text-center">Kişi</th>
+                            <th>Tarih</th>
+                            <th>Durum</th>
+                            <th class="text-end pe-4">İşlemler</th>
                         </tr>
-                    }
-                </tbody>
-            </table>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in list)
+                        {
+                            <tr>
+                                <td>
+                                    <div class="d-flex align-items-center gap-3">
+                                        <div class="user-avatar bg-primary text-white d-flex align-items-center justify-content-center"
+                                             style="width:38px; height:38px; border-radius:10px; font-weight:600; font-size:0.8rem;">
+                                            @item.CustomerName.Substring(0, 1).ToUpper()
+                                        </div>
+                                        <div>
+                                            <div class="fw-bold" style="font-size:0.9rem; color:#2d3748;">@item.CustomerName</div>
+                                            <div class="text-muted" style="font-size:0.75rem;">@item.CustomerEmail</div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="fw-medium text-dark" style="font-size:0.85rem;">@item.TourTitle</div>
+                                </td>
+                                <td class="text-center">
+                                    <span class="badge bg-light text-dark border">@item.PersonCount</span>
+                                </td>
+                                <td><span style="font-size:0.85rem;">@item.ReservationDate.ToString("dd.MM.yyyy")</span></td>
+                                <td>
+                                    @if (item.Status?.ToLower() == "pending")
+                                    {
+                                        <span class="text-warning small fw-bold"><i class="bi bi-circle-fill me-1" style="font-size:0.5rem;"></i> Bekliyor</span>
+                                    }
+                                    else if (item.Status?.ToLower() == "approved")
+                                    {
+                                        <span class="text-success small fw-bold"><i class="bi bi-circle-fill me-1" style="font-size:0.5rem;"></i> Onaylandı</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="text-danger small fw-bold"><i class="bi bi-circle-fill me-1" style="font-size:0.5rem;"></i> Reddedildi</span>
+                                    }
+                                </td>
+                                <td class="text-end pe-4">
+                                    <div class="d-flex justify-content-end gap-1">
+                                        @if (item.Status?.ToLower() == "pending")
+                                        {
+                                            <a asp-action="ApproveReservation" asp-route-id="@item.ReservationId" class="btn btn-sm btn-outline-success">
+                                                <i class="bi bi-check-lg"></i>
+                                            </a>
+                                            <a asp-action="RejectReservation" asp-route-id="@item.ReservationId" class="btn btn-sm btn-outline-danger">
+                                                <i class="bi bi-x-lg"></i>
+                                            </a>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge bg-light text-muted border py-2 px-3">Tamamlandı</span>
+                                        }
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
         </div>
     </div>
 </div>
 
-<style>
-    /* Status Badge Tasarımı */
-    .status-badge {
-        padding: 5px 12px;
-        border-radius: 8px;
-        font-size: 0.75rem;
-        font-weight: 700;
-        text-transform: uppercase;
-    }
+@section Scripts {
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 
-    .status-pending {
-        background: #fff7ed;
-        color: #c2410c;
-        border: 1px solid #fdba74;
-    }
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
 
-    .status-approved {
-        background: #f0fdf4;
-        color: #15803d;
-        border: 1px solid #86efac;
-    }
-
-    .status-rejected {
-        background: #fef2f2;
-        color: #b91c1c;
-        border: 1px solid #fca5a5;
-    }
-
-    /* Modern Buton Yapısı */
-    .btn-action-modern {
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        gap: 8px;
-        padding: 8px 16px;
-        border-radius: 10px;
-        font-size: 0.85rem;
-        font-weight: 600;
-        text-decoration: none;
-        white-space: nowrap; /* Metnin aşağı kaymasını engeller */
-        transition: all 0.2s ease-in-out;
-        min-width: 100px;
-    }
-
-    .approve {
-        background-color: #10b981;
-        color: white;
-        box-shadow: 0 4px 6px -1px rgba(16, 185, 129, 0.2);
-    }
-
-        .approve:hover {
-            background-color: #059669;
-            color: white;
-            transform: scale(1.05);
+    <script>
+        function exportTableToExcel() {
+            var table = document.getElementById("resTable");
+            var wb = XLSX.utils.table_to_book(table, { sheet: "Rezervasyonlar" });
+            XLSX.writeFile(wb, "Rezervasyon_Listesi.xlsx");
         }
 
-    .reject {
-        background-color: #ef4444;
-        color: white;
-        box-shadow: 0 4px 6px -1px rgba(239, 68, 68, 0.2);
-    }
+        function exportTableToPDF() {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF('p', 'pt', 'a4'); 
 
-        .reject:hover {
-            background-color: #dc2626;
-            color: white;
-            transform: scale(1.05);
+            // Tabloyu PDF'e çevir
+            doc.autoTable({
+                html: '#resTable',
+                startY: 50,
+                headStyles: { fillColor: [79, 70, 229] },
+                columns: [0, 1, 2, 3, 4], 
+                margin: { top: 40 },
+                didDrawPage: function (data) {
+                    doc.text("Rezervasyon Listesi Raporu", 40, 30);
+                },
+                styles: { font: "helvetica", fontSize: 10 }
+            });
+
+            doc.save("Rezervasyon_Raporu.pdf");
         }
-
-    /* İşlem Yapıldı Görünümü */
-    .badge-completed-modern {
-        display: inline-flex;
-        align-items: center;
-        gap: 6px;
-        color: #9ca3af;
-        background: #f3f4f6;
-        padding: 8px 15px;
-        border-radius: 10px;
-        font-size: 0.8rem;
-        border: 1px solid #e5e7eb;
-    }
-
-    /* Tablo Düzenlemeleri */
-    .table thead th {
-        font-size: 0.8rem;
-        letter-spacing: 0.5px;
-        text-transform: uppercase;
-        border: none;
-    }
-
-    .table tbody tr:hover {
-        background-color: #f8fafc;
-    }
-</style>
+    </script>
+}

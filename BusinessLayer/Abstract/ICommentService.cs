@@ -14,6 +14,6 @@ namespace BusinessLayer.Abstract
         Task UpdateCommentAsync(UpdateCommentDTO updateCommentDTO);
         Task DeleteCommentAsync(string id);
         Task<GetCommentByIdDTO> GetCommentByIdAsync(string id);
-
+        Task<List<ResultCommentDTO>> GetCommentsByTourIdAsync(string id);
     }
 }

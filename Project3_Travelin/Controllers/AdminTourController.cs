@@ -44,12 +44,12 @@ namespace Project3_Travelin.Controllers
 
             if (guides == null || !guides.Any())
             {
-                ViewBag.v = new List<SelectListItem> { new SelectListItem { Text = "Rehber Bulunamadı", Value = "" } };
+                ViewBag.Guides = new List<SelectListItem> { new SelectListItem { Text = "Rehber Bulunamadı", Value = "" } };
                 return;
             }
 
             var activeGuides = guides
-                .Where(x => x.Status ==true) 
+                .Where(x => x.Status == true)
                 .OrderBy(x => x.Name)
                 .Select(x => new SelectListItem
                 {
@@ -57,7 +57,9 @@ namespace Project3_Travelin.Controllers
                     Value = x.GuideId.ToString()
                 }).ToList();
 
-            ViewBag.Guides = activeGuides.Any() ? activeGuides : new List<SelectListItem>();
+            ViewBag.Guides = activeGuides.Any()
+                ? activeGuides
+                : new List<SelectListItem> { new SelectListItem { Text = "Rehber Bulunamadı", Value = "" } };
         }
 
         public async Task<IActionResult> TourList(string q, string country, string status, DateTime? fromDate, DateTime? toDate, int page = 1)
@@ -208,6 +210,7 @@ namespace Project3_Travelin.Controllers
 
             return RedirectToAction("TourList");
         }
+       
         public async Task<IActionResult> DeleteTour(string id)
         {
             await _tourService.DeleteTourAsync(id);

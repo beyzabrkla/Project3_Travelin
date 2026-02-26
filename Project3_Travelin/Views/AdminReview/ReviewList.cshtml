@@ -1,0 +1,761 @@
+﻿@model List<ResultCommentDTO>
+@{
+    ViewData["Title"] = "Yorumlar";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+
+    int currentPage = ViewBag.CurrentPage;
+    int totalPages = ViewBag.TotalPages;
+    int filterCount = ViewBag.FilterCount;
+    int pageSize = ViewBag.PageSize;
+    string activeStatus = ViewBag.ActiveStatus ?? "";
+    int activeScore = ViewBag.ActiveScore;
+    string q = ViewBag.Q ?? "";
+
+    double avgScore = ViewBag.AvgScore;
+    int totalCount = ViewBag.TotalCount;
+    int approved = ViewBag.ApprovedCount;
+    int pending = ViewBag.PendingCount;
+
+    var queryParams = Context.Request.Query.ToDictionary(x => x.Key, x => x.Value.ToString());
+}
+
+<style>
+    :root {
+        --purple: #5d0473;
+        --purple-dark: #430354;
+        --purple-soft: #f5eaf8;
+        --yellow: #fdc703;
+        --yellow-soft: #fffbea;
+    }
+
+    /* ── Stat Pills ── */
+    .stat-pills {
+        display: flex;
+        gap: 14px;
+        flex-wrap: wrap;
+        margin-bottom: 24px;
+    }
+
+    .stat-pill {
+        background: #fff;
+        border-radius: 12px;
+        padding: 16px 20px;
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        box-shadow: 0 2px 12px rgba(0,0,0,.07);
+        flex: 1;
+        min-width: 140px;
+    }
+
+    .stat-pill-icon {
+        width: 44px;
+        height: 44px;
+        border-radius: 11px;
+        display: grid;
+        place-items: center;
+        font-size: 20px;
+        flex-shrink: 0;
+    }
+
+    .pill-purple {
+        background: var(--purple-soft);
+        color: var(--purple);
+    }
+
+    .pill-green {
+        background: #f0fdf4;
+        color: #16a34a;
+    }
+
+    .pill-amber {
+        background: var(--yellow-soft);
+        color: #b45309;
+    }
+
+    .pill-yellow {
+        background: var(--yellow-soft);
+        color: #92660a;
+    }
+
+    .stat-pill-val {
+        font-size: 24px;
+        font-weight: 700;
+        color: #1a202c;
+        line-height: 1;
+    }
+
+    .stat-pill-lbl {
+        font-size: 12px;
+        color: #718096;
+        margin-top: 2px;
+    }
+
+    /* ── Filter Card ── */
+    .filter-card {
+        background: #fff;
+        border-radius: 14px;
+        padding: 18px 22px;
+        box-shadow: 0 2px 12px rgba(0,0,0,.07);
+        margin-bottom: 22px;
+    }
+
+    /* ── Score chips ── */
+    .score-chips {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+    }
+
+    .score-chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        padding: 5px 14px;
+        border-radius: 100px;
+        font-size: 13px;
+        font-weight: 500;
+        cursor: pointer;
+        border: 1.5px solid #e2e8f0;
+        background: transparent;
+        color: #718096;
+        text-decoration: none;
+        transition: all .2s;
+    }
+
+        .score-chip:hover, .score-chip.active {
+            background: var(--purple);
+            border-color: var(--purple);
+            color: #fff;
+        }
+
+        .score-chip .star {
+            color: var(--yellow);
+            font-size: 11px;
+        }
+
+        .score-chip.active .star {
+            color: rgba(253,199,3,.7);
+        }
+
+    /* ── Table Card ── */
+    .table-card {
+        background: #fff;
+        border-radius: 14px;
+        box-shadow: 0 2px 12px rgba(0,0,0,.07);
+        overflow: hidden;
+    }
+
+    .table-card-header {
+        padding: 16px 22px;
+        border-bottom: 1px solid #f1f5f9;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        flex-wrap: wrap;
+    }
+
+    .tour-count-badge {
+        display: inline-flex;
+        align-items: center;
+        background: var(--purple-soft);
+        color: var(--purple);
+        border: 1px solid #d8a8e8;
+        border-radius: 100px;
+        font-size: 12px;
+        font-weight: 600;
+        padding: 3px 12px;
+        margin-left: 10px;
+    }
+
+    /* ── Reviews Table ── */
+    .reviews-table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+        .reviews-table thead tr {
+            background: #f8fafc;
+            border-bottom: 2px solid #e2e8f0;
+        }
+
+        .reviews-table th {
+            padding: 12px 16px;
+            font-size: 12px;
+            font-weight: 600;
+            color: #718096;
+            text-transform: uppercase;
+            letter-spacing: .04em;
+            white-space: nowrap;
+        }
+
+        .reviews-table tbody tr {
+            border-bottom: 1px solid #f1f5f9;
+            transition: background .15s;
+        }
+
+            .reviews-table tbody tr:hover {
+                background: #fdf8ff;
+            }
+
+        .reviews-table td {
+            padding: 14px 16px;
+            font-size: 14px;
+            color: #2d3748;
+            vertical-align: middle;
+        }
+
+    .mini-stars {
+        display: flex;
+        gap: 2px;
+    }
+
+        .mini-stars .s {
+            font-size: 13px;
+            color: var(--yellow);
+        }
+
+            .mini-stars .s.e {
+                color: #e2d9cc;
+            }
+
+    .score-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        background: var(--yellow);
+        color: #3b1a00;
+        padding: 4px 11px;
+        border-radius: 100px;
+        font-size: 12px;
+        font-weight: 700;
+    }
+
+        .score-pill i {
+            color: #92660a;
+            font-size: 9px;
+        }
+
+    .tour-link {
+        color: var(--purple);
+        font-weight: 600;
+        font-size: 13px;
+        text-decoration: none;
+    }
+
+        .tour-link:hover {
+            text-decoration: underline;
+            color: var(--purple-dark);
+        }
+
+    .headline-cell {
+        font-weight: 600;
+        color: #1a202c;
+        font-size: 14px;
+    }
+
+    .detail-cell {
+        font-size: 13px;
+        color: #718096;
+        max-width: 240px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .badge-approved {
+        background: #f0fdf4;
+        color: #16a34a;
+        border: 1px solid #86efac;
+        border-radius: 6px;
+        font-size: 11px;
+        font-weight: 600;
+        padding: 3px 10px;
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+    }
+
+    .badge-pending {
+        background: var(--yellow-soft);
+        color: #92660a;
+        border: 1px solid var(--yellow);
+        border-radius: 6px;
+        font-size: 11px;
+        font-weight: 600;
+        padding: 3px 10px;
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+    }
+
+    /* Action buttons */
+    .action-group {
+        display: flex;
+        gap: 6px;
+        align-items: center;
+    }
+
+    .btn-action {
+        width: 32px;
+        height: 32px;
+        border-radius: 8px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 14px;
+        border: none;
+        cursor: pointer;
+        transition: all .2s;
+        text-decoration: none;
+    }
+
+    .btn-approve {
+        background: #f0fdf4;
+        color: #16a34a;
+    }
+
+        .btn-approve:hover {
+            background: #16a34a;
+            color: #fff;
+        }
+
+    .btn-reject {
+        background: var(--yellow-soft);
+        color: #92660a;
+    }
+
+        .btn-reject:hover {
+            background: var(--yellow);
+            color: #3b1a00;
+        }
+
+    .btn-delete {
+        background: #fff5f5;
+        color: #e53e3e;
+    }
+
+        .btn-delete:hover {
+            background: #e53e3e;
+            color: #fff;
+        }
+
+    .btn-detail {
+        background: var(--purple-soft);
+        color: var(--purple);
+    }
+
+        .btn-detail:hover {
+            background: var(--purple);
+            color: #fff;
+        }
+
+    /* ── Pagination ── */
+    .pagination-wrapper {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 14px 22px;
+        border-top: 1px solid #f1f5f9;
+        flex-wrap: wrap;
+        gap: 10px;
+    }
+
+    .page-info {
+        font-size: 13px;
+        color: #718096;
+    }
+
+    .page-link {
+        color: var(--purple) !important;
+    }
+
+    .page-item.active .page-link {
+        background: var(--purple) !important;
+        border-color: var(--purple) !important;
+        color: #fff !important;
+    }
+
+    /* ── Empty State ── */
+    .empty-state {
+        padding: 56px 24px;
+        text-align: center;
+    }
+
+        .empty-state i {
+            font-size: 40px;
+            color: var(--purple);
+            display: block;
+            margin-bottom: 14px;
+        }
+
+        .empty-state p {
+            font-size: 14px;
+            color: #718096;
+            margin: 0;
+        }
+
+    /* ── Sidebar ── */
+    .status-sidebar {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+    }
+
+    .status-link {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 9px 14px;
+        border-radius: 9px;
+        font-size: 14px;
+        font-weight: 500;
+        color: #4a5568;
+        text-decoration: none;
+        transition: all .2s;
+    }
+
+        .status-link:hover {
+            background: #f8fafc;
+            color: var(--purple);
+        }
+
+        .status-link.active {
+            background: var(--purple-soft);
+            color: var(--purple);
+            font-weight: 600;
+        }
+
+        .status-link .count-dot {
+            margin-left: auto;
+            min-width: 22px;
+            height: 22px;
+            background: #e2e8f0;
+            color: #718096;
+            border-radius: 100px;
+            font-size: 11px;
+            font-weight: 700;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0 6px;
+        }
+
+        .status-link.active .count-dot {
+            background: var(--purple);
+            color: #fff;
+        }
+</style>
+
+<!-- PAGE HEADER -->
+<div class="page-header">
+    <div>
+        <h1 class="page-title">Yorumlar</h1>
+        <nav aria-label="breadcrumb" class="mt-2">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="#">Admin</a></li>
+                <li class="breadcrumb-item active" aria-current="page">Yorumlar</li>
+            </ol>
+        </nav>
+    </div>
+</div>
+
+<!-- STAT PILLS -->
+<div class="stat-pills">
+    <div class="stat-pill">
+        <div class="stat-pill-icon pill-purple"><i class="bi bi-chat-dots"></i></div>
+        <div>
+            <div class="stat-pill-val">@totalCount</div>
+            <div class="stat-pill-lbl">Toplam Yorum</div>
+        </div>
+    </div>
+    <div class="stat-pill">
+        <div class="stat-pill-icon pill-green"><i class="bi bi-check-circle"></i></div>
+        <div>
+            <div class="stat-pill-val">@approved</div>
+            <div class="stat-pill-lbl">Onaylı</div>
+        </div>
+    </div>
+    <div class="stat-pill">
+        <div class="stat-pill-icon pill-amber"><i class="bi bi-hourglass-split"></i></div>
+        <div>
+            <div class="stat-pill-val">@pending</div>
+            <div class="stat-pill-lbl">Bekleyen</div>
+        </div>
+    </div>
+    <div class="stat-pill">
+        <div class="stat-pill-icon pill-yellow"><i class="bi bi-star-fill"></i></div>
+        <div>
+            <div class="stat-pill-val">@avgScore.ToString("F1")</div>
+            <div class="stat-pill-lbl">Ort. Puan</div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-3">
+    <!-- SIDEBAR -->
+    <div class="col-12 col-md-3 col-lg-2">
+        <div class="table-card p-3 mb-3">
+            <div style="font-size:11px;font-weight:700;color:#a0aec0;text-transform:uppercase;letter-spacing:.06em;margin-bottom:10px;">Durum</div>
+            <div class="status-sidebar">
+                <a href="?@BuildQuery(queryParams, "status", "", "page", "1")"
+                   class="status-link @(activeStatus == "" ? "active" : "")">
+                    <i class="bi bi-list-ul"></i> Tümü
+                    <span class="count-dot">@totalCount</span>
+                </a>
+                <a href="?@BuildQuery(queryParams, "status", "approved", "page", "1")"
+                   class="status-link @(activeStatus == "approved" ? "active" : "")">
+                    <i class="bi bi-check-circle"></i> Onaylı
+                    <span class="count-dot">@approved</span>
+                </a>
+                <a href="?@BuildQuery(queryParams, "status", "pending", "page", "1")"
+                   class="status-link @(activeStatus == "pending" ? "active" : "")">
+                    <i class="bi bi-hourglass-split"></i> Bekleyen
+                    <span class="count-dot">@pending</span>
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- MAIN -->
+    <div class="col-12 col-md-9 col-lg-10">
+
+        <!-- FILTER -->
+        <div class="filter-card">
+            <form method="get" id="filterForm">
+                <input type="hidden" name="status" value="@activeStatus" />
+                <div class="row g-2 align-items-end">
+                    <div class="col-12 col-md-5">
+                        <label class="form-label fw-semibold" style="font-size:.78rem;color:#718096">Yorum Ara</label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-white border-end-0" style="border-radius:8px 0 0 8px;">
+                                <i class="bi bi-search text-muted" style="font-size:.85rem;"></i>
+                            </span>
+                            <input type="text" name="q" value="@q" class="form-control border-start-0 ps-1"
+                                   placeholder="Başlık, tur adı veya içerik..." style="border-radius:0 8px 8px 0;" />
+                        </div>
+                    </div>
+                    <div class="col-12 col-md-5">
+                        <label class="form-label fw-semibold" style="font-size:.78rem;color:#718096">Puan Filtresi</label>
+                        <div class="score-chips">
+                            <a href="?@BuildQuery(queryParams, "score", "0", "page", "1")"
+                               class="score-chip @(activeScore == 0 ? "active" : "")">Tümü</a>
+                            @for (int s = 5; s >= 1; s--)
+                            {
+                                var sc = s;
+                                <a href="?@BuildQuery(queryParams, "score", sc.ToString(), "page", "1")"
+                                   class="score-chip @(activeScore == sc ? "active" : "")">
+                                    @sc <span class="star">★</span>
+                                </a>
+                            }
+                        </div>
+                    </div>
+                    <div class="col-12 col-md-2 d-flex gap-2">
+                        <button type="submit" class="btn btn-brand" style="border-radius:8px;font-size:.875rem;">
+                            <i class="bi bi-funnel me-1"></i> Ara
+                        </button>
+                        <a href="/AdminReview/ReviewList" class="btn btn-outline-secondary" style="border-radius:8px;font-size:.875rem;">
+                            <i class="bi bi-x-lg"></i>
+                        </a>
+                    </div>
+                </div>
+            </form>
+        </div>
+
+        <!-- TABLE -->
+        <div class="table-card">
+            <div class="table-card-header">
+                <div style="font-weight:700;">
+                    <i class="bi bi-chat-dots me-2"></i>
+                    @(activeStatus == "approved" ? "Onaylı Yorumlar" : activeStatus == "pending" ? "Bekleyen Yorumlar" : "Tüm Yorumlar")
+                    <span class="tour-count-badge">@filterCount yorum</span>
+                </div>
+            </div>
+
+            @if (Model == null || !Model.Any())
+            {
+                <div class="empty-state">
+                    <i class="bi bi-chat-quote"></i>
+                    <p>Gösterilecek yorum bulunamadı.</p>
+                </div>
+            }
+            else
+            {
+                <div class="table-responsive">
+                    <table class="reviews-table">
+                        <thead>
+                            <tr>
+                                <th>Başlık</th>
+                                <th>Tur</th>
+                                <th>İçerik</th>
+                                <th>Puan</th>
+                                <th>Tarih</th>
+                                <th>Durum</th>
+                                <th>İşlemler</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var item in Model)
+                            {
+                                <tr>
+                                    <td><span class="headline-cell">@item.Headline</span></td>
+                                    <td>
+                                        @if (!string.IsNullOrEmpty(item.TourId))
+                                        {
+                                            <a asp-action="CommentListByTourId" asp-controller="Comment"
+                                               asp-route-id="@item.TourId" class="tour-link">
+                                                <i class="bi bi-map me-1"></i>@(item.TourName ?? "Tur")
+                                            </a>
+                                        }
+                                        else
+                                        {
+
+                                            <span class="text-muted">—</span>
+                                        }
+                                    </td>
+                                    <td>
+                                        <span class="detail-cell" title="@item.CommentDetail">
+                                            @(item.CommentDetail?.Length > 60 ? item.CommentDetail.Substring(0, 60) + "…" : item.CommentDetail)
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <div class="d-flex align-items-center gap-2">
+                                            <div class="mini-stars">
+                                                @for (int s = 1; s <= 5; s++)
+                                                {
+                                                    <span class="s @(s <= item.Score ? "" : "e")">★</span>
+                                                }
+                                            </div>
+                                            <span class="score-pill">
+                                                <i class="bi bi-star-fill"></i> @item.Score
+                                            </span>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <span style="font-size:13px;color:#718096;">
+                                            <i class="bi bi-calendar3 me-1"></i>@item.CommentDate.ToString("dd.MM.yyyy")
+                                        </span>
+                                    </td>
+                                    <td>
+                                        @if (item.IsStatus)
+                                        {
+                                            <span class="badge-approved"><i class="bi bi-check-circle-fill"></i> Onaylı</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge-pending"><i class="bi bi-hourglass-split"></i> Bekliyor</span>
+                                        }
+                                    </td>
+                                    <td>
+                                        <div class="action-group">
+                                            @if (!item.IsStatus)
+                                            {
+                                                <form method="post" asp-action="ApproveComment" asp-controller="AdminReview" style="display:inline;">
+                                                    @Html.AntiForgeryToken()
+                                                    <input type="hidden" name="id" value="@item.CommentId" />
+                                                    <input type="hidden" name="returnUrl" value="@Context.Request.Path@Context.Request.QueryString" />
+                                                    <button type="submit" class="btn-action btn-approve" title="Onayla"><i class="bi bi-check-lg"></i></button>
+                                                </form>
+                                            }
+                                            else
+                                            {
+                                                <form method="post" asp-action="RejectComment" asp-controller="AdminReview" style="display:inline;">
+                                                    @Html.AntiForgeryToken()
+                                                    <input type="hidden" name="id" value="@item.CommentId" />
+                                                    <input type="hidden" name="returnUrl" value="@Context.Request.Path@Context.Request.QueryString" />
+                                                    <button type="submit" class="btn-action btn-reject" title="Reddet"><i class="bi bi-x-lg"></i></button>
+                                                </form>
+                                            }
+                                            <button type="button" class="btn-action btn-delete"
+                                                    onclick="confirmDelete('@item.CommentId','@Html.Raw(System.Web.HttpUtility.JavaScriptStringEncode(item.Headline))')"
+                                                    title="Sil">
+                                                <i class="bi bi-trash3"></i>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- PAGINATION -->
+                <div class="pagination-wrapper">
+                    <span class="page-info">
+                        Toplam <strong>@filterCount</strong> yorumdan
+                        <strong>@(((currentPage - 1) * pageSize) + 1) – @(Math.Min(currentPage * pageSize, filterCount))</strong> arası
+                    </span>
+                    <nav>
+                        <ul class="pagination pagination-sm mb-0">
+                            <li class="page-item @(currentPage == 1 ? "disabled" : "")">
+                                @{
+                                    queryParams["page"] = (currentPage - 1).ToString();
+                                }
+                                <a class="page-link" href="?@string.Join("&", queryParams.Select(p => $"{p.Key}={p.Value}"))"><i class="bi bi-chevron-left"></i></a>
+                            </li>
+                            @for (int i = 1; i <= totalPages; i++)
+                            {
+                                queryParams["page"] = i.ToString();
+                                <li class="page-item @(currentPage == i ? "active" : "")">
+                                    <a class="page-link" href="?@string.Join("&", queryParams.Select(p => $"{p.Key}={p.Value}"))">@i</a>
+                                </li>
+                            }
+                            <li class="page-item @(currentPage == totalPages || totalPages == 0 ? "disabled" : "")">
+                                @{
+                                    queryParams["page"] = (currentPage + 1).ToString();
+                                }
+                                <a class="page-link" href="?@string.Join("&", queryParams.Select(p => $"{p.Key}={p.Value}"))"><i class="bi bi-chevron-right"></i></a>
+                            </li>
+                        </ul>
+                    </nav>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+<!-- DELETE MODAL -->
+<div class="modal fade" id="deleteModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" style="max-width:420px">
+        <div class="modal-content" style="border-radius:14px;border:0;box-shadow:0 20px 60px rgba(0,0,0,.15)">
+            <div class="modal-body p-4 text-center">
+                <div style="width:60px;height:60px;background:var(--purple-soft);border-radius:50%;display:grid;place-items:center;margin:0 auto 1.25rem;font-size:1.5rem;color:var(--purple);">
+                    <i class="bi bi-exclamation-triangle"></i>
+                </div>
+                <h5 style="font-weight:700;font-size:1.1rem;color:#1a202c;margin-bottom:.5rem;">Yorum Silinecek</h5>
+                <p class="text-muted" style="font-size:.875rem;" id="deleteModalBody">Bu yorumu silmek istediğinize emin misiniz?</p>
+            </div>
+            <div class="modal-footer border-0 pt-0 pb-4 px-4 d-flex gap-2">
+                <button type="button" class="btn btn-light flex-fill" data-bs-dismiss="modal" style="border-radius:9px;">İptal</button>
+                <form id="deleteForm" method="post" style="flex:1">
+                    @Html.AntiForgeryToken()
+                    <button type="submit" class="btn btn-danger w-100" style="border-radius:9px;">
+                        <i class="bi bi-trash3 me-1"></i> Evet, Sil
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@functions {
+    string BuildQuery(Dictionary<string, string> existing, string key1, string val1, string key2 = null, string val2 = null)
+    {
+        var d = new Dictionary<string, string>(existing);
+        d[key1] = val1;
+        if (key2 != null) d[key2] = val2;
+        return string.Join("&", d.Select(p => $"{p.Key}={p.Value}"));
+    }
+}
+
+@section Scripts {
+    <script>
+        function confirmDelete(commentId, headline) {
+            document.getElementById('deleteModalBody').textContent =
+                '"' + headline + '" başlıklı yorum kalıcı olarak silinecek.';
+            document.getElementById('deleteForm').action = '/AdminReview/DeleteComment/' + commentId;
+            new bootstrap.Modal(document.getElementById('deleteModal')).show();
+        }
+    </script>
+}

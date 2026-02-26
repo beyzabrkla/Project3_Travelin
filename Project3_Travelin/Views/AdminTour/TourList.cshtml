@@ -163,11 +163,11 @@
                             </td>
                             <td data-label="İşlemler">
                                 <div class="action-group">
-                                    <a asp-action="UpdateTour" asp-route-id="@item.TourId" class="btn-action btn-edit" title="Düzenle">
+                                    <a asp-action="UpdateTour" asp-controller="AdminTour" asp-route-id="@item.TourId" class="btn-action btn-edit" title="Düzenle">
                                         <i class="bi bi-pencil"></i>
                                     </a>
-                                    <a asp-action="EditDetail" asp-route-id="@item.TourId" class="btn-action btn-detail" title="Detay">
-                                        <i class="bi bi-eye"></i>
+                                    <a asp-action="CommentListByTourId" asp-controller="Comment" asp-route-id="@item.TourId" class="btn-action btn-detail" title="Detay">
+                                        <i class="bi bi-chat-left-text"></i>
                                     </a>
                                     <button type="button" class="btn-action btn-delete" onclick="confirmDelete('@item.TourId', '@Html.Raw(System.Web.HttpUtility.JavaScriptStringEncode(item.TourTitle))')" title="Sil">
                                         <i class="bi bi-trash3"></i>
