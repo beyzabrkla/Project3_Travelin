@@ -55,11 +55,6 @@ Travelin, gezginlerin hayallerindeki turları keşfetmesini ve kolayca rezervasy
 * **Sorgu Performansı:** MongoDB Shell üzerinden yapılan `db["Users"].find()` gibi komutlarla veritabanı seviyesinde anlık veri manipülasyonu ve izleme. <br>
 * **Yüksek Ölçeklenebilirlik:** NoSQL yapısı sayesinde büyük veriler altında bile yüksek performanslı çalışma kapasitesi. <br>
 
-### 📱 5. Bilgi Alanı ve Footer (Alt Bilgi) <br>
-* **Zengin Footer İçeriği:** Tur fotoğrafları, hızlı bağlantılar ve kurumsal bilgilerle donatılmış geniş alt panel. <br>
-* **Bülten Aboneliği:** Kullanıcıların yeni turlardan haberdar olmasını sağlayan "Newsletter" entegrasyonu. <br>
-* **Global Ödeme Desteği:** Visa, Mastercard gibi ödeme yöntemleri ikonları ile profesyonel güven algısı. <br>
-
 ## 🛠️ Teknik Özellikler ve Notlar <br>
 * **UI/UX:** Bootstrap 5 ve özel CSS ile responsive (mobil uyumlu) tasarım. <br>
 * **Veri Akışı:** ASP.NET Core MVC mimarisi ile temiz ve sürdürülebilir kod yapısı. <br>
