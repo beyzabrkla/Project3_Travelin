@@ -52,6 +52,8 @@
                     </div>
                 </div>
                 <div class="section-body">
+
+                    <!-- Tur Başlığı -->
                     <div class="field-group">
                         <label asp-for="TourTitle" class="field-label">
                             <i class="bi bi-tag" style="color:#a0aec0;font-size:.85rem;"></i>
@@ -66,10 +68,26 @@
                         </span>
                     </div>
 
+                    <!-- Kısa Açıklama (SubDescription) -->
+                    <div class="field-group">
+                        <label asp-for="SubDescription" class="field-label">
+                            <i class="bi bi-card-text" style="color:#a0aec0;font-size:.85rem;"></i>
+                            Kısa Açıklama <span class="required">*</span>
+                        </label>
+                        <input asp-for="SubDescription" class="form-control"
+                               placeholder="Örn: Roma'nın tarihi güzelliklerini keşfedin..."
+                               maxlength="200" id="subDescInput" />
+                        <div class="char-counter" id="subDescCounter">0 / 200</div>
+                        <span asp-validation-for="SubDescription" class="text-danger-field">
+                            <i class="bi bi-exclamation-circle"></i><span></span>
+                        </span>
+                    </div>
+
+                    <!-- Uzun Açıklama (FullDescription) -->
                     <div class="field-group">
                         <label asp-for="FullDescription" class="field-label">
                             <i class="bi bi-text-left" style="color:#a0aec0;font-size:.85rem;"></i>
-                            Açıklama <span class="required">*</span>
+                            Detaylı Açıklama <span class="required">*</span>
                         </label>
                         <textarea asp-for="FullDescription" class="form-control"
                                   placeholder="Tur hakkında detaylı açıklama yazın..."
@@ -79,6 +97,7 @@
                             <i class="bi bi-exclamation-circle"></i><span></span>
                         </span>
                     </div>
+
                 </div>
             </div>
 
@@ -105,7 +124,7 @@
                                     {
                                         foreach (var item in (List<string>)ViewBag.Countries)
                                         {
-                                            <option value="@item">@item</option>
+                                            <option value="@item" selected="@(item == Model.TourCountry ? "selected" : null)">@item</option>
                                         }
                                     }
                                 </select>
@@ -421,11 +440,11 @@
                         </li>
                         <li style="font-size:.78rem;color:#718096;display:flex;gap:.5rem;align-items:flex-start;">
                             <i class="bi bi-check2-circle" style="color:#16a34a;margin-top:1px;flex-shrink:0;"></i>
-                            Görselin en az <strong>1200×800px</strong> çözünürlükte olması önerilir.
+                            Kısa açıklama tur listesinde görünen özet metindir.
                         </li>
                         <li style="font-size:.78rem;color:#718096;display:flex;gap:.5rem;align-items:flex-start;">
                             <i class="bi bi-check2-circle" style="color:#16a34a;margin-top:1px;flex-shrink:0;"></i>
-                            Açıklama <strong>özellikler ve dahil/hariç</strong> bilgileri içermeli.
+                            Görselin en az <strong>1200×800px</strong> çözünürlükte olması önerilir.
                         </li>
                         <li style="font-size:.78rem;color:#718096;display:flex;gap:.5rem;align-items:flex-start;">
                             <i class="bi bi-check2-circle" style="color:#16a34a;margin-top:1px;flex-shrink:0;"></i>
@@ -462,7 +481,8 @@
             update();
         }
         initCounter('tourTitleInput', 'titleCounter', 120);
-        initCounter('descInput', 'descCounter', 1000);
+        initCounter('subDescInput',   'subDescCounter', 200); // ✅ SubDescription counter
+        initCounter('descInput',      'descCounter', 1000);
 
         // ── STEPPER ───────────────────────────────────
         function stepperDecrement() {
@@ -489,7 +509,6 @@
         document.getElementById('dayCount').addEventListener('input', updateDuration);
         document.getElementById('nightCount').addEventListener('input', updateDuration);
 
-        // Sayfa yüklenince model'den gelen DayNight değerini parse et
         (function initDuration() {
             const existing = document.getElementById('dayNightHidden').value || '';
             const match = existing.match(/(\d+)\s*Gün\s*\/\s*(\d+)\s*Gece/i);
@@ -589,7 +608,6 @@
             }
         }
 
-        // Sayfa yüklenince modeldeki duruma göre radyo seç
         window.addEventListener('DOMContentLoaded', function () {
             const isStatus = "@Model.IsStatus".toLowerCase() === "true";
             const isDraft  = "@Model.IsDrafts".toLowerCase()  === "true";

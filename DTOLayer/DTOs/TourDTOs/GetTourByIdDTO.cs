@@ -1,4 +1,5 @@
-﻿using MongoDB.Bson.Serialization.Attributes;
+﻿using DTOLayer.DTOs.CommentDTOs;
+using MongoDB.Bson.Serialization.Attributes;
 
 namespace DTOLayer.DTOs.TourDTOs
 {
@@ -27,6 +28,12 @@ namespace DTOLayer.DTOs.TourDTOs
 
         public string GuideImageUrl { get; set; }
         public string GuideDescription { get; set; }
+
+        public string VideoUrl { get; set; }
+        public int Rating { get; set; }
+        public int ReviewCount { get; set; }
+        public List<ResultCommentListByTourIdDTO> Comments { get; set; } = new();
+
 
     }
 }

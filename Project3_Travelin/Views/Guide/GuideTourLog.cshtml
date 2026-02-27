@@ -1,0 +1,62 @@
+﻿@model ResultTourDTO
+@{
+    ViewData["Title"] = "Gezi Günlüğü Düzenle";
+    Layout = "~/Views/Shared/_CustomerLayout.cshtml";
+}
+
+<div class="page-header mb-4">
+    <h1 class="page-title">Gezi Günlüğü: @Model.TourTitle</h1>
+    <p class="text-muted small">Bu rota hakkındaki kişisel notlarınızı ve fotoğraflarınızı buradan güncelleyebilirsiniz.</p>
+</div>
+
+<form method="post" enctype="multipart/form-data">
+    <input type="hidden" asp-for="TourId" />
+
+    <div class="card border-0 shadow-sm rounded-3 p-4 mb-4">
+        <div class="mb-4">
+            <h5 class="fw-bold mb-3" style="color:#5d0473;">
+                <i class="bi bi-pencil-fill me-2"></i>Bu Rota Hakkında Ne Düşünüyorum?
+            </h5>
+            <textarea name="GuideComment" class="form-control border-0 bg-light p-3"
+                      rows="6" placeholder="Rehber notlarınızı buraya yazın..."
+                      style="border-radius: 12px;">@Model.GuideDescription</textarea>
+            <div class="form-text mt-2 text-muted">
+                Not: Bu metin tur detay sayfasında kullanıcılar tarafından görüntülenecektir.
+            </div>
+        </div>
+
+        <hr class="text-muted my-4 opacity-25">
+
+        <div>
+            <h5 class="fw-bold mb-3" style="color:#5d0473;">
+                <i class="bi bi-camera-fill me-2"></i>Rehberimizin Kadrajından Görüntüler
+            </h5>
+
+            @if (!string.IsNullOrEmpty(Model.GuideImageUrl))
+            {
+                <div class="mb-3 d-flex gap-2 overflow-auto py-2">
+                    <img src="@Model.GuideImageUrl" class="rounded-3 shadow-sm" style="height: 120px; width: 180px; object-fit: cover;">
+                    @* Varsa diğer görseller *@
+                </div>
+            }
+
+            <div class="input-group">
+                <input type="file" name="GuideImages" class="form-control" id="inputGroupFile" multiple>
+                <label class="input-group-text bg-white" for="inputGroupFile">Yeni Fotoğraf Yükle</label>
+            </div>
+            <p class="small text-success mt-2">
+                <i class="bi bi-info-circle me-1"></i>En fazla 4 fotoğraf yükleyebilirsiniz.
+            </p>
+        </div>
+    </div>
+
+    @* BUTONLAR *@
+    <div class="d-flex gap-2">
+        <button type="submit" class="btn text-white px-4 rounded-pill" style="background:#5d0473;">
+            <i class="bi bi-save me-2"></i>Değişiklikleri Kaydet
+        </button>
+        <a href="/Guide/MyTours" class="btn btn-outline-secondary px-4 rounded-pill">
+            Vazgeç
+        </a>
+    </div>
+</form>

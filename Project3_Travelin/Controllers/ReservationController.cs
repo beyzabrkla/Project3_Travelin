@@ -36,6 +36,8 @@ namespace Project3_Travelin.Controllers
                 Selected = x.TourId == id
             }).ToList();
 
+            ViewBag.TourPrices = activeTours.ToDictionary(x => x.TourId, x => x.TourPrice);
+
             var model = new CreateReservationDTO
             {
                 CustomerName = user?.FullName,
@@ -52,22 +54,39 @@ namespace Project3_Travelin.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> NewReservation(CreateReservationDTO createReservationDTO)
         {
+            if (!User.Identity.IsAuthenticated)
+                return RedirectToAction("Login", "Login");
+
+            var isAjax = Request.Headers["X-Requested-With"] == "XMLHttpRequest";
+
             if (!ModelState.IsValid)
             {
+                if (isAjax) return Json(new { success = false, message = "Lütfen tüm alanları doğru doldurunuz." });
+
                 var allTours = await _tourService.GetAllTourAsync();
-                ViewBag.TourList = allTours.Where(x => x.IsStatus == true && x.IsDrafts == false)
-                    .Select(x => new Microsoft.AspNetCore.Mvc.Rendering.SelectListItem
-                    {
-                        Text = x.TourTitle,
-                        Value = x.TourId
-                    }).ToList();
+                var activeTours = allTours.Where(x => x.IsStatus == true && x.IsDrafts == false).ToList();
+
+                ViewBag.TourList = activeTours.Select(x => new Microsoft.AspNetCore.Mvc.Rendering.SelectListItem
+                {
+                    Text = x.TourTitle,
+                    Value = x.TourId,
+                    Selected = x.TourId == createReservationDTO.TourId
+                }).ToList();
 
                 return View(createReservationDTO);
             }
 
             await _reservationService.CreateReservationAsync(createReservationDTO);
+
+            if (isAjax)
+            {
+                return Json(new { success = true, message = "Rezervasyonunuz başarıyla oluşturuldu ve mail adresinize iletildi!" });
+            }
+
+            TempData["SuccessMessage"] = "Rezervasyonunuz başarıyla oluşturuldu!";
             return RedirectToAction("MyReservations");
         }
+
 
         public async Task<IActionResult> MyReservations()
         {
@@ -107,6 +126,32 @@ namespace Project3_Travelin.Controllers
                 unitPrice = unitPrice.ToString("C0"),
                 totalPrice = totalPrice.ToString("C0")
             });
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> Cancel(string id)
+        {
+            var user = await _userManager.FindByNameAsync(User.Identity.Name);
+            if (user == null) return RedirectToAction("SignIn", "Login");
+
+            var allReservations = await _reservationService.GetAllReservationAsync();
+            var reservation = allReservations.FirstOrDefault(x => x.ReservationId == id);
+
+            if (reservation != null && reservation.CustomerEmail == user.Email)
+            {
+                if (reservation.Status?.ToLower() == "approved")
+                {
+                    TempData["ErrorMessage"] = "Onaylanmış rezervasyonlar silinemez, lütfen destekle iletişime geçin.";
+                    return RedirectToAction("MyReservations");
+                }
+
+                // VERİTABANINDAN TAMAMEN SİLME
+                await _reservationService.DeleteReservationAsync(id);
+
+                TempData["SuccessMessage"] = "Rezervasyon talebiniz başarıyla silindi.";
+            }
+
+            return RedirectToAction("MyReservations");
         }
     }
 }

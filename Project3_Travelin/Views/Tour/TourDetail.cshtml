@@ -1,6 +1,10 @@
 ﻿@model GetTourByIdDTO
+@using DTOLayer.DTOs.CommentDTOs
+@using EntityLayer
+@using Microsoft.AspNetCore.Identity
+@inject UserManager<AppUser> UserManager
 @{
-    ViewData["Title"] = "TourDetail";
+    ViewData["Title"] = "Tur Detayları";
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
@@ -12,7 +16,7 @@
                 <h1 class="mb-3">@Model.TourTitle</h1>
                 <nav aria-label="breadcrumb" class="d-block">
                     <ul class="breadcrumb">
-                        <li class="breadcrumb-item"><a href="/Home/Index">AnaSayfa</a></li>
+                        <li class="breadcrumb-item"><a href="/Home/Index">Ana Sayfa</a></li>
                         <li class="breadcrumb-item active" aria-current="page">Tur Detayları</li>
                     </ul>
                 </nav>
@@ -21,171 +25,459 @@
     </div>
     <div class="dot-overlay"></div>
 </section>
+
 <section class="trending pt-6 pb-0 bg-lgrey overflow-hidden">
     <div class="tabs-navbar1 bg-white sticky1 bordernone py-3">
-        <ul id="tabs" class="nav nav-tabs bordernone mb-0 overflow-visible">
+        <ul id="tabs" class="nav nav-tabs bordernone mb-0 overflow-visible justify-content-center">
             <li class="active"><a data-toggle="tab" href="#highlight">Genel Bilgiler</a></li>
+            <li><a data-toggle="tab" href="#iternary">Tur Programı</a></li>
+            <li><a data-toggle="tab" href="#single-map">Harita</a></li>
             <li><a data-toggle="tab" href="#single-comments">Yorumlar</a></li>
         </ul>
     </div>
+
     <div class="container">
-        <div class="single-content">
-            <div id="highlight">
-                <div class="single-full-title border-b mb-2 pb-2">
-                    <div class="single-title text-center">
-                        <h2 class="mb-1">@Model.TourTitle</h2>
-                        <div class="rating-main">
-                            <p class="mb-0 me-2 d-inline-block"><i class="icon-location-pin"></i> @Model.TourCity, @Model.TourCountry</p>
-                            <div class="rating me-2 d-inline-block">
-                                <span class="fa fa-star checked"></span>
-                                <span class="fa fa-star checked"></span>
-                                <span class="fa fa-star checked"></span>
-                                <span class="fa fa-star checked"></span>
-                                <span class="fa fa-star checked"></span>
+        <div class="row">
+            <div class="col-lg-8">
+                <div class="single-content">
+
+                    @* Genel Bilgiler *@
+                    <div id="highlight" class="tab-pane fade in active">
+                        <div class="single-full-title border-b mb-2 pb-2">
+                            <div class="single-title text-center">
+                                <h2 class="mb-1">@Model.TourTitle</h2>
+                                <div class="rating-main">
+                                    <p class="mb-0 me-2 d-inline-block">
+                                        <i class="icon-location-pin"></i> @Model.TourCity, @Model.TourCountry
+                                    </p>
+                                    <div class="rating me-2 d-inline-block">
+                                        @for (int i = 1; i <= 5; i++)
+                                        {
+                                            <span class="fa fa-star @(i <= Model.Rating ? "checked text-warning" : "text-muted")"></span>
+                                        }
+                                    </div>
+                                    <span>(@Model.ReviewCount Değerlendirme)</span>
+                                </div>
                             </div>
-                            <span>(1,186 Değerlendirme)</span>
+                        </div>
+
+                        <div class="description-images mb-4">
+                            <div class="row">
+                                @if (Model.ImageAlbumUrls != null && Model.ImageAlbumUrls.Any())
+                                {
+                                    foreach (var item in Model.ImageAlbumUrls.Take(3))
+                                    {
+                                        <div class="col-md-4 col-sm-6 mb-2">
+                                            <img src="@item" alt="Tur Fotoğrafı" class="rounded w-100 shadow-sm" style="height:250px; object-fit:cover;">
+                                        </div>
+                                    }
+                                }
+                            </div>
+                        </div>
+
+                        <div class="description mb-4">
+                            <h4>Tur Açıklaması</h4>
+                            <p class="fw-bold text-theme">@Model.SubDescription</p>
+                            <p class="mb-0">@Model.FullDescription</p>
+                        </div>
+
+                        <div class="tour-includes mb-4">
+                            <table class="table table-bordered bg-white">
+                                <tbody>
+                                    <tr>
+                                        <td><i class="fa fa-clock-o pink mr-1"></i> <strong>Süre:</strong> @Model.DayNight</td>
+                                        <td><i class="fa fa-group pink mr-1"></i> <strong>Kapasite:</strong> @Model.TourCapacity Kişi</td>
+                                        <td><i class="fa fa-calendar pink mr-1"></i> <strong>Tarih:</strong> @Model.TourDate.ToString("dd MMM yyyy")</td>
+                                    </tr>
+                                    <tr>
+                                        <td><i class="fa fa-tag pink mr-1"></i> <strong>Fiyat:</strong> @Model.TourPrice.ToString("C2")</td>
+                                        <td><i class="fa fa-map-signs pink mr-1"></i> <strong>Alış:</strong> Havalimanı / Otel</td>
+                                        <td><i class="fa fa-language pink mr-1"></i> <strong>Dil:</strong> Türkçe, İngilizce</td>
+                                    </tr>
+                                </tbody>
+                            </table>
                         </div>
                     </div>
-                </div>
 
-                <div class="description-images mb-4">
-                    <div class="row">
-                        @if (Model.ImageAlbumUrls != null && Model.ImageAlbumUrls.Any())
+                    @* Tur Programı *@
+                    <div id="iternary" class="tab-pane fade">
+                        <div class="accrodion-grp faq-accrodion mb-4" data-grp-name="faq-accrodion">
+                            <h4 class="mb-3">Tur Programı</h4>
+
+                            <div class="accrodion active">
+                                <div class="accrodion-title" onclick="toggleAccordion(this)" style="cursor:pointer;">
+                                    <h5 class="mb-0"><span>1. Gün</span> - Varış ve Karşılama</h5>
+                                </div>
+                                <div class="accrodion-content" style="display: block;">
+                                    <div class="inner p-3">
+                                        <p>Havalimanında rehberimiz tarafından karşılanma ve otele transfer. Şehirdeki ilk gününüzde serbest zaman ve akşam yemeği.</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="accrodion">
+                                <div class="accrodion-title" onclick="toggleAccordion(this)" style="cursor:pointer;">
+                                    <h5 class="mb-0"><span>2. Gün</span> - Şehir Keşfi ve Tarihi Yerler</h5>
+                                </div>
+                                <div class="accrodion-content" style="display: none;">
+                                    <div class="inner p-3">
+                                        <p>Profesyonel rehberimiz eşliğinde şehrin en önemli tarihi ve turistik noktalarını ziyaret ediyoruz.</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+
+                    @* Harita *@
+                    <div id="single-map" class="single-map mb-4 tab-pane fade">
+                        <h4>Konum / Harita</h4>
+                        <div class="map rounded overflow-hidden">
+                            <iframe height="400" class="w-100" src="https://maps.google.com/maps?q=@Model.TourCity&t=&z=13&ie=UTF8&iwloc=&output=embed"></iframe>
+                        </div>
+                    </div>
+
+                    @* Dinamik Yorumlar Listesi *@
+                    <div id="single-comments" class="single-comments single-box mb-4 tab-pane fade">
+                        <h4 class="mb-4 border-b pb-2">Misafir Yorumları (@Model.ReviewCount Değerlendirme)</h4>
+
+                        @if (Model.Comments != null && Model.Comments.Any())
                         {
-                            foreach (var item in Model.ImageAlbumUrls.Take(3)) // İlk 3 resmi gösterir
+                            @foreach (var comment in Model.Comments)
                             {
-                                <div class="col-md-4 col-sm-6 mb-2">
-                                    <img src="@item" alt="Tur Fotoğrafı" class="rounded w-100" style="height:250px; object-fit:cover;">
+                                <div class="comment-box d-flex mb-3 shadow-sm p-3 bg-white rounded">
+                                    <div class="comment-image me-3" style="flex-shrink:0;">
+                                        <div class="rounded-circle d-flex align-items-center justify-content-center text-white fw-bold"
+                                             style="width:60px; height:60px; font-size:1.4rem; background:#5d0473;">
+                                            @(comment.Headline?.Length > 0 ? comment.Headline.Substring(0, 1).ToUpper() : "?")
+                                        </div>
+                                    </div>
+                                    <div class="comment-content w-100">
+                                        <h5 class="mb-1">@comment.Headline</h5>
+                                        <p class="comment-date text-muted small">
+                                            @comment.CommentDate.ToString("dd MMMM yyyy, HH:mm")
+                                        </p>
+                                        <div class="comment-rate mb-2">
+                                            @for (int i = 1; i <= 5; i++)
+                                            {
+                                                <span class="fa fa-star @(i <= comment.Score ? "text-warning" : "text-muted")"></span>
+                                            }
+                                        </div>
+                                        <p class="mb-0">@comment.CommentDetail</p>
+                                    </div>
                                 </div>
                             }
                         }
-                    </div>
-                </div>
-
-                <div class="description mb-2">
-                    <h4>Tur Açıklaması</h4>
-                    <p>@Model.SubDescription</p>
-                    <p class="mb-0">@Model.FullDescription</p>
-                </div>
-
-                <div class="tour-includes mb-4">
-                    <table>
-                        <tbody>
-                            <tr>
-                                <td><i class="fa fa-clock-o pink mr-1" aria-hidden="true"></i> @Model.DayNight</td>
-                                <td><i class="fa fa-group pink mr-1" aria-hidden="true"></i> Max Kapasite : @Model.TourCapacity</td>
-                                <td><i class="fa fa-calendar pink mr-1" aria-hidden="true"></i> @Model.TourDate.ToString("dd MMM yyyy")</td>
-                            </tr>
-                            <tr>
-                                <td><i class="fa fa-tag pink mr-1" aria-hidden="true"></i> Fiyat : @Model.TourPrice.ToString("C2")</td>
-                                <td><i class="fa fa-map-signs pink mr-1" aria-hidden="true"></i> Alış: Havalimanı</td>
-                                <td><i class="fa fa-file-alt pink mr-1" aria-hidden="true"></i> Dil: Türkçe, İngilizce</td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-
-                <div class="description mb-4">
-                    <h4>Sizi Neler Bekliyor?</h4>
-                    <p>Bu tur kapsamında @Model.TourCity şehrinin en ikonik noktalarını profesyonel rehberlerimiz eşliğinde keşfedeceksiniz. @Model.DayNight sürecek olan bu macerada konforlu ulaşım ve konaklama imkanlarıyla sadece tatilinize odaklanacaksınız.</p>
-                </div>
-            </div>
-
-            <!-- blog comment list -->
-            <div id="single-comments" class="single-comments single-box mb-4">
-                <h5 class="border-b pb-2 mb-2">Showing 16 verified guest comments</h5>
-                <div class="comment-box">
-                    <div class="comment-image">
-                        <img src="images/reviewer/1.jpg" alt="image">
-                    </div>
-                    <div class="comment-content rounded">
-                        <h5 class="mb-1">Helena</h5>
-                        <p class="comment-date">April 25, 2022 at 10:46 am</p>
-                        <div class="comment-rate">
-                            <div class="rating mar-right-15">
-                                <span class="fa fa-star checked"></span>
-                                <span class="fa fa-star checked"></span>
-                                <span class="fa fa-star checked"></span>
-                                <span class="fa fa-star checked"></span>
-                                <span class="fa fa-star checked"></span>
+                        else
+                        {
+                            <div class="alert alert-info">
+                                <i class="fa fa-info-circle me-2"></i> Henüz yorum yapılmamış. İlk yorumu siz yapın!
                             </div>
-                            <span class="comment-title">The worst hotel ever"</span>
+                        }
+                    </div>
+
+                    @* Yorum Formu *@
+                    @if (User.Identity.IsAuthenticated)
+                    {
+                        var currentUser = await UserManager.GetUserAsync(User);
+                        <div id="single-add-review" class="single-box mb-4">
+                            <h4>Yorum Yazın</h4>
+                            <form class="bg-white p-4 rounded shadow-sm" asp-action="CreateComment" asp-controller="Comment" method="post">
+                                @Html.AntiForgeryToken()
+                                <input type="hidden" name="TourId" value="@Model.TourId" />
+
+                                <div class="row">
+                                    <div class="col-md-12 mb-3">
+                                        <label class="fw-bold d-block mb-2">Puanınız</label>
+                                        <div class="star-rating fs-4">
+                                            <button type="button" class="star-option btn p-0 border-0 bg-transparent" data-value="1"><i class="fa fa-star"></i></button>
+                                            <button type="button" class="star-option btn p-0 border-0 bg-transparent" data-value="2"><i class="fa fa-star"></i></button>
+                                            <button type="button" class="star-option btn p-0 border-0 bg-transparent" data-value="3"><i class="fa fa-star"></i></button>
+                                            <button type="button" class="star-option btn p-0 border-0 bg-transparent" data-value="4"><i class="fa fa-star"></i></button>
+                                            <button type="button" class="star-option btn p-0 border-0 bg-transparent" data-value="5"><i class="fa fa-star"></i></button>
+                                        </div>
+                                        <input type="hidden" name="Score" id="selectedRating" value="5">
+                                    </div>
+
+                                    <div class="col-md-12 mb-2">
+                                        <label class="small text-muted">Adınız Soyadınız</label>
+                                        <input type="text" name="Headline" class="form-control bg-light" value="@currentUser.FullName" readonly>
+                                    </div>
+
+                                    <div class="col-md-12 mb-2">
+                                        <label class="small text-muted">Yorumunuz</label>
+                                        <textarea name="CommentDetail" class="form-control" rows="4"
+                                              placeholder="Tur hakkındaki deneyimlerinizi paylaşın..." required></textarea>
+                                    </div>
+
+                                    <div class="col-md-12">
+                                        <button type="submit" class="nir-btn">Yorumu Gönder</button>
+                                    </div>
+                                </div>
+                            </form>
                         </div>
+                    }
+                    else
+                    {
+                        <div class="alert alert-warning">
+                            Yorum yapabilmek için lütfen
+                            <a href="javascript:void(0)" data-bs-toggle="modal" data-bs-target="#exampleModal">giriş yapın</a>.
+                        </div>
+                    }
 
-                        <p class="comment">Take in the iconic skyline and visit the neighbourhood hangouts that you've only ever seen on TV. Take in the iconic skyline and visit the neighbourhood.</p>
-                        <div class="comment-like">
-                            <div class="like-title">
-                                <a href="#" class="nir-btn">Reply</a>
-                            </div>
-                            <div class="like-btn pull-right">
-                                <a href="#" class="like"><i class="fa fa-thumbs-up"></i></a>
-                                <a href="#" class="disike"><i class="fa fa-thumbs-down"></i></a>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="comment-box">
-                    <div class="comment-image">
-                        <img src="images/reviewer/2.jpg" alt="image">
-                    </div>
-                    <div class="comment-content rounded">
-                        <h5 class="mb-1">Helena</h5>
-                        <p class="comment-date">April 25, 2022 at 10:46 am</p>
-                        <div class="comment-rate">
-                            <div class="rating mar-right-15">
-                                <span class="fa fa-star checked"></span>
-                                <span class="fa fa-star checked"></span>
-                                <span class="fa fa-star checked"></span>
-                                <span class="fa fa-star checked"></span>
-                                <span class="fa fa-star checked"></span>
-                            </div>
-                            <span class="comment-title">Was too noisy and not suitable for business meetings"</span>
-                        </div>
-
-                        <p class="comment">Take in the iconic skyline and visit the neighbourhood hangouts that you've only ever seen on TV. Take in the iconic skyline and visit the neighbourhood.</p>
-                        <div class="comment-like">
-                            <div class="like-title">
-                                <a href="#" class="nir-btn">Reply</a>
-                            </div>
-                            <div class="like-btn pull-right">
-                                <a href="#" class="like"><i class="fa fa-thumbs-up"></i></a>
-                                <a href="#" class="disike"><i class="fa fa-thumbs-down"></i></a>
-                            </div>
-                        </div>
-                    </div>
                 </div>
             </div>
 
-            <!-- blog review -->
-            <div id="single-add-review" class="single-add-review">
-                <h4>Write a Review</h4>
-                <form>
-                    <div class="row">
-                        <div class="col-md-6">
-                            <div class="form-group mb-2">
-                                <input type="text" placeholder="Name">
-                            </div>
-                        </div>
-                        <div class="col-md-6">
-                            <div class="form-group mb-2">
-                                <input type="email" placeholder="Email">
-                            </div>
-                        </div>
-                        <div class="col-md-12">
-                            <div class="form-group mb-2">
-                                <textarea>Comment</textarea>
-                            </div>
-                        </div>
-                        <div class="col-md-6">
-                            <div class="form-btn">
-                                <a href="#" class="nir-btn">Submit Review</a>
-                            </div>
-                        </div>
+            @* Sağ Sidebar *@
+            <div class="col-lg-4 ps-lg-4">
+                <div class="sidebar-sticky sticky1">
+                    <div class="tabs-navbar bg-lgrey mb-4 bordernone rounded overflow-hidden p-3 shadow-sm">
+                        <h5 class="mb-3 border-b pb-2">Hızlı Erişim</h5>
+                        <ul class="nav nav-tabs bordernone mb-0 d-block">
+                            <li class="mb-2"><a data-toggle="tab" href="#highlight" class="rounded d-block p-2 border bg-white">Genel Bilgiler</a></li>
+                            <li class="mb-2"><a data-toggle="tab" href="#iternary" class="rounded d-block p-2 border bg-white">Tur Programı</a></li>
+                            <li class="mb-2"><a data-toggle="tab" href="#single-map" class="rounded d-block p-2 border bg-white">Harita</a></li>
+                            <li class="mb-2"><a data-toggle="tab" href="#single-comments" class="rounded d-block p-2 border bg-white">Misafir Yorumları</a></li>
+                            <button type="button" class="nir-btn w-100 text-center border-0 mt-2" data-bs-toggle="modal" data-bs-target="#tourVideoModal">
+                                Tanıtım Videosunu İzle
+                            </button>
+                        </ul>
                     </div>
-                </form>
+
+                    <div class="bg-title p-4 rounded shadow-lg text-white" style="background: #232323;">
+                        <h4 class="text-white mb-2">Rezervasyon</h4>
+                        <div class="d-flex justify-content-between mb-2">
+                            <span>Fiyat:</span>
+                            <span class="fw-bold text-warning">@Model.TourPrice.ToString("C2")</span>
+                        </div>
+                        @if (User.Identity.IsAuthenticated)
+                        {
+                            <button type="button" class="nir-btn w-100 text-center border-0" data-bs-toggle="modal" data-bs-target="#tourReservationModal">
+                                HEMEN YERİNİ AYIRT
+                            </button>
+                        }
+                        else
+                        {
+                            <button type="button" class="nir-btn w-100 text-center border-0" data-bs-toggle="modal" data-bs-target="#exampleModal">
+                                HEMEN YERİNİ AYIRT
+                            </button>
+                        }
+                    </div>
+                </div>
             </div>
         </div>
     </div>
 </section>
 
+@* Rezervasyon Modal *@
+<div class="modal fade" id="tourReservationModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content border-0" style="border-radius: 15px; overflow: hidden;">
+            <div class="modal-header text-white" style="background: #5d0473;">
+                <h5 class="modal-title text-white">
+                    <i class="fa fa-paper-plane me-2"></i> @Model.TourTitle - Rezervasyon Formu
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            @if (User.Identity.IsAuthenticated)
+            {
+                <form asp-action="NewReservation" asp-controller="Reservation" method="post" id="tour-details-reservation-form">
+                    <input type="hidden" name="TourId" value="@Model.TourId" />
+                    <input type="hidden" name="TourTitle" value="@Model.TourTitle" />
+                    <input type="hidden" name="AppUserId" value="@UserManager.GetUserId(User)" />
+                    <div class="modal-body p-4 bg-light">
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="fw-bold">Adınız Soyadınız</label>
+                                <input type="text" name="CustomerName" class="form-control border-0 shadow-sm" value="@User.Identity.Name" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="fw-bold">E-Posta Adresiniz</label>
+                                <input type="email" name="CustomerEmail" class="form-control border-0 shadow-sm" value="@UserManager.GetUserAsync(User).Result.Email" readonly required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="fw-bold">Telefon Numaranız</label>
+                                <input type="tel" name="CustomerPhone" class="form-control border-0 shadow-sm" placeholder="05xx xxx xx xx" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="fw-bold">Kişi Sayısı</label>
+                                <select name="PersonCount" id="personCount" class="form-control border-0 shadow-sm">
+                                    @for (int i = 1; i <= Model.TourCapacity; i++)
+                                    {
+                                        <option value="@i">@i Kişi</option>
+                                    }
+                                </select>
+                            </div>
+                        </div>
+                        <div class="alert alert-info py-2 small">
+                            <i class="fa fa-info-circle"></i> Seçtiğiniz tur için toplam fiyat:
+                            <strong id="totalPrice">@Model.TourPrice.ToString("C2")</strong>
+                        </div>
+                    </div>
+                    <div class="modal-footer bg-white border-0">
+                        <button type="button" class="btn btn-secondary rounded-pill px-4" data-bs-dismiss="modal">İptal</button>
+                        <button type="submit" class="nir-btn px-5">REZERVASYONU TAMAMLA</button>
+                    </div>
+                </form>
+            }
+        </div>
+    </div>
+</div>
 
+@* Video Modal *@
+<div class="modal fade" id="tourVideoModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content border-0" style="border-radius: 15px; overflow: hidden;">
+            <div class="modal-header text-white" style="background: #5d0473;">
+                <h5 class="modal-title text-white">
+                    <i class="fa fa-video-camera me-2"></i> @Model.TourTitle - Tanıtım Videosu
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-0">
+                <div class="ratio ratio-16x9">
+                    <iframe src="@Model.VideoUrl" title="YouTube video" allowfullscreen></iframe>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+@* toggleAccordion global scope'ta tanimli - onclick ile erisilebilir *@
+<script>
+    function toggleAccordion(titleEl) {
+        var content = titleEl.nextElementSibling;
+        var parent = titleEl.parentElement;
+        var allAccordions = document.querySelectorAll('.accrodion');
+
+        allAccordions.forEach(function (acc) {
+            if (acc !== parent) {
+                acc.querySelector('.accrodion-content').style.display = 'none';
+                acc.classList.remove('active');
+            }
+        });
+
+        if (content.style.display === 'none' || content.style.display === '') {
+            content.style.display = 'block';
+            parent.classList.add('active');
+        } else {
+            content.style.display = 'none';
+            parent.classList.remove('active');
+        }
+    }
+</script>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+
+        // 1) Yildiz secimi
+        var stars = document.querySelectorAll('.star-option');
+        var ratingInput = document.getElementById('selectedRating');
+
+        function updateStars(value) {
+            stars.forEach(function (s) {
+                var sv = parseInt(s.dataset.value, 10);
+                var icon = s.querySelector('i, svg');
+                if (icon) {
+                    icon.style.cssText = 'color: ' + (sv <= value ? '#ffc107' : '#ccc') + ' !important; pointer-events: none;';
+                }
+                s.style.fontSize = '1.5rem';
+            });
+        }
+
+        if (stars.length > 0 && ratingInput) {
+            updateStars(parseInt(ratingInput.value) || 5);
+
+            stars.forEach(function (star) {
+                star.addEventListener('click', function () {
+                    var value = parseInt(this.dataset.value, 10);
+                    ratingInput.value = value;
+                    updateStars(value);
+                });
+                star.addEventListener('mouseenter', function () {
+                    updateStars(parseInt(this.dataset.value, 10));
+                });
+            });
+
+            var starContainer = document.querySelector('.star-rating');
+            if (starContainer) {
+                starContainer.addEventListener('mouseleave', function () {
+                    updateStars(parseInt(ratingInput.value) || 5);
+                });
+            }
+        }
+
+        // 2) Rezervasyon tutar guncelleme
+        var personSelect = document.getElementById("personCount");
+        var totalPriceLabel = document.getElementById("totalPrice");
+        var unitPrice = @Model.TourPrice.ToString("0.00", System.Globalization.CultureInfo.InvariantCulture);
+
+        if (personSelect && totalPriceLabel) {
+            personSelect.addEventListener("change", function () {
+                var count = parseInt(this.value, 10) || 1;
+                var total = count * unitPrice;
+                totalPriceLabel.textContent = total.toLocaleString("tr-TR", { style: "currency", currency: "TRY" });
+            });
+        }
+
+        // 3) Rezervasyon AJAX
+        var reservationForm = document.getElementById('tour-details-reservation-form');
+        if (reservationForm) {
+            reservationForm.addEventListener('submit', function (e) {
+                e.preventDefault();
+                handleAjaxSubmit(this, "/Reservation/MyReservations", "Rezervasyonunuz basariyla alindi.");
+            });
+        }
+
+        // 4) Yorum AJAX
+        var commentForm = document.querySelector('#single-add-review form');
+        if (commentForm) {
+            commentForm.addEventListener('submit', function (e) {
+                e.preventDefault();
+                handleAjaxSubmit(this, null, "Yorumunuz alindi, onay sonrasi gorunecektir.");
+            });
+        }
+
+        // 5) Ortak AJAX fonksiyonu
+        function handleAjaxSubmit(form, redirectUrl, successMessage) {
+            var formData = new FormData(form);
+            fetch(form.action, {
+                method: 'POST',
+                body: formData,
+                headers: { 'X-Requested-With': 'XMLHttpRequest' }
+            })
+            .then(function (response) {
+                if (!response.ok) {
+                    return response.text().then(function (text) {
+                        throw new Error('Sunucu hatasi: ' + response.status + '. ' + text.substring(0, 200));
+                    });
+                }
+                return response.json();
+            })
+            .then(function (data) {
+                if (data.success) {
+                    Swal.fire({
+                        title: 'Basarili!',
+                        text: data.message || successMessage,
+                        icon: 'success',
+                        confirmButtonColor: '#5d0473'
+                    }).then(function () {
+                        if (redirectUrl) {
+                            window.location.href = redirectUrl;
+                        } else {
+                            location.reload();
+                        }
+                    });
+                } else {
+                    Swal.fire('Hata!', data.message || 'Bir sorun olustu.', 'error');
+                }
+            })
+            .catch(function (error) {
+                console.error('AJAX Hata:', error);
+                Swal.fire('Hata!', error.message || 'Sunucuya baglanilmadi.', 'error');
+            });
+        }
+    });
+</script>

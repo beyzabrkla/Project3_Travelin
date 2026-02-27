@@ -1,6 +1,7 @@
 ﻿using MongoDB.Bson;
 using MongoDB.Bson.Serialization.Attributes;
 
+
 namespace EntityLayer
 {
     [BsonIgnoreExtraElements]
@@ -25,7 +26,10 @@ namespace EntityLayer
 
         [BsonRepresentation(BsonType.Decimal128)]
         public decimal TourPrice { get; set; } // Tur fiyatı
-
         public string GuideId { get; set; }
+        public string VideoUrl { get; set; }
+        public int Rating { get; set; } // 1-5 arası yıldız puanı
+        public int ReviewCount { get; set; } // toplam yorum sayısı
     }
 }
+

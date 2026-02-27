@@ -83,6 +83,7 @@
         </div>
 
         @* SAĞ TARAFTAKİ ÖZET PANELİ *@
+        @* SAĞ TARAFTAKİ ÖZET PANELİ *@
         <div class="col-lg-4">
             <div class="sidebar-sticky" style="position: sticky; top: 20px;">
                 <div class="summary-card p-4 text-white shadow-lg" style="background: linear-gradient(135deg, #d946ef 0%, #9333ea 100%); border-radius: 24px;">
@@ -94,14 +95,22 @@
                     </div>
 
                     <div class="mb-3">
+                        <label class="small opacity-75 d-block">Kişi Başı Fiyat</label>
+                        <span class="fs-6 fw-bold" id="unitPrice">₺0,00</span>
+                    </div>
+
+                    <div class="mb-3">
                         <label class="small opacity-75 d-block">Toplam Katılımcı</label>
                         <span class="fs-5 fw-bold" id="sumPersonCount">1 Kişi</span>
                     </div>
 
                     <div class="mt-4 pt-3 border-top border-white border-opacity-25">
-                        <div class="d-flex justify-content-between align-items-center">
-                            <span class="small">Durum</span>
-                            <span class="badge bg-white text-dark rounded-pill">Onay Bekliyor</span>
+                        <div class="d-flex justify-content-between align-items-end">
+                            <div>
+                                <span class="small opacity-75 d-block">Toplam Tutar</span>
+                                <span class="fs-3 fw-bolder" id="totalPrice">₺0,00</span>
+                            </div>
+                            <span class="badge bg-white text-dark rounded-pill mb-1">Onay Bekliyor</span>
                         </div>
                     </div>
                 </div>
@@ -118,11 +127,36 @@
 
 @section Scripts {
     <script>
-        document.getElementById('tourSelect').addEventListener('change', function() {
-            const selectedText = this.options[this.selectedIndex].text;
-            document.getElementById('sumTourTitle').textContent = selectedText;
-            document.getElementById('hiddenTourTitle').value = selectedText; 
-        });
+        const tourPrices = @Html.Raw(Json.Serialize(ViewBag.TourPrices));
+
+        function calculateEverything() {
+            const tourSelect = document.getElementById('tourSelect');
+            const selectedTourId = tourSelect.value;
+            const personCount = parseInt(document.getElementById('pCount').value);
+            
+            const unitPriceSpan = document.getElementById('unitPrice');
+            const totalPriceSpan = document.getElementById('totalPrice');
+            const sumTourTitle = document.getElementById('sumTourTitle');
+            const hiddenTourTitle = document.getElementById('hiddenTourTitle');
+
+            if (selectedTourId && tourPrices[selectedTourId]) {
+                const unitPrice = tourPrices[selectedTourId];
+                const total = unitPrice * personCount;
+
+                unitPriceSpan.textContent = unitPrice.toLocaleString('tr-TR', { style: 'currency', currency: 'TRY' });
+                totalPriceSpan.textContent = total.toLocaleString('tr-TR', { style: 'currency', currency: 'TRY' });
+                
+                const selectedText = tourSelect.options[tourSelect.selectedIndex].text;
+                sumTourTitle.textContent = selectedText;
+                hiddenTourTitle.value = selectedText;
+            } else {
+                unitPriceSpan.textContent = "₺0,00";
+                totalPriceSpan.textContent = "₺0,00";
+                sumTourTitle.textContent = "Lütfen tur seçiniz";
+            }
+        }
+
+        document.getElementById('tourSelect').addEventListener('change', calculateEverything);
 
         function changeCount(val) {
             const input = document.getElementById('pCount');
@@ -132,13 +166,17 @@
             if(next >= 1 && next <= 20) {
                 input.value = next;
                 document.getElementById('sumPersonCount').textContent = next + " Kişi";
+                calculateEverything(); // Sayı değişince fiyatı da güncelle
             }
         }
 
+        window.onload = calculateEverything;
+
         document.getElementById('resForm').onsubmit = function() {
             const btn = this.querySelector('button[type="submit"]');
-            btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span> Gönderiliyor...';
-            btn.style.opacity = '0.7';
+            btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span> İşleniyor...';
+            btn.disabled = true;
         };
     </script>
+}
 }

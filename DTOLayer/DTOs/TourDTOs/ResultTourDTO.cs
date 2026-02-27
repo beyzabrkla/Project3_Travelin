@@ -18,16 +18,12 @@ namespace DTOLayer.DTOs.TourDTOs
         public bool IsDrafts { get; set; }
         public bool IsStatus { get; set; }
         public List<string> ImageAlbumUrls { get; set; }
-
         public string GuideId { get; set; }
-
         public string GuideName { get; set; }
-
         public string GuideTitle { get; set; }
-
-
         public string GuideImageUrl { get; set; }
         public string GuideDescription { get; set; }
-
+        public int Rating { get; set; } 
+        public int ReviewCount { get; set; } 
     }
 }
