@@ -16,7 +16,7 @@
                     <li><a href="#" class="white"><i class="fab fa-linkedin" aria-hidden="true"></i></a></li>
                 </ul>
 
-                @* ── DİL SEÇİCİ (script component'te) ── *@
+                @* ── DİL SEÇİCİ ── *@
                 <div class="d-flex align-items-center gap-1">
                     <i class="fa fa-globe white" style="font-size:.8rem;opacity:.8;"></i>
                     <select id="headerLangSelect"
@@ -80,9 +80,22 @@
                     <div class="register-login d-flex align-items-center gap-3">
                         @if (User.Identity.IsAuthenticated)
                         {
-                            <a href="@(User.IsInRole("Guide") ? "/Guide/MyTours" : "/Customer/Dashboard")" class="me-2">
+                            @* Dinamik Yönlendirme Mantığı *@
+                            string targetUrl = "/Customer/Dashboard"; // Varsayılan: Müşteri
+
+                            if (User.IsInRole("Admin"))
+                            {
+                                targetUrl = "/AdminTour/TourList";
+                            }
+                            else if (User.IsInRole("Guide"))
+                            {
+                                targetUrl = "/Guide/MyTours";
+                            }
+
+                            <a href="@targetUrl" class="me-2">
                                 <i class="icon-user"></i> @User.Identity.Name
                             </a>
+
                             <a href="/Login/Logout" class="me-2 text-danger">
                                 <i class="fa fa-sign-out-alt"></i> Çıkış Yap
                             </a>
@@ -96,14 +109,10 @@
                                 <i class="fa fa-shield-alt text-danger" style="font-size: 20px;"></i>
                             </a>
                         }
-                        @if (User.Identity.IsAuthenticated)
-                        {
-                            <a href="/Reservation/NewReservation" class="nir-btn white">Rezervasyon Yap</a>
-                        }
-                        else
-                        {
-                            <a href="#" data-bs-toggle="modal" data-bs-target="#exampleModal" class="nir-btn white">Rezervasyon Yap</a>
-                        }
+
+                        <a href="@(User.Identity.IsAuthenticated ? "/Reservation/NewReservation" : "#")"
+                           @(User.Identity.IsAuthenticated ? "" : "data-bs-toggle=modal data-bs-target=#exampleModal")
+                           class="nir-btn white">Rezervasyon Yap</a>
                     </div>
                     <div id="slicknav-mobile"></div>
                 </div>
@@ -112,7 +121,7 @@
     </div>
 </header>
 
-@* Google Translate gizli widget - script component'teki init fonksiyonu bunu kullanır *@
+@* Google Translate gizli widget *@
 <div id="google_translate_element" style="display:none;"></div>
 
 <style>

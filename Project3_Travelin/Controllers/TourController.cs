@@ -13,7 +13,6 @@ namespace Project3_Travelin.Controllers
         private readonly ICommentService _commentService;
         private readonly IMapper _mapper;
 
-
         public TourController(ITourService tourService, IMapper mapper, IGuideService guideService, ICommentService commentService)
         {
             _tourService = tourService;
@@ -29,27 +28,17 @@ namespace Project3_Travelin.Controllers
 
             allValues = allValues.Where(x => x.IsStatus == true && x.IsDrafts == false).ToList();
 
-            // VİZE FİLTRESİ EKLEMESİ
             if (visaStatus.HasValue)
-            {
                 allValues = allValues.Where(x => x.IsVisaRequired == visaStatus.Value).ToList();
-            }
 
-            // Lokasyon Filtresi
             if (!string.IsNullOrEmpty(destination))
-            {
                 allValues = allValues.Where(x =>
                     x.TourCountry.Contains(destination, StringComparison.OrdinalIgnoreCase) ||
                     x.TourCity.Contains(destination, StringComparison.OrdinalIgnoreCase)).ToList();
-            }
 
-            // Süre Filtresi
             if (!string.IsNullOrEmpty(duration))
-            {
                 allValues = allValues.Where(x => x.DayNight.Contains(duration)).ToList();
-            }
 
-            // Yorum ve Rating Hesaplama (Mevcut kodun)
             foreach (var tour in allValues)
             {
                 var comments = await _commentService.GetCommentsByTourIdAsync(tour.TourId);
@@ -61,7 +50,6 @@ namespace Project3_Travelin.Controllers
             var totalCount = allValues.Count();
             var pagedValues = allValues.Skip((page - 1) * pageSize).Take(pageSize).ToList();
 
-            // ViewBag'ler (VisaStatus'ü de gönderiyoruz ki sayfada aktif tab'ı bilelim)
             ViewBag.CurrentPage = page;
             ViewBag.TotalPages = (int)Math.Ceiling(totalCount / (double)pageSize);
             ViewBag.TotalTours = totalCount;
@@ -80,7 +68,6 @@ namespace Project3_Travelin.Controllers
             var value = await _tourService.GetTourByIdAsync(id);
             if (value == null) return NotFound();
 
-            // Yorumları çek
             var comments = await _commentService.GetCommentsByTourIdAsync(id);
             var approvedComments = comments
                 .Where(c => c.IsStatus)
@@ -99,12 +86,18 @@ namespace Project3_Travelin.Controllers
         public async Task<IActionResult> TourRoutes(string guideId, int page = 1)
         {
             int pageSize = 6;
+
             var allGuides = await _guideService.GetAllGuideAsync();
             ViewBag.Guides = allGuides.Where(x => x.Status).ToList();
 
             var tours = string.IsNullOrEmpty(guideId)
-                        ? await _tourService.GetAllTourAsync()
-                        : await _tourService.GetToursByGuideIdAsync(guideId);
+                ? await _tourService.GetAllTourAsync()
+                : await _tourService.GetToursByGuideIdAsync(guideId);
+
+            // ✅ DÜZELTİLDİ: Sadece aktif, taslak olmayan turlar gösterilsin
+            tours = tours
+                .Where(x => x.IsStatus == true && x.IsDrafts == false)
+                .ToList();
 
             var totalCount = tours.Count();
             var totalPages = (int)Math.Ceiling(totalCount / (double)pageSize);
@@ -122,6 +115,7 @@ namespace Project3_Travelin.Controllers
 
             return View(pagedValues);
         }
+
         public async Task<IActionResult> GuideTourLog(string id)
         {
             if (string.IsNullOrEmpty(id)) return RedirectToAction("TourList");
@@ -141,9 +135,7 @@ namespace Project3_Travelin.Controllers
             }
 
             var model = _mapper.Map<GetTourByIdDTO>(tourValue);
-
             return View(model);
         }
-
     }
 }

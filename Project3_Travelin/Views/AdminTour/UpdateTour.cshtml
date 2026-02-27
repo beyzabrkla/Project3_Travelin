@@ -3,17 +3,6 @@
     ViewData["Title"] = "Tur Düzenle";
     Layout = "~/Views/Shared/_AdminLayout.cshtml";
 }
-@if (ViewBag.Errors != null)
-{
-    <div class="alert alert-danger">
-        <ul>
-            @foreach (var error in ViewBag.Errors)
-            {
-                <li>@error</li>
-            }
-        </ul>
-    </div>
-}
 
 <!-- PAGE HEADER -->
 <div class="page-header">
@@ -33,8 +22,8 @@
     </a>
 </div>
 
-<form asp-action="UpdateTour" method="post" id="updateTourForm">
-    <input type="hidden" asp-for="TourId" />
+<form asp-action="UpdateTour" method="post" id="updateTourForm" enctype="multipart/form-data">
+   <input type="hidden" asp-for="TourId" />
     <input type="hidden" id="isStatusHidden" name="IsStatus" value="@Model.IsStatus.ToString().ToLower()" />
     <input type="hidden" id="isDraftsHidden" name="IsDrafts" value="@Model.IsDrafts.ToString().ToLower()" />
     @Html.AntiForgeryToken()
@@ -68,7 +57,7 @@
                         </span>
                     </div>
 
-                    <!-- Kısa Açıklama (SubDescription) -->
+                    <!-- Kısa Açıklama -->
                     <div class="field-group">
                         <label asp-for="SubDescription" class="field-label">
                             <i class="bi bi-card-text" style="color:#a0aec0;font-size:.85rem;"></i>
@@ -83,7 +72,7 @@
                         </span>
                     </div>
 
-                    <!-- Uzun Açıklama (FullDescription) -->
+                    <!-- Detaylı Açıklama -->
                     <div class="field-group">
                         <label asp-for="FullDescription" class="field-label">
                             <i class="bi bi-text-left" style="color:#a0aec0;font-size:.85rem;"></i>
@@ -276,6 +265,125 @@
                 </div>
             </div>
 
+
+            <!-- ✅ VİZE & VİDEO BİLGİLERİ -->
+            <div class="form-section">
+                <div class="section-header">
+                    <div class="section-icon amber"><i class="bi bi-passport"></i></div>
+                    <div>
+                        <div class="section-title">Vize & Video</div>
+                        <div class="section-subtitle">Vize durumu ve tanıtım videosu</div>
+                    </div>
+                </div>
+                <div class="section-body">
+                    <div class="row g-3">
+
+                        <!-- Vize Durumu -->
+                        <div class="col-12">
+                            <div class="field-group">
+                                <label class="field-label">
+                                    <i class="bi bi-passport" style="color:#a0aec0;font-size:.85rem;"></i>
+                                    Vize Durumu <span class="required">*</span>
+                                </label>
+                                <div class="d-flex gap-3 mt-1">
+                                    <label class="visa-option" id="visaRequired">
+                                        <input type="radio" name="VisaRadio" value="true" onchange="updateVisa(this)" />
+                                        <span class="visa-dot" style="background:#e53e3e;"></span>
+                                        <div class="status-text">
+                                            <div class="stitle">Vize Gerekiyor</div>
+                                            <div class="ssub">Pasaport + vize şartı var</div>
+                                        </div>
+                                        <i class="bi bi-x-circle-fill ms-auto" style="color:#e53e3e;font-size:.95rem;"></i>
+                                    </label>
+                                    <label class="visa-option" id="visaNotRequired">
+                                        <input type="radio" name="VisaRadio" value="false" onchange="updateVisa(this)" />
+                                        <span class="visa-dot" style="background:#16a34a;"></span>
+                                        <div class="status-text">
+                                            <div class="stitle">Vizesiz</div>
+                                            <div class="ssub">Vize gerekmez</div>
+                                        </div>
+                                        <i class="bi bi-check-circle-fill ms-auto" style="color:#16a34a;font-size:.95rem;"></i>
+                                    </label>
+                                </div>
+                                <input type="hidden" id="isVisaRequiredHidden" name="IsVisaRequired" value="@Model.IsVisaRequired.ToString().ToLower()" />
+                                <div class="field-hint mt-2">
+                                    <i class="bi bi-info-circle me-1"></i>Bu seçim tur listesinde filtre olarak görünür.
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Video URL -->
+                        <div class="col-12">
+                            <div class="field-group">
+                                <label class="field-label">
+                                    <i class="bi bi-play-circle" style="color:#a0aec0;font-size:.85rem;"></i>
+                                    Tanıtım Video URL <span style="color:#a0aec0;font-size:.78rem;">(isteğe bağlı)</span>
+                                </label>
+                                <div class="input-with-icon">
+                                    <i class="bi bi-youtube input-icon" style="color:#ff0000;"></i>
+                                    <input asp-for="VideoUrl" type="url" class="form-control"
+                                           placeholder="https://www.youtube.com/watch?v=..."
+                                           id="videoUrlInput" />
+                                </div>
+                                <div class="field-hint">
+                                    <i class="bi bi-info-circle me-1"></i>YouTube veya Vimeo linki girin.
+                                </div>
+                                <!-- Video önizleme -->
+                                <div id="videoPreview" class="mt-2" style="display:none;">
+                                    <iframe id="videoIframe" width="100%" height="220"
+                                            style="border-radius:8px;border:1px solid #e2e8f0;"
+                                            allowfullscreen></iframe>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+
+            <!-- ✅ DÜZELTİLDİ: HARİTA GÖRSELİ — Artık kendi form-section'ı içinde -->
+            <div class="form-section">
+                <div class="section-header">
+                    <div class="section-icon green"><i class="bi bi-map"></i></div>
+                    <div>
+                        <div class="section-title">Harita Görseli</div>
+                        <div class="section-subtitle">Tur güzergah haritası</div>
+                    </div>
+                </div>
+                <div class="section-body">
+                    <div class="field-group">
+                        <!-- Mevcut harita görseli varsa göster -->
+                        @if (!string.IsNullOrEmpty(Model.MapImageUrl))
+                        {
+                            <div class="mb-3">
+                                <p class="field-hint"><i class="bi bi-info-circle me-1"></i>Mevcut harita görseli:</p>
+                                <img src="/userimages/@Model.MapImageUrl" alt="Mevcut harita"
+                                     style="max-width:200px;border-radius:8px;border:1px solid #e2e8f0;" />
+                            </div>
+                        }
+
+                        <div class="image-upload-zone" id="mapUploadZone">
+                            @* ✅ DÜZELTİLDİ: name="MapImageFile" zaten var, form içinde ve doğru konumda *@
+                            <input type="file" name="MapImageFile" id="mapFileInput" accept="image/*" />
+                            <div class="upload-icon"><i class="bi bi-map"></i></div>
+                            <div class="upload-title">Harita Dosyası Yükle</div>
+                            <div class="upload-sub">PNG, JPG, WebP — Maks. 5MB</div>
+                        </div>
+
+                        <div class="image-preview-box mt-3" id="mapPreviewBox" style="display:none;">
+                            <img src="" alt="Harita önizleme" id="mapPreviewImg" />
+                            <div class="preview-overlay">
+                                <button type="button" class="preview-remove" onclick="removeMapImage()">
+                                    <i class="bi bi-trash3"></i> Haritayı Kaldır
+                                </button>
+                            </div>
+                        </div>
+
+                        <input type="hidden" asp-for="MapImageUrl" id="mapImageUrlHidden" />
+                    </div>
+                </div>
+            </div>
+
             <!-- GÖRSEL -->
             <div class="form-section">
                 <div class="section-header">
@@ -310,7 +418,8 @@
                     </div>
 
                     <div class="image-upload-zone" id="uploadZone">
-                        <input type="file" accept="image/*" id="imageFileInput" aria-label="Görsel dosyası seç" />
+                        @* ✅ DÜZELTİLDİ: name="ImageFile" EKLENDİ — önceden yoktu, dosya hiç gelmiyordu *@
+                        <input type="file" name="ImageFile" accept="image/*" id="imageFileInput" aria-label="Görsel dosyası seç" />
                         <div class="upload-icon"><i class="bi bi-cloud-arrow-up"></i></div>
                         <div class="upload-title">Dosya sürükleyin veya seçin</div>
                         <div class="upload-sub">PNG, JPG, WebP — Maks. 5MB</div>
@@ -463,28 +572,98 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-validate/1.19.5/jquery.validate.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-validation-unobtrusive/3.2.13/jquery.validate.unobtrusive.min.js"></script>
 
+<style>
+    /* Vize seçenek kartları */
+    .visa-option {
+        display: flex;
+        align-items: center;
+        gap: .75rem;
+        padding: .75rem 1rem;
+        border: 1.5px solid #e2e8f0;
+        border-radius: 10px;
+        cursor: pointer;
+        transition: all .2s;
+        flex: 1;
+        background: #fff;
+    }
+
+        .visa-option input[type="radio"] {
+            display: none;
+        }
+
+    .visa-dot {
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        flex-shrink: 0;
+    }
+
+    .visa-option.selected-active {
+        border-color: #16a34a;
+        background: #f0fdf4;
+    }
+
+    .visa-option.selected-passive {
+        border-color: #e53e3e;
+        background: #fff5f5;
+    }
+
+    .visa-option:hover {
+        border-color: #a0aec0;
+    }
+
+</style>
+
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
     <script>
 
-        // ── CHAR COUNTERS ─────────────────────────────
+        // ── MAP FILE UPLOAD PREVIEW ────────────────────────────────────
+        const mapUploadZone = document.getElementById('mapUploadZone');
+        const mapFileInput  = document.getElementById('mapFileInput');
+        const mapPreviewBox = document.getElementById('mapPreviewBox');
+        const mapPreviewImg = document.getElementById('mapPreviewImg');
+
+        if (mapFileInput) {
+            mapFileInput.addEventListener('change', function () {
+                const file = this.files[0];
+                if (!file) return;
+                const reader = new FileReader();
+                reader.onload = function (e) {
+                    mapPreviewImg.src = e.target.result;
+                    mapPreviewBox.style.display = 'block';
+                    mapUploadZone.style.display  = 'none';
+                };
+                reader.readAsDataURL(file);
+            });
+        }
+
+        function removeMapImage() {
+            mapPreviewBox.style.display = 'none';
+            mapUploadZone.style.display  = 'block';
+            mapFileInput.value = '';
+            mapPreviewImg.src  = '';
+            document.getElementById('mapImageUrlHidden').value = '';
+        }
+
+        // ── CHAR COUNTERS ─────────────────────────────────────────────
         function initCounter(inputId, counterId, max) {
-            const el = document.getElementById(inputId);
+            const el      = document.getElementById(inputId);
             const counter = document.getElementById(counterId);
             if (!el || !counter) return;
             function update() {
                 const len = el.value.length;
                 counter.textContent = len + ' / ' + max;
-                counter.className = 'char-counter' + (len > max * .9 ? (len >= max ? ' danger' : ' warn') : '');
+                counter.className   = 'char-counter' + (len > max * .9 ? (len >= max ? ' danger' : ' warn') : '');
             }
             el.addEventListener('input', update);
             update();
         }
-        initCounter('tourTitleInput', 'titleCounter', 120);
-        initCounter('subDescInput',   'subDescCounter', 200); // ✅ SubDescription counter
-        initCounter('descInput',      'descCounter', 1000);
+        initCounter('tourTitleInput', 'titleCounter',   120);
+        initCounter('subDescInput',   'subDescCounter', 200);
+        initCounter('descInput',      'descCounter',   1000);
 
-        // ── STEPPER ───────────────────────────────────
+        // ── STEPPER ───────────────────────────────────────────────────
         function stepperDecrement() {
             const inp = document.getElementById('capacityInput');
             const val = parseInt(inp.value) || 1;
@@ -497,7 +676,7 @@
         }
         document.getElementById('capacityInput').addEventListener('input', updateSummary);
 
-        // ── DURATION BUILDER ──────────────────────────
+        // ── DURATION BUILDER ──────────────────────────────────────────
         function updateDuration() {
             const days   = parseInt(document.getElementById('dayCount').value)   || 0;
             const nights = parseInt(document.getElementById('nightCount').value) || 0;
@@ -511,7 +690,7 @@
 
         (function initDuration() {
             const existing = document.getElementById('dayNightHidden').value || '';
-            const match = existing.match(/(\d+)\s*Gün\s*\/\s*(\d+)\s*Gece/i);
+            const match    = existing.match(/(\d+)\s*Gün\s*\/\s*(\d+)\s*Gece/i);
             if (match) {
                 document.getElementById('dayCount').value    = match[1];
                 document.getElementById('nightCount').value = match[2];
@@ -524,7 +703,7 @@
             updateSummary();
         })();
 
-        // ── IMAGE URL PREVIEW ─────────────────────────
+        // ── IMAGE URL PREVIEW ─────────────────────────────────────────
         const imageUrlInput = document.getElementById('imageUrlInput');
         const urlPreviewImg = document.getElementById('urlPreviewImg');
         let urlDebounce;
@@ -551,7 +730,7 @@
             }
         })();
 
-        // ── FILE UPLOAD PREVIEW ───────────────────────
+        // ── FILE UPLOAD PREVIEW ───────────────────────────────────────
         const uploadZone     = document.getElementById('uploadZone');
         const imageFileInput = document.getElementById('imageFileInput');
         const previewBox     = document.getElementById('previewBox');
@@ -588,7 +767,7 @@
             previewImg.src = '';
         }
 
-        // ── YAYIM DURUMU ──────────────────────────────
+        // ── YAYIM DURUMU ──────────────────────────────────────────────
         function updateStatus(radio) {
             $('.status-option').removeClass('selected-active selected-draft selected-passive');
             const val    = radio.value;
@@ -610,20 +789,15 @@
 
         window.addEventListener('DOMContentLoaded', function () {
             const isStatus = "@Model.IsStatus".toLowerCase() === "true";
-            const isDraft  = "@Model.IsDrafts".toLowerCase()  === "true";
-
+            const isDraft  = "@Model.IsDrafts".toLowerCase() === "true";
             let targetValue = "passive";
             if (isDraft)       targetValue = "draft";
             else if (isStatus) targetValue = "active";
-
             const targetRadio = document.querySelector('input[name="PublishStatus"][value="' + targetValue + '"]');
-            if (targetRadio) {
-                targetRadio.checked = true;
-                updateStatus(targetRadio);
-            }
+            if (targetRadio) { targetRadio.checked = true; updateStatus(targetRadio); }
         });
 
-        // ── LIVE SUMMARY ──────────────────────────────
+        // ── LIVE SUMMARY ──────────────────────────────────────────────
         function updateSummary() {
             const title    = document.getElementById('tourTitleInput').value.trim();
             const country  = document.getElementById('countrySelect').value;
@@ -650,23 +824,72 @@
         });
         updateSummary();
 
-        // ── DRAFT SAVE ────────────────────────────────
+        // ── DRAFT SAVE ────────────────────────────────────────────────
         function saveDraft() {
             $('#isStatusHidden').val("false");
             $('#isDraftsHidden').val("true");
             document.getElementById('updateTourForm').submit();
         }
 
-        // ── FORM SUBMIT ───────────────────────────────
+        // ── FORM SUBMIT ───────────────────────────────────────────────
         $(document).ready(function () {
-            $('#updateTourForm').on('submit', function () {
-                if (!$(this).valid()) return false;
+            $('#updateTourForm').on('submit', function (e) {
+                if (!$(this).valid()) {
+                    console.warn("Hatalı alanlar:", $(this).validate().errorList);
+                    return false;
+                }
                 const btn = $('#submitBtn');
                 btn.prop('disabled', true);
-                btn.html('<span class="spinner-border spinner-border-sm me-2"></span>Güncelleniyor...');
+                btn.html('<span class="spinner-border spinner-border-sm me-2"></span>İşlem yapılıyor...');
                 return true;
             });
         });
+
+
+        // ── VİZE DURUMU ───────────────────────────────────────────────
+        function updateVisa(radio) {
+            document.querySelectorAll('.visa-option').forEach(el => el.classList.remove('selected-active', 'selected-passive'));
+            const parent = radio.closest('.visa-option');
+            document.getElementById('isVisaRequiredHidden').value = radio.value;
+            if (radio.value === 'true') parent.classList.add('selected-passive');
+            else parent.classList.add('selected-active');
+        }
+
+        (function initVisa() {
+            const existing = document.getElementById('isVisaRequiredHidden').value;
+            const targetVal = (existing === 'true' || existing === 'True') ? 'true' : 'false';
+            const targetRadio = document.querySelector('input[name="VisaRadio"][value="' + targetVal + '"]');
+            if (targetRadio) { targetRadio.checked = true; updateVisa(targetRadio); }
+        })();
+
+        // ── VİDEO ÖNİZLEME ───────────────────────────────────────────
+        const videoUrlInput = document.getElementById('videoUrlInput');
+        if (videoUrlInput) {
+            videoUrlInput.addEventListener('input', function () {
+                const url = this.value.trim();
+                const preview = document.getElementById('videoPreview');
+                const iframe  = document.getElementById('videoIframe');
+                if (!url) { preview.style.display = 'none'; return; }
+                const ytMatch = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([^&\s]+)/);
+                if (ytMatch) {
+                    iframe.src = 'https://www.youtube.com/embed/' + ytMatch[1];
+                    preview.style.display = 'block';
+                    return;
+                }
+                const vimeoMatch = url.match(/vimeo\.com\/(\d+)/);
+                if (vimeoMatch) {
+                    iframe.src = 'https://player.vimeo.com/video/' + vimeoMatch[1];
+                    preview.style.display = 'block';
+                    return;
+                }
+                preview.style.display = 'none';
+            });
+
+            // Init video preview if existing URL
+            if (videoUrlInput.value.trim()) {
+                videoUrlInput.dispatchEvent(new Event('input'));
+            }
+        }
 
     </script>
 }
