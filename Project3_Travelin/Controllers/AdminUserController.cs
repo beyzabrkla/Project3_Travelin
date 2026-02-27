@@ -1,4 +1,4 @@
-﻿using AutoMapper;
+using AutoMapper;
 using BusinessLayer.Abstract;
 using DTOLayer.DTOs.GuideDTOs;
 using EntityLayer;
@@ -98,23 +98,23 @@ namespace Project3_Travelin.Controllers
         {
             if (string.IsNullOrEmpty(id)) return NotFound();
 
-            // 1. Rehberin MongoDB bilgilerini getir
+            //Rehberin MongoDB bilgilerini getir
             var guide = await _guideService.GetGuideByIdAsync(id);
             if (guide == null) return NotFound();
 
-            // 2. Bu rehberle ilişkili Identity kullanıcısını (AppUser) bul
+            //Bu rehberle ilişkili Identity kullanıcısını (AppUser) bul
             // (İsim üzerinden eşleştirme yapıyoruz)
             var user = _userManager.Users.FirstOrDefault(x =>
                 x.FullName == guide.Name || x.UserName == guide.Name);
 
-            // 3. Rehber bilgilerini View'a taşımak için ViewBag kullanabiliriz
+            //Rehber bilgilerini View'a taşımak için ViewBag kullanabiliriz
             ViewBag.GuideInfo = guide;
 
             if (user != null)
             {
                 var roles = await _userManager.GetRolesAsync(user);
                 ViewBag.UserRoles = roles;
-                return View(user); // View'da @model AppUser bekleyeceğiz
+                return View(user); 
             }
 
             // Kullanıcı hesabı bulunamazsa sadece rehber ismiyle boş bir model gönder
