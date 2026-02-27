@@ -104,11 +104,27 @@
         <a href="#" class="sidebar-brand">
             <div class="brand-icon"><i class="bi bi-person-workspace"></i></div>
             <div>
-                <span class="brand-sub">@(User.IsInRole("Guide") ? "Rehber Alanı" : "Müşteri Alanı")</span>
+                <span class="brand-sub">
+                    @if (User.IsInRole("Admin"))
+                    {
+                        <span>Admin Paneli</span>
+                    }
+                    else if (User.IsInRole("Guide"))
+                    {
+
+                        <span>Rehber Alanı</span>
+                    }
+                    else
+                    {
+
+                        <span>Müşteri Alanı</span>
+                    }
+                </span>
             </div>
         </a>
 
-        @if (User.IsInRole("Customer"))
+        @* MÜŞTERİ MENÜSÜ (Admin veya Guide olmayan herkes görür) *@
+        @if (!User.IsInRole("Admin") && !User.IsInRole("Guide"))
         {
             <div class="sidebar-section">
                 <div class="sidebar-section-label">Menü</div>
@@ -121,20 +137,20 @@
             </div>
             <div class="sidebar-section">
                 <div class="sidebar-section-label">Hesabım</div>
-                <a href="/Customer/MyReviews" class="nav-item-link"><i class="bi bi-chat-left-text"></i> Yorumlarım</a>
                 <a href="/Customer/Profile" class="nav-item-link"><i class="bi bi-person-gear"></i> Profil Ayarları</a>
             </div>
         }
 
+        @* REHBER MENÜSÜ *@
         @if (User.IsInRole("Guide"))
         {
-            <div class="sidebar-section">
-                <div class="sidebar-section-label">Hesabım</div>
-                <a href="/Customer/Profile" class="nav-item-link"><i class="bi bi-person-gear"></i> Profil Ayarları</a>
-            </div>
             <div class="sidebar-section guide-nav-section">
                 <div class="sidebar-section-label">Rehberlik</div>
                 <a href="/Guide/MyTours" class="nav-item-link"><i class="bi bi-map"></i> Turlarımı Yönet</a>
+            </div>
+            <div class="sidebar-section">
+                <div class="sidebar-section-label">Hesabım</div>
+                <a href="/Customer/Profile" class="nav-item-link"><i class="bi bi-person-gear"></i> Profil Ayarları</a>
             </div>
         }
 
@@ -142,7 +158,6 @@
             <a href="/Login/Logout" class="nav-item-link text-danger"><i class="bi bi-box-arrow-left"></i> Çıkış Yap</a>
         </div>
     </aside>
-
     <header class="topbar">
         <button class="hamburger" onclick="toggleSidebar()"><i class="bi bi-list"></i></button>
         <span class="topbar-title">@ViewData["Title"]</span>

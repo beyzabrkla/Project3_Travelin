@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 
 namespace Project3_Travelin.Controllers
 {
-    [Authorize]
+    [Authorize] 
     public class CustomerController : Controller
     {
         private readonly IReservationService _reservationService;

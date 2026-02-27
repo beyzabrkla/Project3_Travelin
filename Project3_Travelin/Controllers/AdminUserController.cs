@@ -12,7 +12,6 @@ using System.Threading.Tasks;
 
 namespace Project3_Travelin.Controllers
 {
-    [Authorize(Roles = "Admin")]
     public class AdminUserController : Controller
     {
         private readonly UserManager<AppUser> _userManager;

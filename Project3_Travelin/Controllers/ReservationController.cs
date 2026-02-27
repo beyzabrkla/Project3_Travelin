@@ -13,13 +13,15 @@ namespace Project3_Travelin.Controllers
     {
         private readonly ITourService _tourService;
         private readonly IReservationService _reservationService;
+        private readonly IGuideService _guideService;
         private readonly UserManager<AppUser> _userManager;
 
-        public ReservationController(ITourService tourService, IReservationService reservationService, UserManager<AppUser> userManager)
+        public ReservationController(ITourService tourService, IReservationService reservationService, UserManager<AppUser> userManager, IGuideService guideService)
         {
             _tourService = tourService;
             _reservationService = reservationService;
             _userManager = userManager;
+            _guideService = guideService;
         }
 
         [HttpGet]
@@ -111,6 +113,20 @@ namespace Project3_Travelin.Controllers
             var allTours = await _tourService.GetAllTourAsync();
             var tour = allTours.FirstOrDefault(x => x.TourId == res.TourId);
 
+            // REHBER BİLGİSİNİ ÇEKME MANTIĞI
+            string guideName = "Rehber Atanmadı";
+            string guideImage = "/images/default-guide.png";
+
+            if (tour != null && !string.IsNullOrEmpty(tour.GuideId))
+            {
+                var guide = await _guideService.GetGuideByIdAsync(tour.GuideId);
+                if (guide != null)
+                {
+                    guideName = guide.Name;
+                    guideImage = !string.IsNullOrEmpty(guide.ImageUrl) ? guide.ImageUrl : guideImage;
+                }
+            }
+
             decimal unitPrice = tour?.TourPrice ?? 0;
             decimal totalPrice = res.PersonCount * unitPrice;
 
@@ -121,8 +137,8 @@ namespace Project3_Travelin.Controllers
                 person = res.PersonCount,
                 customer = res.CustomerName,
                 status = res.Status,
-                guide = res.GuideName,
-                guideImage = res.GuideImageUrl ?? "/images/default-guide.png",
+                guide = guideName, // Rehber tablosundan gelen isim
+                guideImage = guideImage, // Rehber tablosundan gelen görsel
                 unitPrice = unitPrice.ToString("C0"),
                 totalPrice = totalPrice.ToString("C0")
             });
