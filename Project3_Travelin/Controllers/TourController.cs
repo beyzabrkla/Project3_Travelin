@@ -1,4 +1,4 @@
-﻿using AutoMapper;
+using AutoMapper;
 using BusinessLayer.Abstract;
 using DTOLayer.DTOs.CommentDTOs;
 using DTOLayer.DTOs.TourDTOs;
@@ -94,7 +94,7 @@ namespace Project3_Travelin.Controllers
                 ? await _tourService.GetAllTourAsync()
                 : await _tourService.GetToursByGuideIdAsync(guideId);
 
-            // ✅ DÜZELTİLDİ: Sadece aktif, taslak olmayan turlar gösterilsin
+            //Sadece aktif, taslak olmayan turlar
             tours = tours
                 .Where(x => x.IsStatus == true && x.IsDrafts == false)
                 .ToList();
