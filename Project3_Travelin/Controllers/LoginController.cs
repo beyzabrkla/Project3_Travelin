@@ -1,4 +1,4 @@
-﻿using EntityLayer;
+using EntityLayer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -46,11 +46,11 @@ namespace Project3_Travelin.Controllers
 
                 if (await _userManager.IsInRoleAsync(user, "Guide"))
                 {
-                    // Guide Dashboard'a yönlendir
+                
                     return RedirectToAction("Index", "Home");
                 }
 
-                // Customer ise Customer Dashboard'a gider
+                
                 return RedirectToAction("Index", "Home");
             }
             TempData["LoginError"] = "Kullanıcı adı veya şifre hatalı.";
@@ -166,7 +166,7 @@ namespace Project3_Travelin.Controllers
             var result = await _userManager.CreateAsync(user, password_name);
             if (result.Succeeded)
             {
-                // Yeni admin'i Admin rolüne ata
+                
                 await _userManager.AddToRoleAsync(user, "Admin");
                 await _signInManager.SignInAsync(user, isPersistent: true);
                 TempData["AdminRegisterSuccess"] = "Admin kayıt başarılı! Panele yönlendiriliyorsunuz.";
