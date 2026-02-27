@@ -131,3 +131,68 @@ Travelin, güvenli bir ekosistem sağlamak adına ASP.NET Core Identity altyapı
 <img width="827" height="388" alt="giriş2" src="https://github.com/user-attachments/assets/c6c31b4c-038b-4ff4-b155-d6f35454b776" />
 
 
+## 🛠️ Rehber Yönetim Paneli ve Dinamik İçerik Kontrolü <br>
+Travelin sisteminde rehberler, sistemin hem kullanıcısı hem de içerik editörüdür. Admin tarafından yetkilendirilen rehberler, kendilerine özel bir yönetim katmanına sahip olurlar. <br>
+
+### ✍️ 1. İçerik Editörlüğü ve Blog Yönetimi <br>
+* **Blog Görüntüleme ve Düzenleme:** Rehberler, kendilerine atanan turlar için kaleme aldıkları deneyim yazılarını (blogları) özel bir liste üzerinden görüntüleyebilir. <br>
+* **Anlık Güncelleme:** Rehber, tur detaylarını veya yazdığı blog içeriğini ihtiyaç duyduğu her an güncelleyebilir; bu güncellemeler veritabanında asenkron olarak işlenir. <br>
+* **Canlı Önizleme:** Rehber, panel üzerinden tek tıkla yazdığı yazının kullanıcı tarafında nasıl göründüğünü (Tur Detay Sayfası) inceleyebilir. <br>
+
+### 🎭 2. Hibrit Kullanıcı Deneyimi (Customer UI Integration) <br>
+Projenin en özgün teknik yapılarından biri olan rehber arayüzü şu şekilde kurgulanmıştır: <br>
+* **Filtrelenmiş Müşteri Tasarımı:** Bir kullanıcıya Admin tarafından "Rehber" rolü verildiğinde, bu kullanıcı genel **Customer (Müşteri) tasarımını** kullanmaya devam eder. <br>
+* **Rol Bazlı Menü Filtreleme:** Rehberler, müşteri arayüzünü kullanırken sadece kendilerine yetki verilen **"Rehber Paneli"** ve **"Turlarım"** gibi özel alanları görebilirler. <br>
+* **Özelleştirilmiş Sidebar:** Sidebar (yan menü), kullanıcının rolüne göre (Customer/Guide) dinamik olarak filtrelenir; böylece rehber, karmaşık admin panellerine girmeden kendi işlerini müşteri konforunda yönetebilir. <br>
+
+### 🛡️ 3. Yetkilendirme Mantığı ve Güvenlik <br>
+* **Admin Onaylı Geçiş:** Bir kullanıcının rehber yeteneklerine kavuşması için mutlaka Admin tarafından rolünün güncellenmesi gerekir. <br>
+* **Data Isolation (Veri İzolasyonu):** Rehberler sadece kendi `GuideId`'leri ile eşleşen tur ve blog verilerine erişebilirler; diğer rehberlerin veya adminin özel verilerine erişim kod seviyesinde engellenmiştir. <br>
+
+### ⚙️ 4. Teknik Arka Plan <br>
+* **Dinamik View Mapping:** Kullanıcı giriş yaptığında `User.IsInRole("Guide")` kontrolü ile CustomerLayout üzerindeki menü öğeleri anlık olarak filtrelenir. <br>
+* **MongoDB CRUD:** Rehberin yaptığı her güncelleme, MongoDB'nin esnek döküman yapısı sayesinde turun diğer verilerine zarar vermeden sadece ilgili alanları (Partial Update) günceller. <br>
+
+<img width="1915" height="911" alt="rehber1" src="https://github.com/user-attachments/assets/c78d106e-52dd-45a7-9b65-2d837d6a0b50" />
+<img width="1918" height="916" alt="rehber2" src="https://github.com/user-attachments/assets/2ddaac49-76a6-41aa-96b0-fc754d6c4906" />
+<img width="904" height="691" alt="rehber3" src="https://github.com/user-attachments/assets/41279c8f-0092-4c41-abdf-e8e96ce74994" />
+<img width="1912" height="909" alt="rehber4" src="https://github.com/user-attachments/assets/e1356c28-1e4a-4260-83ec-dbe814fd4107" />
+<img width="1915" height="910" alt="rehber5" src="https://github.com/user-attachments/assets/e1bb1615-62bb-43e2-9eac-6a986678caf3" />
+
+
+  ---
+
+## 🏗️ Merkezi Yönetim Sistemi (Admin Dashboard) <br>
+
+Admin paneli, platformun tüm veri akışını, kullanıcı yetkilendirmelerini ve operasyonel süreçlerini yöneten kapsamlı bir kontrol merkezidir. <br>
+
+### 📊 1. Akıllı Dashboard ve İstatistik Yönetimi <br>
+* **Anlık Veri Takibi:** Dashboard üzerinde; toplam kayıtlı kullanıcı, aktif tur sayısı, bekleyen rezervasyonlar ve toplam rehber sayısı gibi kritik veriler dinamik kartlar aracılığıyla sunulur. <br>
+* **Görsel Analiz:** Sistemin genel sağlık durumu ve doluluk oranları admin tarafından anlık olarak bu panelden izlenebilir. <br>
+
+### 🎡 2. Tur ve İçerik Yönetimi (Inventory Control) <br>
+* **Onay ve Taslak Sistemi:** Admin, turları "Taslak" (Draft) veya "Yayında" (Status) olarak işaretleyebilir. Sadece onaylanmış ve taslak aşamasını geçmiş turlar kullanıcı arayüzünde listelenir. <br>
+* **Gelişmiş Tur Düzenleme:** Tur fiyatları, kontenjanlar, rotalar ve açıklama metinleri üzerinde tam yetkiyle güncelleme yapabilme imkanı. <br>
+* **Rehber Atama:** Her tur için sisteme kayıtlı rehberler arasından dinamik olarak atama yapma. Bu işlem, `GuideId` ile `Tour` koleksiyonu arasında veritabanı seviyesinde bir bağ oluşturur. <br>
+
+### 🛡️ 3. Moderasyon ve Güvenlik <br>
+* **Yorum ve Rezervasyon Onayı:** Kullanıcılardan gelen yorumlar ve rezervasyon talepleri Admin onay mekanizmasından geçmeden yayına alınmaz. Bu, sistemde kirli veri oluşmasını ve sahte rezervasyonları engeller. <br>
+* **Rol ve Yetki Atama:** Admin, mevcut kullanıcılar arasından "Rehber" atayabilir veya kullanıcıları pasif duruma getirerek sistem erişimlerini kısıtlayabilir. <br>
+
+### 📱 4. Yönetim Arayüzü Özellikleri <br>
+* **Dinamik Sidebar:** Sadece Admin rolüne sahip kullanıcıların görebildiği, tüm yönetim modüllerine (Turlar, Kullanıcılar, Mesajlar, Ayarlar) hızlı erişim sağlayan özel navigasyon menüsü. <br>
+* **Hızlı Eylem Menüleri:** Tablolarda yer alan "Güncelle", "Sil", "Pasif Yap" ve "Detaylar" butonları ile minimum tıklama ile maksimum yönetim verimliliği. <br>
+
+### ⚙️ 5. Teknik Altyapı (Admin Operations) <br>
+* **Full CRUD Yetkisi:** MongoDB üzerinde tüm koleksiyonlar için oluşturma, okuma, güncelleme ve silme (Create, Read, Update, Delete) yetkileri asenkron servisler üzerinden yürütülür. <br>
+* **Policy-Based Authorization:** Yönetim paneli sayfaları `[Authorize(Roles = "Admin")]` ile en üst düzey güvenlik katmanıyla korunmaktadır. <br>
+
+### 🤖 6. Groq API ile Yapay Zeka Destekli İçerik Üretimi <br>
+Yeni tur oluşturma sürecinde, içerik yönetimini bir üst seviyeye taşıyan **Groq Cloud API** entegrasyonu kullanılmıştır: <br>
+* **Otomatik Tur Açıklamaları:** Admin, tur başlığını ve temel anahtar kelimeleri girdiğinde, sistem Groq API üzerinden yüksek performanslı LLM (Large Language Model) modellerini tetikler. <br>
+* **Saniyeler İçinde Özgün İçerik:** Geleneksel API'lerden kat kat daha hızlı olan Groq altyapısı sayesinde, saniyeler içinde tura özel, ilgi çekici ve pazarlama odaklı açıklama metinleri otomatik olarak oluşturulur. <br>
+* **Verimlilik Artışı:** Adminlerin manuel metin yazma yükü ortadan kaldırılarak, profesyonel ve SEO uyumlu tur detayları anında sisteme dahil edilir. <br>
+* **Teknik Entegrasyon:** Arka planda Groq API'ye gönderilen "Prompt" mühendisliği ile her tur için benzersiz ve yaratıcı içerikler üretilmesi sağlanmıştır. <br>
+
+
+
