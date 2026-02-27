@@ -1831,3 +1831,69 @@ textarea.form-control {
     color: #5d0473 !important;
 }
 
+.accrodion-title {
+    position: relative;
+    display: block;
+    padding: 15px 20px;
+    background-color: #5d0473 !important; /* Kurumsal Mor */
+    color: white !important;
+    border: 1px solid #6a0ed9;
+    border-radius: 5px;
+    margin-bottom: 5px;
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+
+    .accrodion-title h5,
+    .accrodion-title h5 span {
+        color: white !important;
+        font-weight: 600;
+        margin: 0;
+    }
+
+    .accrodion-title:hover {
+        background-color: #4a035c !important;
+    }
+
+    /* İkon Ayarları (+ / -) */
+    .accrodion-title:after {
+        content: '+';
+        position: absolute;
+        right: 20px;
+        top: 50%;
+        transform: translateY(-50%);
+        font-weight: bold;
+        font-size: 20px;
+        color: white;
+    }
+
+.accrodion.active .accrodion-title:after {
+    content: '-';
+}
+
+.accrodion.active .accrodion-title {
+    background-color: #590bb8 !important; /* Açık haldeki mor tonu */
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    border-radius: 5px 5px 0 0;
+    margin-bottom: 0;
+}
+
+/* İçerik Alanı */
+.accrodion-content {
+    border: 1px solid #ddd;
+    border-top: none;
+    border-radius: 0 0 5px 5px;
+    background-color: #fff;
+    margin-bottom: 10px;
+}
+
+.inner.p-3 {
+    padding: 15px;
+}
+
+/* Tab Navigasyon Fix */
+.nav-tabs .active a {
+    background-color: #5d0473 !important;
+    color: white !important;
+    border: none !important;
+}

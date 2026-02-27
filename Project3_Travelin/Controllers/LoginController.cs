@@ -51,7 +51,7 @@ namespace Project3_Travelin.Controllers
                 }
 
                 // Customer ise Customer Dashboard'a gider
-                return RedirectToAction("Dashboard", "Customer");
+                return RedirectToAction("Index", "Home");
             }
             TempData["LoginError"] = "Kullanıcı adı veya şifre hatalı.";
             return RedirectToAction("Index", "Home");

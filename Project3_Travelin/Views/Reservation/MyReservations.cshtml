@@ -114,7 +114,9 @@
                                     </button>
                                 }
                                 <div class="btn-group">
-                                    <button class="btn btn-outline-danger btn-sm" onclick="cancelReservation('@item.ReservationId')" @(item.Status?.ToLower() == "approved" ? "disabled" : "")>
+                                    <button class="btn btn-outline-danger btn-sm"
+                                            onclick="cancelReservation('@item.ReservationId')"
+                                            @(item.Status?.ToLower() == "approved" || item.Status?.ToLower() == "rejected" ? "disabled" : "")>
                                         <i class="bi bi-trash"></i>
                                     </button>
                                 </div>

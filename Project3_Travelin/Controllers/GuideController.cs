@@ -1,24 +1,27 @@
-﻿using BusinessLayer.Abstract;
+﻿using AutoMapper;
+using BusinessLayer.Abstract;
 using DTOLayer.DTOs.GuideDTOs;
+using DTOLayer.DTOs.TourDTOs;
 using EntityLayer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using System;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace Project3_Travelin.Controllers
 {
     public class GuideController : Controller
     {
         private readonly IGuideService _guideService;
+        private readonly ITourService _tourService;
         private readonly UserManager<AppUser> _userManager;
+        private readonly IMapper _mapper;
 
-        public GuideController(IGuideService guideService, UserManager<AppUser> userManager)
+        public GuideController(IGuideService guideService, UserManager<AppUser> userManager, ITourService tourService, IMapper mapper)
         {
             _guideService = guideService;
             _userManager = userManager;
+            _tourService = tourService;
+            _mapper = mapper;
         }
 
         [Authorize(Roles = "Admin")]
@@ -29,7 +32,6 @@ namespace Project3_Travelin.Controllers
             if (user == null) return NotFound();
 
             var result = await _userManager.AddToRoleAsync(user, "Guide");
-
             if (result.Succeeded)
             {
                 var createGuideDTO = new CreateGuideDTO
@@ -37,58 +39,110 @@ namespace Project3_Travelin.Controllers
                     UserId = user.Id.ToString(),
                     Name = user.FullName,
                     Status = true,
-               };
+                };
                 await _guideService.CreateGuideAsync(createGuideDTO);
-
                 TempData["Success"] = $"{user.FullName} artık bir rehber!";
             }
-            return RedirectToAction("UserList", "Admin"); 
+
+            return RedirectToAction("UserList", "Admin");
         }
 
         [Authorize(Roles = "Guide")]
         [HttpGet]
-        public async Task<IActionResult> GuideDashboard()
+        public async Task<IActionResult> MyTours()
         {
             var currentUser = await _userManager.GetUserAsync(User);
-            if (currentUser == null) return RedirectToAction("Index", "Home");
+            if (currentUser == null) return RedirectToAction("Dashboard", "Customer");
 
-            var guides = await _guideService.GetAllGuideAsync();
-            var myProfile = guides.FirstOrDefault(x => x.UserId == currentUser.Id.ToString());
+            var allGuides = await _guideService.GetAllGuideAsync();
+            var myGuide = allGuides.FirstOrDefault(g => g.UserId == currentUser.Id.ToString());
 
-            if (myProfile == null)
+            if (myGuide == null)
             {
-                TempData["Error"] = "Rehber profiliniz henüz oluşturulmamış.";
-                return RedirectToAction("Index", "Home");
+                ViewBag.Error = "Rehber profiliniz henüz oluşturulmamış.";
+                return View(new List<ResultTourDTO>());
             }
 
-            return View(myProfile);
+            var tours = await _tourService.GetToursByGuideIdAsync(myGuide.GuideId);
+
+            ViewBag.GuideName = myGuide.Name;
+            ViewBag.TourCount = tours.Count;
+            ViewBag.ActiveTourCount = tours.Count(x => x.IsStatus && !x.IsDrafts);
+
+            return View(tours);
+        }
+
+
+        [Authorize(Roles = "Guide")]
+        [HttpGet]
+        public async Task<IActionResult> GuideTourLog(string id)
+        {
+            var tourValue = await _tourService.GetTourByIdAsync(id);
+
+            var model = _mapper.Map<ResultTourDTO>(tourValue);
+
+            return View(model);
+        }
+
+        [Authorize(Roles = "Guide")]
+        [HttpPost]
+        public async Task<IActionResult> GuideTourLog(UpdateTourDTO model)
+        {
+            try
+            {
+                var existingTourData = await _tourService.GetTourByIdAsync(model.TourId);
+
+                if (existingTourData != null)
+                {
+                    var updateTour = _mapper.Map<UpdateTourDTO>(existingTourData);
+                    updateTour.GuideDescription = model.GuideDescription;
+
+                    if (model.GuideImages != null && model.GuideImages.Any())
+                    {
+                        foreach (var item in model.GuideImages)
+                        {
+                            var extension = Path.GetExtension(item.FileName);
+                            var newImageName = Guid.NewGuid() + extension;
+
+                            var location = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/userimages/", newImageName);
+
+                            using var stream = new FileStream(location, FileMode.Create);
+                            await item.CopyToAsync(stream);
+
+                            if (updateTour.ImageAlbumUrls == null) updateTour.ImageAlbumUrls = new List<string>();
+                            updateTour.ImageAlbumUrls.Add("/userimages/" + newImageName);
+                        }
+                    }
+
+                    await _tourService.UpdateTourAsync(updateTour);
+                    TempData["Success"] = "Gezi günlüğü başarıyla güncellendi.";
+                }
+            }
+            catch (Exception ex)
+            {
+                TempData["Error"] = "Hata oluştu: " + ex.Message;
+            }
+
+            return RedirectToAction("MyTours");
         }
 
         [Authorize(Roles = "Guide")]
         [HttpPost]
         public async Task<IActionResult> UpdateProfile(UpdateGuideDTO updateDTO)
         {
-            if (!ModelState.IsValid) return View("GuideDashboard", updateDTO);
+            if (!ModelState.IsValid) return RedirectToAction("MyTours");
 
-            try
-            {
-                await _guideService.UpdateGuideAsync(updateDTO);
-                TempData["Success"] = "Profiliniz başarıyla güncellendi.";
-            }
-            catch (Exception ex)
-            {
-                TempData["Error"] = "Güncelleme hatası: " + ex.Message;
-            }
+            await _guideService.UpdateGuideAsync(updateDTO);
+            TempData["Success"] = "Profiliniz başarıyla güncellendi.";
 
-            return RedirectToAction("GuideDashboard");
+            return RedirectToAction("MyTours");
         }
 
         [HttpGet]
-        public async Task<IActionResult> GuideDetail(string id) 
+        public async Task<IActionResult> GuideDetail(string id)
         {
             var guide = await _guideService.GetGuideByIdAsync(id);
             if (guide == null) return NotFound();
-
             return View(guide);
         }
     }

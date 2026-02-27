@@ -21,7 +21,7 @@
                 <h1 class="mb-3">TUR LİSTESİ</h1>
                 <nav aria-label="breadcrumb" class="d-block">
                     <ul class="breadcrumb">
-                        <li class="breadcrumb-item"><a href="#">Ana Sayfa</a></li>
+                        <li class="breadcrumb-item"><a href="/">Ana Sayfa</a></li>
                         <li class="breadcrumb-item active" aria-current="page">Güncel Tur Listesi</li>
                     </ul>
                 </nav>
@@ -30,6 +30,7 @@
     </div>
     <div class="dot-overlay"></div>
 </section>
+
 <section class="trending pt-6 pb-0 bg-lgrey">
     <div class="container">
         <div class="list-results d-flex align-items-center justify-content-between">
@@ -40,7 +41,7 @@
                 }
                 else
                 {
-                    <p class="m-0">Görüntülenecek tur bulunamadı.</p>
+                    <p class="m-0">Görüntülenecek aktif tur bulunamadı.</p>
                 }
             </div>
         </div>
@@ -48,60 +49,74 @@
         <div class="destination-list">
             @foreach (var x in Model)
             {
-                <div class="trend-full bg-white rounded box-shadow overflow-hidden p-4 mb-4">
-                    <div class="row">
-                        <div class="col-lg-4 col-md-3">
-                            <div class="trend-item2 rounded">
-                                <a href="tour-single.html" style="background-image: url(@x.ImageUrl);"></a>
-                                <div class="color-overlay"></div>
-                            </div>
-                        </div>
-                        <div class="col-lg-5 col-md-6">
-                            <div class="trend-content position-relative text-md-start text-center">
-                                <small>@x.DayNight</small>
-                                <h3 class="mb-1"><a href="tour-single.html">@x.TourTitle</a></h3>
-                                <h6 class="theme mb-0"><i class="icon-location-pin"></i> @x.TourCountry</h6>
-                                <p class="mt-4 mb-0">@x.SubDescription <br><a href="#"><span class="theme"> Ücretsiz İptal</span></a></p>
-                            </div>
-                        </div>
-                        <div class="col-lg-3 col-md-3">
-                            <div class="trend-content text-md-end text-center">
-                                <div class="rating">
-                                    <span class="fa fa-star checked"></span>
-                                    <span class="fa fa-star checked"></span>
-                                    <span class="fa fa-star checked"></span>
-                                    <span class="fa fa-star checked"></span>
-                                    <span class="fa fa-star checked"></span>
+                @* Sadece Aktif Turları Göster *@
+                if (x.IsStatus == true)
+                {
+                    <div class="trend-full bg-white rounded box-shadow overflow-hidden p-4 mb-4">
+                        <div class="row">
+                            <div class="col-lg-4 col-md-3">
+                                <div class="trend-item2 rounded">
+                                    <a href="/Tour/TourDetail/@x.TourId" style="background-image: url(@x.ImageUrl);"></a>
+                                    <div class="color-overlay"></div>
                                 </div>
-                                <small>200 Reviews</small>
-                                <div class="trend-price my-2">
-                                    <h3 class="mb-0">@x.TourPrice ₺</h3>
-                                    <small>Kişi Başı</small>
+                            </div>
+                            <div class="col-lg-5 col-md-6">
+                                <div class="trend-content position-relative text-md-start text-center">
+                                    <small>@x.DayNight</small>
+                                    <h3 class="mb-1"><a href="/Tour/TourDetail/@x.TourId">@x.TourTitle</a></h3>
+                                    <h6 class="theme mb-0"><i class="icon-location-pin"></i> @x.TourCountry</h6>
+                                    <p class="mt-4 mb-0">@x.SubDescription <br><a href="#"><span class="theme"> Ücretsiz İptal</span></a></p>
                                 </div>
-                                <a href="/Tour/TourDetail/@x.TourId" class="nir-btn">Detay</a>
+                            </div>
+                            <div class="col-lg-3 col-md-3">
+                                <div class="trend-content text-md-end text-center">
+                                    <div class="rating">
+                                        @for (int i = 1; i <= 5; i++)
+                                        {
+                                            if (i <= x.Rating)
+                                            {
+                                                <span class="fa fa-star checked text-warning"></span>
+                                            }
+                                            else
+                                            {
+                                                <span class="fa fa-star text-muted"></span>
+                                            }
+                                        }
+                                    </div>
+
+                                    <small>@x.ReviewCount Değerlendirme</small>
+                                    <div class="trend-price my-2">
+                                        <h3 class="mb-0">@x.TourPrice ₺</h3>
+                                        <small>Kişi Başı</small>
+                                    </div>
+                                    <a href="/Tour/TourDetail/@x.TourId" class="nir-btn">Detay</a>
+                                </div>
                             </div>
                         </div>
                     </div>
-                </div>
+                }
             }
+
+            @* Sayfalama Alanı *@
             <div class="text-center mt-4">
                 @if (ViewBag.CurrentPage > 1)
                 {
-                    <a href="?page=@(ViewBag.CurrentPage - 1)" class="nir-btn me-2">
+                    <a href="?page=@(ViewBag.CurrentPage - 1)&destination=@ViewBag.Destination&duration=@ViewBag.Duration" class="nir-btn me-2">
                         <i class="fa fa-long-arrow-alt-left"></i> Önceki
                     </a>
                 }
 
                 @for (int i = 1; i <= ViewBag.TotalPages; i++)
                 {
-                    <a href="?page=@i" class="nir-btn me-1 @(i == ViewBag.CurrentPage ? "active" : "")">
+                    <a href="?page=@i&destination=@ViewBag.Destination&duration=@ViewBag.Duration"
+                       class="nir-btn me-1 @(i == ViewBag.CurrentPage ? "active" : "")">
                         @i
                     </a>
                 }
 
                 @if (ViewBag.CurrentPage < ViewBag.TotalPages)
                 {
-                    <a href="?page=@(ViewBag.CurrentPage + 1)" class="nir-btn ms-2">
+                    <a href="?page=@(ViewBag.CurrentPage + 1)&destination=@ViewBag.Destination&duration=@ViewBag.Duration" class="nir-btn ms-2">
                         Sonraki <i class="fa fa-long-arrow-alt-right"></i>
                     </a>
                 }
@@ -109,4 +124,3 @@
         </div>
     </div>
 </section>
-

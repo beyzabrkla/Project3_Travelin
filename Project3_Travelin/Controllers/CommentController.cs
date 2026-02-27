@@ -6,7 +6,6 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace Project3_Travelin.Controllers
 {
-    [Authorize(Roles = "Admin")]
     public class CommentController : Controller
     {
         private readonly ICommentService _commentService;
@@ -26,14 +25,23 @@ namespace Project3_Travelin.Controllers
         }
 
         [HttpPost]
+        [Authorize]
         public async Task<IActionResult> CreateComment(CreateCommentDTO createCommentDTO)
         {
+            if (!ModelState.IsValid)
+            {
+                return Json(new { success = false, message = "Eksik veya hatalı bilgi girdiniz." });
+            }
+
             createCommentDTO.CommentDate = DateTime.Now;
             createCommentDTO.IsStatus = false;
+
             await _commentService.CreateCommentAsync(createCommentDTO);
-            return RedirectToAction("CommentList");
+
+            return Json(new { success = true, message = "Yorumunuz başarıyla alındı, onay sonrası görünecektir." });
         }
 
+        [Authorize(Roles = "Admin")] 
         public async Task<IActionResult> CommentListByTourId(string id)
         {
             var values = await _commentService.GetCommentsByTourIdAsync(id);

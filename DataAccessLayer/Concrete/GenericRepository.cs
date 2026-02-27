@@ -24,8 +24,16 @@ namespace DataAccessLayer.Concrete
         public async Task<List<T>> GetAllAsync() =>
             await _collection.Find(x => true).ToListAsync();
 
-        public async Task<T> GetByIdAsync(string id) =>
-            await _collection.Find(Builders<T>.Filter.Eq("_id", ObjectId.Parse(id))).FirstOrDefaultAsync();
+        public async Task<T> GetByIdAsync(string id)
+        {
+            // Eğer id null ise veya MongoDB formatına uygun değilse (24 karakterli hex) hata fırlatma, null dön.
+            if (string.IsNullOrEmpty(id) || id.Length != 24)
+            {
+                return null;
+            }
+
+            return await _collection.Find(Builders<T>.Filter.Eq("_id", ObjectId.Parse(id))).FirstOrDefaultAsync();
+        }
 
         public async Task InsertAsync(T t) =>
             await _collection.InsertOneAsync(t);

@@ -3,9 +3,7 @@ using BusinessLayer.Abstract;
 using DTOLayer.DTOs.TourDTOs;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.AspNetCore.Mvc.Rendering;
-using System.Diagnostics.Metrics;
 
 namespace Project3_Travelin.Controllers
 {
@@ -22,6 +20,7 @@ namespace Project3_Travelin.Controllers
             _mapper = mapper;
             _guideService = guideService;
         }
+
         private async Task SetCountryViewBag()
         {
             var allTours = await _tourService.GetAllTourAsync();
@@ -32,12 +31,12 @@ namespace Project3_Travelin.Controllers
                 .OrderBy(x => x)
                 .ToList();
 
-            // Eğer hiç tur yoksa dropdown boş kalmasın diye varsayılan bir kaç ülke
-            if (ViewBag.Countries.Count == 0)
+            if (((List<string>)ViewBag.Countries).Count == 0)
             {
                 ViewBag.Countries = new List<string> { "Türkiye", "İtalya", "Fransa", "İspanya", "Yunanistan" };
             }
         }
+
         private async Task SetGuideViewBag()
         {
             var guides = await _guideService.GetAllGuideAsync();
@@ -66,7 +65,6 @@ namespace Project3_Travelin.Controllers
         {
             var values = await _tourService.GetAllTourAsync();
 
-            // ÜLKE LİSTESİ
             ViewBag.Countries = values
                 .Where(x => !string.IsNullOrEmpty(x.TourCountry))
                 .Select(x => x.TourCountry)
@@ -74,7 +72,6 @@ namespace Project3_Travelin.Controllers
                 .OrderBy(x => x)
                 .ToList();
 
-            // DURUM FİLTRESİ (sidebar linklerinden gelir)
             if (!string.IsNullOrEmpty(status))
             {
                 values = status switch
@@ -86,7 +83,6 @@ namespace Project3_Travelin.Controllers
                 };
             }
 
-            // ARAMA FİLTRESİ
             if (!string.IsNullOrEmpty(q))
             {
                 values = values.Where(x =>
@@ -95,17 +91,14 @@ namespace Project3_Travelin.Controllers
                 ).ToList();
             }
 
-            // ÜLKE FİLTRESİ
             if (!string.IsNullOrEmpty(country))
                 values = values.Where(x => x.TourCountry != null && x.TourCountry == country).ToList();
 
-            // TARİH FİLTRELERİ
             if (fromDate.HasValue)
                 values = values.Where(x => x.TourDate >= fromDate.Value).ToList();
             if (toDate.HasValue)
                 values = values.Where(x => x.TourDate <= toDate.Value).ToList();
 
-            // SAYFALAMA
             int pageSize = 6;
             int totalCount = values.Count;
             int totalPages = (int)Math.Ceiling(totalCount / (double)pageSize);
@@ -117,7 +110,7 @@ namespace Project3_Travelin.Controllers
             ViewBag.TotalPages = totalPages;
             ViewBag.TotalCount = totalCount;
             ViewBag.PageSize = pageSize;
-            ViewBag.ActiveStatus = status; // View'da hangi linkin aktif olduğunu vurgulamak için
+            ViewBag.ActiveStatus = status;
 
             return View(pagedData);
         }
@@ -146,7 +139,7 @@ namespace Project3_Travelin.Controllers
         [HttpGet]
         public async Task<IActionResult> CreateTour()
         {
-            await SetGuideViewBag(); 
+            await SetGuideViewBag();
             return View();
         }
 
@@ -159,7 +152,6 @@ namespace Project3_Travelin.Controllers
             if (ModelState.IsValid)
             {
                 var status = Request.Form["PublishStatus"];
-
                 model.IsStatus = (status == "active" || status == "passive");
                 model.IsDrafts = (status == "draft");
 
@@ -185,32 +177,24 @@ namespace Project3_Travelin.Controllers
         [HttpPost]
         public async Task<IActionResult> UpdateTour(UpdateTourDTO updateTourDTO)
         {
-            // Formda hiç olmayan (hidden olarak bile taşımadığımız) alanları validasyondan muaf tut
-            string[] ignoredFields = new[] { "GuideName", "GuideTitle", "GuideImageUrl", "ImageAlbumUrls", "SubDescription", "GuideDescription" };
+            string[] ignoredFields = new[] { "GuideName", "GuideTitle", "GuideImageUrl", "ImageAlbumUrls", "GuideDescription" };
             foreach (var field in ignoredFields) ModelState.Remove(field);
 
             if (!ModelState.IsValid)
             {
                 await SetCountryViewBag();
-                await SetGuideViewBag(); // Rehber listesini tekrar doldur
+                await SetGuideViewBag();
                 return View(updateTourDTO);
             }
 
-            // 1. Veritabanındaki orijinal kaydı çek (Entity olarak)
             var existingTour = await _tourService.GetTourByIdAsync(updateTourDTO.TourId);
-
-            // 2. AutoMapper Sihri: 
-            // updateTourDTO içindeki dolu olan her şeyi existingTour üzerine yazar.
-            // DTO'da olmayan alanlar (Örn: ImageAlbumUrls) existingTour içinde korunur.
             _mapper.Map(updateTourDTO, existingTour);
-
-            // 3. Güncellenmiş Entity'yi tekrar DTO'ya çevirip servise gönder (Eğer servis DTO istiyorsa)
             var finalDto = _mapper.Map<UpdateTourDTO>(existingTour);
             await _tourService.UpdateTourAsync(finalDto);
 
             return RedirectToAction("TourList");
         }
-       
+
         public async Task<IActionResult> DeleteTour(string id)
         {
             await _tourService.DeleteTourAsync(id);

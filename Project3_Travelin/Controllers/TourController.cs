@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using BusinessLayer.Abstract;
+using DTOLayer.DTOs.CommentDTOs;
 using DTOLayer.DTOs.TourDTOs;
 using Microsoft.AspNetCore.Mvc;
 
@@ -9,14 +10,16 @@ namespace Project3_Travelin.Controllers
     {
         private readonly ITourService _tourService;
         private readonly IGuideService _guideService;
+        private readonly ICommentService _commentService;
         private readonly IMapper _mapper;
 
 
-        public TourController(ITourService tourService, IMapper mapper, IGuideService guideService)
+        public TourController(ITourService tourService, IMapper mapper, IGuideService guideService, ICommentService commentService)
         {
             _tourService = tourService;
             _mapper = mapper;
             _guideService = guideService;
+            _commentService = commentService;
         }
 
         public async Task<IActionResult> TourList(string destination, string duration, int page = 1)
@@ -24,7 +27,8 @@ namespace Project3_Travelin.Controllers
             int pageSize = 3;
             var allValues = await _tourService.GetAllTourAsync();
 
-            // Eğer destination boş değilse hem ülke hem şehirde ara
+            allValues = allValues.Where(x => x.IsStatus == true && x.IsDrafts == false).ToList();
+
             if (!string.IsNullOrEmpty(destination))
             {
                 allValues = allValues.Where(x =>
@@ -32,13 +36,22 @@ namespace Project3_Travelin.Controllers
                     x.TourCity.Contains(destination, StringComparison.OrdinalIgnoreCase)).ToList();
             }
 
-            // Süre seçildiyse (Örn: "5" gün içerenleri getir)
             if (!string.IsNullOrEmpty(duration))
             {
                 allValues = allValues.Where(x => x.DayNight.Contains(duration)).ToList();
             }
 
-            //Sayfalama
+            foreach (var tour in allValues)
+            {
+                var comments = await _commentService.GetCommentsByTourIdAsync(tour.TourId);
+                var approvedComments = comments.Where(c => c.IsStatus).ToList();
+
+                tour.ReviewCount = approvedComments.Count;
+                tour.Rating = approvedComments.Any()
+                    ? (int)Math.Round(approvedComments.Average(c => c.Score))
+                    : 0;
+            }
+
             var totalCount = allValues.Count();
             var pagedValues = allValues.Skip((page - 1) * pageSize).Take(pageSize).ToList();
 
@@ -53,7 +66,24 @@ namespace Project3_Travelin.Controllers
         }
         public async Task<IActionResult> TourDetail(string id)
         {
+            if (string.IsNullOrEmpty(id))
+                return RedirectToAction("TourList");
+
             var value = await _tourService.GetTourByIdAsync(id);
+            if (value == null) return NotFound();
+
+            // Yorumları çek
+            var comments = await _commentService.GetCommentsByTourIdAsync(id);
+            var approvedComments = comments
+                .Where(c => c.IsStatus)
+                .OrderByDescending(c => c.CommentDate)
+                .ToList();
+
+            value.Comments = _mapper.Map<List<ResultCommentListByTourIdDTO>>(approvedComments);
+            value.ReviewCount = value.Comments.Count;
+            value.Rating = value.Comments.Any()
+                ? (int)Math.Round(value.Comments.Average(c => c.Score))
+                : 0;
 
             return View(value);
         }
@@ -92,6 +122,8 @@ namespace Project3_Travelin.Controllers
         }
         public async Task<IActionResult> GuideTourLog(string id)
         {
+            if (string.IsNullOrEmpty(id)) return RedirectToAction("TourList");
+
             var value = await _tourService.GetTourByIdAsync(id);
             return View(value);
         }

@@ -1,4 +1,5 @@
-﻿using MongoDB.Bson.Serialization.Attributes;
+﻿using Microsoft.AspNetCore.Http;
+using MongoDB.Bson.Serialization.Attributes;
 
 namespace DTOLayer.DTOs.TourDTOs
 {
@@ -18,7 +19,7 @@ namespace DTOLayer.DTOs.TourDTOs
         public bool IsDrafts { get; set; }
         public bool IsStatus { get; set; }
         public List<string> ImageAlbumUrls { get; set; }
-
+        public List<IFormFile> GuideImages { get; set; } // Yeni yüklenecek dosyalar
         public string GuideId { get; set; }
 
         public string GuideName { get; set; }
