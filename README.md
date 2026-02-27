@@ -282,7 +282,5 @@ Proje, kullanıcıyı her aşamada bilgilendiren bir otomasyon sistemine sahipti
 <img width="441" height="655" alt="müşteri4" src="https://github.com/user-attachments/assets/18a690ec-4541-46c3-a1e8-551c75c83c89" />
 <img width="1917" height="901" alt="müşteri5" src="https://github.com/user-attachments/assets/8a9432cf-f13a-4960-a814-4d5c943a444d" />
 <img width="799" height="706" alt="müşteri6" src="https://github.com/user-attachments/assets/186a7570-1be9-4185-a210-7139a832f564" />
-![müşteri7](https://github.com/user-attachments/assets/b03f48c1-233a-4cd0-963a-6f8f8bdb4322)
-
-
+<img width="1285" height="488" alt="Ekran görüntüsü 2026-02-27 212353" src="https://github.com/user-attachments/assets/f5ae10e4-682d-4a33-a763-4e32e9f174e5" />
 
