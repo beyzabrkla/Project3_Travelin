@@ -133,9 +133,28 @@
                     <div id="single-map" class="single-map mb-4 tab-pane fade">
                         <h4>Konum / Harita</h4>
                         <div class="map rounded overflow-hidden">
-                            <iframe height="400" class="w-100" src="https://maps.google.com/maps?q=@Model.TourCity&t=&z=13&ie=UTF8&iwloc=&output=embed"></iframe>
+                            @if (!string.IsNullOrEmpty(Model.MapImageUrl))
+                            {
+                                <img src="/userimages/@Model.MapImageUrl"
+                                     alt="@Model.TourCity Haritası"
+                                     style="width:100%;height:400px;object-fit:cover;border-radius:8px;"
+                                     onerror="this.style.display='none';document.getElementById('mapFallback').style.display='block'" />
+                                <div id="mapFallback" style="display:none;">
+                                    <iframe height="400" class="w-100"
+                                            src="https://maps.google.com/maps?q=@Model.TourCity&t=&z=13&ie=UTF8&iwloc=&output=embed">
+                                    </iframe>
+                                </div>
+                            }
+                            else
+                            {
+                                <iframe height="400" class="w-100"
+                                        src="https://maps.google.com/maps?q=@Model.TourCity&t=&z=13&ie=UTF8&iwloc=&output=embed">
+                                </iframe>
+                            }
                         </div>
                     </div>
+
+
 
                     @* Dinamik Yorumlar Listesi *@
                     <div id="single-comments" class="single-comments single-box mb-4 tab-pane fade">

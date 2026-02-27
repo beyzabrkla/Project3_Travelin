@@ -26,6 +26,8 @@ namespace Project3_Travelin.Controllers
             _configuration = configuration;
         }
 
+        // ── YARDIMCI METOTLAR ─────────────────────────────────────────
+
         private async Task SetCountryViewBag()
         {
             var allTours = await _tourService.GetAllTourAsync();
@@ -63,6 +65,21 @@ namespace Project3_Travelin.Controllers
                 ? activeGuides
                 : new List<SelectListItem> { new SelectListItem { Text = "No Guide Found", Value = "" } };
         }
+
+        private void RemoveOptionalModelStateFields()
+        {
+            ModelState.Remove("ImageFile");
+            ModelState.Remove("MapImageFile");
+            ModelState.Remove("GuideImages");
+            ModelState.Remove("ImageAlbumUrls");
+            ModelState.Remove("GuideAlbumUrls");
+            ModelState.Remove("GuideName");
+            ModelState.Remove("GuideTitle");
+            ModelState.Remove("GuideImageUrl");
+            ModelState.Remove("GuideDescription");
+            ModelState.Remove("VideoUrl");      
+        }
+
 
         public async Task<IActionResult> TourList(string q, string country, string status, DateTime? fromDate, DateTime? toDate, int page = 1)
         {
@@ -130,32 +147,40 @@ namespace Project3_Travelin.Controllers
             return View("TourList", values.Where(x => x.IsStatus == false).ToList());
         }
 
+
         [HttpGet]
         public async Task<IActionResult> CreateTour()
         {
             await SetGuideViewBag();
-            return View();
+            return View(new CreateTourDTO());
         }
 
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> CreateTour(CreateTourDTO model)
         {
-            ModelState.Remove("ImageAlbumUrls");
+            RemoveOptionalModelStateFields();
 
-            if (ModelState.IsValid)
+            if (!ModelState.IsValid)
             {
-                var status = Request.Form["PublishStatus"];
-                model.IsStatus = (status == "active" || status == "passive");
-                model.IsDrafts = (status == "draft");
-
-                await _tourService.CreateTourAsync(model);
-                return RedirectToAction("TourList");
+                await SetGuideViewBag();
+                return View(model);
             }
 
-            await SetGuideViewBag();
-            return View(model);
+            if (model.ImageFile != null && model.ImageFile.Length > 0)
+                model.ImageUrl = await SaveImage(model.ImageFile);
+
+            if (model.MapImageFile != null && model.MapImageFile.Length > 0)
+                model.MapImageUrl = await SaveImage(model.MapImageFile);
+
+            var publishStatus = Request.Form["PublishStatus"].ToString();
+            model.IsStatus = publishStatus == "active";
+            model.IsDrafts = publishStatus == "draft";
+
+            await _tourService.CreateTourAsync(model);
+            return RedirectToAction("TourList");
         }
+
 
         [HttpGet]
         public async Task<IActionResult> UpdateTour(string id)
@@ -169,25 +194,43 @@ namespace Project3_Travelin.Controllers
         }
 
         [HttpPost]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> UpdateTour(UpdateTourDTO updateTourDTO)
         {
-            string[] ignoredFields = new[] { "GuideName", "GuideTitle", "GuideImageUrl", "ImageAlbumUrls", "GuideDescription" };
-            foreach (var field in ignoredFields) ModelState.Remove(field);
+            RemoveOptionalModelStateFields();
 
             if (!ModelState.IsValid)
             {
+                ViewBag.Errors = ModelState
+                    .Where(x => x.Value.Errors.Count > 0)
+                    .SelectMany(x => x.Value.Errors.Select(e => $"{x.Key}: {e.ErrorMessage}"))
+                    .ToList();
+
                 await SetCountryViewBag();
                 await SetGuideViewBag();
                 return View(updateTourDTO);
             }
 
-            var existingTour = await _tourService.GetTourByIdAsync(updateTourDTO.TourId);
-            _mapper.Map(updateTourDTO, existingTour);
-            var finalDto = _mapper.Map<UpdateTourDTO>(existingTour);
-            await _tourService.UpdateTourAsync(finalDto);
+            try
+            {
+                if (updateTourDTO.ImageFile != null && updateTourDTO.ImageFile.Length > 0)
+                    updateTourDTO.ImageUrl = await SaveImage(updateTourDTO.ImageFile);
 
-            return RedirectToAction("TourList");
+                if (updateTourDTO.MapImageFile != null && updateTourDTO.MapImageFile.Length > 0)
+                    updateTourDTO.MapImageUrl = await SaveImage(updateTourDTO.MapImageFile);
+
+                await _tourService.UpdateTourAsync(updateTourDTO);
+                return RedirectToAction("TourList");
+            }
+            catch (Exception ex)
+            {
+                ModelState.AddModelError("", "Sistem Hatası: " + ex.Message);
+                await SetCountryViewBag();
+                await SetGuideViewBag();
+                return View(updateTourDTO);
+            }
         }
+
 
         public async Task<IActionResult> DeleteTour(string id)
         {
@@ -195,9 +238,29 @@ namespace Project3_Travelin.Controllers
             return RedirectToAction("TourList");
         }
 
-        // ══════════════════════════════════════════════════════════
-        // GROQ AI - DESCRIPTION GENERATOR
-        // ══════════════════════════════════════════════════════════
+
+        private async Task<string> SaveImage(IFormFile file)
+        {
+            if (file == null || file.Length == 0) return null;
+
+            var resource = Directory.GetCurrentDirectory();
+            var extension = Path.GetExtension(file.FileName);
+            var newImageName = Guid.NewGuid() + extension;
+            var saveLocation = Path.Combine(resource, "wwwroot/userimages", newImageName);
+
+            var directoryPath = Path.GetDirectoryName(saveLocation);
+            if (!Directory.Exists(directoryPath))
+                Directory.CreateDirectory(directoryPath);
+
+            using (var stream = new FileStream(saveLocation, FileMode.Create))
+            {
+                await file.CopyToAsync(stream);
+            }
+
+            return newImageName;
+        }
+
+
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> GenerateDescription([FromBody] GenerateDescriptionRequest request)
@@ -206,9 +269,8 @@ namespace Project3_Travelin.Controllers
             {
                 var apiKey = _configuration["Groq:ApiKey"];
                 if (string.IsNullOrEmpty(apiKey))
-                    return Json(new { success = false, error = "Groq API key is not configured in appsettings.json." });
+                    return Json(new { success = false, error = "Groq API key is not configured." });
 
-                // Tone is passed in Turkish from UI but we map to English for a language-agnostic prompt
                 var toneDesc = request.Tone switch
                 {
                     "heyecanli" => "exciting, adventurous and energetic",
@@ -217,11 +279,10 @@ namespace Project3_Travelin.Controllers
                     _ => "professional, informative and trustworthy"
                 };
 
-                // Prompt is intentionally in English so Google Translate on the frontend
-                // does not interfere with the AI instructions — only the OUTPUT is Turkish.
-                var systemMessage = "You are a professional travel content writer. " +
-                                    "Always write tour descriptions in Turkish. " +
-                                    "Return ONLY valid JSON with no markdown fences, no extra text.";
+                var systemMessage =
+                    "You are a professional travel content writer. " +
+                    "Always write tour descriptions in Turkish. " +
+                    "Return ONLY valid JSON with no markdown fences, no extra text.";
 
                 var userMessage =
                     $"Write a tour description in a {toneDesc} style.\n\n" +
@@ -231,7 +292,7 @@ namespace Project3_Travelin.Controllers
                     $"Duration: {request.Duration}\n" +
                     $"Price: {(string.IsNullOrEmpty(request.Price) ? "not specified" : request.Price + " TL")}\n\n" +
                     "Respond ONLY with this JSON structure (values must be in Turkish):\n" +
-                    "{\"fullDescription\":\"250-350 word detailed description including places to visit, activities, accommodation, meals and motivation\",\"subDescription\":\"Max 150 character catchy summary for the tour card\"}";
+                    "{\"fullDescription\":\"250-350 word detailed description\",\"subDescription\":\"Max 150 character catchy summary\"}";
 
                 using var httpClient = new HttpClient();
                 httpClient.DefaultRequestHeaders.Add("Authorization", $"Bearer {apiKey}");
@@ -260,7 +321,6 @@ namespace Project3_Travelin.Controllers
                 if (!response.IsSuccessStatusCode)
                     return Json(new { success = false, error = "Groq API error: " + responseBody });
 
-                // Extract text from Groq response
                 using var doc = JsonDocument.Parse(responseBody);
                 var rawContent = doc.RootElement
                     .GetProperty("choices")[0]
@@ -268,30 +328,21 @@ namespace Project3_Travelin.Controllers
                     .GetProperty("content")
                     .GetString() ?? "";
 
-                // Strip markdown fences if model wraps in ```json ... ```
-                var cleaned = rawContent
-                    .Replace("```json", "")
-                    .Replace("```", "")
-                    .Trim();
+                var cleaned = rawContent.Replace("```json", "").Replace("```", "").Trim();
 
                 using var resultDoc = JsonDocument.Parse(cleaned);
                 var fullDesc = resultDoc.RootElement.GetProperty("fullDescription").GetString();
                 var subDesc = resultDoc.RootElement.GetProperty("subDescription").GetString();
 
-                return Json(new
-                {
-                    success = true,
-                    fullDescription = fullDesc,
-                    subDescription = subDesc
-                });
+                return Json(new { success = true, fullDescription = fullDesc, subDescription = subDesc });
             }
             catch (JsonException)
             {
-                return Json(new { success = false, error = "AI response was not in the expected format. Please try again." });
+                return Json(new { success = false, error = "AI yanıtı beklenen formatta değildi. Lütfen tekrar deneyin." });
             }
             catch (Exception ex)
             {
-                return Json(new { success = false, error = "Unexpected error: " + ex.Message });
+                return Json(new { success = false, error = "Beklenmeyen hata: " + ex.Message });
             }
         }
     }

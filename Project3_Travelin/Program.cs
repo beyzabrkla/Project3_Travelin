@@ -1,4 +1,4 @@
-using AspNetCore.Identity.MongoDbCore.Extensions;
+ï»¿using AspNetCore.Identity.MongoDbCore.Extensions;
 using AspNetCore.Identity.MongoDbCore.Infrastructure;
 using BusinessLayer.Abstract;
 using BusinessLayer.Concrete;
@@ -8,10 +8,11 @@ using EntityLayer;
 using EntityLayer.Settings;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Options;
+using Project3_Travelin.Filters;
 
 var builder = WebApplication.CreateBuilder(args);
 
-//  DataAccessLayer (Dal) Kayýtlarý ---
+//  DataAccessLayer (Dal) KayÄ±tlarÄ± ---
 builder.Services.AddScoped<ICommentDal, MongoCommentDal>();
 builder.Services.AddScoped<ITourDal, MongoTourDal>();
 builder.Services.AddScoped<IGuideDal, MongoGuideDal>();
@@ -26,12 +27,11 @@ builder.Services.AddScoped<IDatabaseSettings>(sp =>
     return sp.GetRequiredService<IOptions<DatabaseSettings>>().Value;
 });
 
-// Identity & MongoDB Yapýlandýrmasý ---
+// Identity & MongoDB YapÄ±landÄ±rmasÄ± ---
 var mongoDbIdentityConfig = new MongoDbIdentityConfiguration
 {
     MongoDbSettings = new MongoDbSettings
     {
-        // Not: Eðer appsettings.json'da farklý bir isim verdiysen burayý güncelle
         ConnectionString = builder.Configuration["DatabaseSettings:ConnectionString"],
         DatabaseName = builder.Configuration["DatabaseSettings:DatabaseName"]
     },
@@ -56,7 +56,11 @@ builder.Services
     .AddRoleManager<RoleManager<AppRole>>()
     .AddDefaultTokenProviders();
 
-// 2. Authentication Ayarý (Hata veren kýsým burasýydý)
+builder.Services.Configure<IISServerOptions>(options => {
+    options.MaxRequestBodySize = 52428800; // 50MB
+});
+
+// 2. Authentication AyarÄ±
 builder.Services.AddAuthentication(options =>
 {
     options.DefaultScheme = IdentityConstants.ApplicationScheme;
@@ -71,7 +75,7 @@ builder.Services.AddAuthentication(options =>
     options.Cookie.HttpOnly = true;
 });
 
-// 3. Ek Cookie Ayarlarý (ConfigureApplicationCookie bunu üsttekiyle baðlar)
+// 3. Ek Cookie AyarlarÄ±
 builder.Services.ConfigureApplicationCookie(options =>
 {
     options.LoginPath = "/Home/Index/";
@@ -79,14 +83,20 @@ builder.Services.ConfigureApplicationCookie(options =>
     options.SlidingExpiration = true;
 });
 
-// BusinessLayer (Service) Kayýtlarý ---
+// BusinessLayer (Service) KayÄ±tlarÄ± ---
 builder.Services.AddScoped<ITourService, TourManager>();
 builder.Services.AddScoped<IGuideService, GuideManager>();
 builder.Services.AddScoped<ICommentService, CommentManager>();
 builder.Services.AddScoped<IReservationService, ReservationManager>();
 
 builder.Services.AddSingleton(TimeProvider.System);
-builder.Services.AddControllersWithViews();
+
+// FooterPhotosFilter kaydÄ± ve global filtre olarak ekleme
+builder.Services.AddScoped<FooterPhotosFilter>();
+builder.Services.AddControllersWithViews(options =>
+{
+    options.Filters.AddService<FooterPhotosFilter>();
+});
 
 var app = builder.Build();
 
@@ -109,7 +119,7 @@ app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Home}/{action=Index}/{id?}");
 
-// Otomatik Rol Oluþturma (Seed Data) ---
+// Otomatik Rol OluÅŸturma (Seed Data) ---
 using (var scope = app.Services.CreateScope())
 {
     var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<AppRole>>();
