@@ -160,39 +160,129 @@ Projenin en özgün teknik yapılarından biri olan rehber arayüzü şu şekild
 <img width="1915" height="910" alt="rehber5" src="https://github.com/user-attachments/assets/e1bb1615-62bb-43e2-9eac-6a986678caf3" />
 
 
-  ---
+## 🏗️ Merkezi Yönetim Sistemi (Admin Dashboard)
+Admin paneli, platformun tüm veri akışını, kullanıcı yetkilendirmelerini ve operasyonel süreçlerini yöneten kapsamlı bir kontrol merkezidir.
 
-## 🏗️ Merkezi Yönetim Sistemi (Admin Dashboard) <br>
+### 📊 1. Akıllı Dashboard ve İstatistik Yönetimi
+* **Anlık Veri Takibi:** Dashboard üzerinde; toplam kayıtlı kullanıcı, aktif tur sayısı, bekleyen rezervasyonlar ve toplam rehber sayısı gibi kritik veriler dinamik kartlar aracılığıyla sunulur.
+* **Görsel Analiz:** Sistemin genel sağlık durumu ve doluluk oranları admin tarafından anlık olarak bu panelden izlenebilir.
 
-Admin paneli, platformun tüm veri akışını, kullanıcı yetkilendirmelerini ve operasyonel süreçlerini yöneten kapsamlı bir kontrol merkezidir. <br>
+### 🎡 2. Tur ve İçerik Yönetimi (Inventory Control)
+* **Onay ve Taslak Sistemi:** Admin, turları "Taslak" (Draft) veya "Yayında" (Status) olarak işaretleyebilir. Sadece onaylanmış ve taslak aşamasını geçmiş turlar kullanıcı arayüzünde listelenir.
+* **Gelişmiş Tur Düzenleme:** Tur fiyatları, kontenjanlar, rotalar ve açıklama metinleri üzerinde tam yetkiyle güncelleme yapabilme imkanı sağlanmıştır.
+* **Rehber Atama:** Her tur için sisteme kayıtlı rehberler arasından dinamik olarak atama yapma. Bu işlem, `GuideId` ile `Tour` koleksiyonu arasında veritabanı seviyesinde bir bağ oluşturur.
 
-### 📊 1. Akıllı Dashboard ve İstatistik Yönetimi <br>
-* **Anlık Veri Takibi:** Dashboard üzerinde; toplam kayıtlı kullanıcı, aktif tur sayısı, bekleyen rezervasyonlar ve toplam rehber sayısı gibi kritik veriler dinamik kartlar aracılığıyla sunulur. <br>
-* **Görsel Analiz:** Sistemin genel sağlık durumu ve doluluk oranları admin tarafından anlık olarak bu panelden izlenebilir. <br>
+### 🤖 3. Groq API ile Yapay Zeka Destekli İçerik Üretimi
+Yeni tur oluşturma sürecinde, içerik yönetimini bir üst seviyeye taşıyan **Groq Cloud API** entegrasyonu kullanılmıştır:
+* **Otomatik Tur Açıklamaları:** Admin, tur başlığını ve temel anahtar kelimeleri girdiğinde, sistem Groq API üzerinden yüksek performanslı LLM (Llama 3/Mixtral) modellerini tetikler.
+* **Saniyeler İçinde Özgün İçerik:** Groq altyapısı sayesinde, saniyeler içinde tura özel, ilgi çekici ve pazarlama odaklı açıklama metinleri otomatik olarak oluşturulur.
+* **Verimlilik Artışı:** Adminlerin manuel metin yazma yükü ortadan kaldırılarak, profesyonel ve SEO uyumlu tur detayları anında sisteme dahil edilir.
 
-### 🎡 2. Tur ve İçerik Yönetimi (Inventory Control) <br>
-* **Onay ve Taslak Sistemi:** Admin, turları "Taslak" (Draft) veya "Yayında" (Status) olarak işaretleyebilir. Sadece onaylanmış ve taslak aşamasını geçmiş turlar kullanıcı arayüzünde listelenir. <br>
-* **Gelişmiş Tur Düzenleme:** Tur fiyatları, kontenjanlar, rotalar ve açıklama metinleri üzerinde tam yetkiyle güncelleme yapabilme imkanı. <br>
-* **Rehber Atama:** Her tur için sisteme kayıtlı rehberler arasından dinamik olarak atama yapma. Bu işlem, `GuideId` ile `Tour` koleksiyonu arasında veritabanı seviyesinde bir bağ oluşturur. <br>
+### 🚦 4. Tur Durum Yönetimi ve Yayın Döngüsü
+Turlar, sistemin işleyişini ve veri güvenliğini korumak adına üç farklı statüde yönetilir (`Status` flag):
+* **✅ Aktif Turlar (Published):** Kontrolleri yapılmış, fiyatı ve rehberi atanmış, kullanıcıya açık turlar.
+* **📝 Taslak Turlar (Draft):** Yapım aşamasında olan veya üzerinde **Groq API** ile içerik çalışması devam eden, kullanıcıya kapalı turlar.
+* **❌ Pasif Turlar (Archived):** Sezonu kapanmış veya durdurulmuş turlar. Soft Delete mantığıyla veritabanında saklanır ancak listelenmez.
+* **🛠️ Teknik Uygulama:** Statü değişimleri MongoDB'nin `UpdateOneAsync` metoduyla asenkron olarak gerçekleşir ve UI anında güncellenir.
 
-### 🛡️ 3. Moderasyon ve Güvenlik <br>
-* **Yorum ve Rezervasyon Onayı:** Kullanıcılardan gelen yorumlar ve rezervasyon talepleri Admin onay mekanizmasından geçmeden yayına alınmaz. Bu, sistemde kirli veri oluşmasını ve sahte rezervasyonları engeller. <br>
-* **Rol ve Yetki Atama:** Admin, mevcut kullanıcılar arasından "Rehber" atayabilir veya kullanıcıları pasif duruma getirerek sistem erişimlerini kısıtlayabilir. <br>
+### 🛡️ 5. Moderasyon ve Güvenlik
+* **Yorum ve Rezervasyon Onayı:** Kullanıcılardan gelen yorumlar ve rezervasyon talepleri Admin onay mekanizmasından geçmeden yayına alınmaz. Bu, kirli veri oluşmasını ve sahte rezervasyonları engeller.
+* **Rol ve Yetki Atama:** Admin, mevcut kullanıcılar arasından "Rehber" atayabilir veya kullanıcıları pasif duruma getirerek sistem erişimlerini kısıtlayabilir.
 
-### 📱 4. Yönetim Arayüzü Özellikleri <br>
-* **Dinamik Sidebar:** Sadece Admin rolüne sahip kullanıcıların görebildiği, tüm yönetim modüllerine (Turlar, Kullanıcılar, Mesajlar, Ayarlar) hızlı erişim sağlayan özel navigasyon menüsü. <br>
-* **Hızlı Eylem Menüleri:** Tablolarda yer alan "Güncelle", "Sil", "Pasif Yap" ve "Detaylar" butonları ile minimum tıklama ile maksimum yönetim verimliliği. <br>
+### 👨‍💼 6. Dinamik Rehber Yönetimi
+Admin, sistemdeki tüm rehberlerin statülerini ve bilgilerini merkezi bir tablo üzerinden yönetir:
+* **🔄 Aktif/Pasif Geçişi:** Rehberler tek tıkla pasife çekilebilir; pasif rehberler "Rehberlerimiz" sayfasında listelenmez.
+* **📝 Bilgi Düzenleme:** Rehberin uzmanlık alanları, biyografisi, sosyal medya linkleri ve profil fotoğrafı bu panelden güncellenir.
+* **🗑️ Güvenli Silme:** Silme işlemi öncesinde rehberin üzerine kayıtlı aktif bir tur olup olmadığı sistem tarafından otomatik kontrol edilir.
 
-### ⚙️ 5. Teknik Altyapı (Admin Operations) <br>
-* **Full CRUD Yetkisi:** MongoDB üzerinde tüm koleksiyonlar için oluşturma, okuma, güncelleme ve silme (Create, Read, Update, Delete) yetkileri asenkron servisler üzerinden yürütülür. <br>
-* **Policy-Based Authorization:** Yönetim paneli sayfaları `[Authorize(Roles = "Admin")]` ile en üst düzey güvenlik katmanıyla korunmaktadır. <br>
+### 💬 7. Gelişmiş Yorum Yönetimi ve Akıllı Filtreleme
+* **⏳ Rehber Onay Mekanizması:** Yorumlar önce "Pending" statüsüyle bekleme havuzuna düşer. İlgili turun rehberi onay vermeden yorumlar yayınlanmaz.
+* **⭐ Derecelendirme Filtrelemesi:** Kullanıcılar turları yıldız puanlarına (5 Yıldız, 4+ Yıldız vb.) göre filtreleyebilir. Bu işlem MongoDB `Aggregation` yetenekleriyle anlık listelenir.
+* **🛠️ Teknik Güvenlik:** Giriş yapmayan kullanıcılar yorum formunu göremez; Identity doğrulaması şarttır.
 
-### 🤖 6. Groq API ile Yapay Zeka Destekli İçerik Üretimi <br>
-Yeni tur oluşturma sürecinde, içerik yönetimini bir üst seviyeye taşıyan **Groq Cloud API** entegrasyonu kullanılmıştır: <br>
-* **Otomatik Tur Açıklamaları:** Admin, tur başlığını ve temel anahtar kelimeleri girdiğinde, sistem Groq API üzerinden yüksek performanslı LLM (Large Language Model) modellerini tetikler. <br>
-* **Saniyeler İçinde Özgün İçerik:** Geleneksel API'lerden kat kat daha hızlı olan Groq altyapısı sayesinde, saniyeler içinde tura özel, ilgi çekici ve pazarlama odaklı açıklama metinleri otomatik olarak oluşturulur. <br>
-* **Verimlilik Artışı:** Adminlerin manuel metin yazma yükü ortadan kaldırılarak, profesyonel ve SEO uyumlu tur detayları anında sisteme dahil edilir. <br>
-* **Teknik Entegrasyon:** Arka planda Groq API'ye gönderilen "Prompt" mühendisliği ile her tur için benzersiz ve yaratıcı içerikler üretilmesi sağlanmıştır. <br>
+### 👥 8. Merkezi Kullanıcı ve Yetki Yönetimi (User Control Center)
+* **🔑 Dinamik Rol Dönüşümü:** Admin; müşterileri tek tıkla **"Guide" (Rehber)** rolüne yükseltebilir veya rehberleri tekrar **"Customer"** statüsüne döndürebilir.
+* **🛡️ Hesap Durum Kontrolü:** Herhangi bir kullanıcı toggle butonu ile "Pasif" statüsüne çekilebilir. Pasif kullanıcıların giriş yapması ve işlem yapması anında engellenir.
+* **🔎 Detay Analizi:** Tüm kullanıcıların e-posta, kayıt tarihi ve rolleri listelenir; rehberlerin profil detaylarına özel erişim sağlanır.
+
+### 📊 9. Raporlama ve Dışa Aktarma
+* **📑 Excel ve PDF Dökümü:** Admin; tur listelerini, kullanıcı verilerini ve rezervasyon kayıtlarını tek tıkla dışa aktarabilir.
+* **🛠️ Teknik Not:** Raporlama modülü `FileContentResult` mimarisiyle entegre edilmiştir ve verileri asenkron olarak parse ederek performans kaybını önler.
+
+### ⚙️ 10. Teknik Altyapı Notları
+* **Full CRUD & NoSQL:** MongoDB üzerinde tüm işlemler asenkron servisler üzerinden yürütülür.
+* **Security:** Yönetim paneli sayfaları `[Authorize(Roles = "Admin")]` Policy-Based Authorization ile korunmaktadır.
+* **Identity:** Rol değişimleri `UserManager<AppUser>` ve `RoleManager<AppRole>` servisleri üzerinden `Claim` güncellemeleriyle gerçekleştirilir.
+* 
+<img width="1918" height="911" alt="admin1" src="https://github.com/user-attachments/assets/63d4e2b2-b41f-46e3-b4c0-0f790368ea9c" />
+<img width="1916" height="903" alt="admin2" src="https://github.com/user-attachments/assets/cb95a9af-d00b-4798-999b-ddaad54d43b1" />
+<img width="1914" height="912" alt="admin3" src="https://github.com/user-attachments/assets/da7717b4-6076-4ba0-a2c7-2cd3ae2551c5" />
+<img width="1919" height="905" alt="admin4" src="https://github.com/user-attachments/assets/2008d16d-10a3-4c2d-9ca0-c1b78ecb2d87" />
+<img width="721" height="690" alt="admin5" src="https://github.com/user-attachments/assets/5acaf8e9-c7b6-4304-9644-f4ccebdd9e54" />
+<img width="1918" height="628" alt="admin6" src="https://github.com/user-attachments/assets/565888b3-abba-4df0-9f33-4a2b4491d165" />
+<img width="1912" height="905" alt="admin7" src="https://github.com/user-attachments/assets/52739f21-4575-4495-be71-6628369d0517" />
+<img width="1912" height="908" alt="admin8" src="https://github.com/user-attachments/assets/8c8717eb-3734-4e73-8c06-a0b56f6159ba" />
+<img width="1919" height="909" alt="admin9" src="https://github.com/user-attachments/assets/50ede15a-b619-40ee-8dee-5d83e772f73c" />
+<img width="1918" height="907" alt="admin10" src="https://github.com/user-attachments/assets/71529696-f144-4aab-98d9-7e0a78884c6c" />
+<img width="1919" height="918" alt="admin11" src="https://github.com/user-attachments/assets/2991b2d3-f93a-44d7-9921-6ac5750b81f5" />
+<img width="1914" height="916" alt="admin12" src="https://github.com/user-attachments/assets/cb465445-faf7-4914-acb6-c4d9fabb26fc" />
+<img width="1916" height="907" alt="admin13" src="https://github.com/user-attachments/assets/00d7615e-ac93-4e68-8924-a5919990c4fd" />
+<img width="1912" height="907" alt="admin14" src="https://github.com/user-attachments/assets/4cb442e3-94f4-4e75-a73e-959bfa3b39ea" />
+<img width="1914" height="909" alt="admin15" src="https://github.com/user-attachments/assets/4692d6fc-4459-4977-943a-0d480414e620" />
+<img width="1917" height="908" alt="admin16" src="https://github.com/user-attachments/assets/bce740f7-1d67-485f-9da3-a490da257bd0" />
+<img width="1438" height="491" alt="admin17" src="https://github.com/user-attachments/assets/b456a4f2-37ed-44ab-823e-bf94dd35b665" />
+<img width="1919" height="917" alt="admin18" src="https://github.com/user-attachments/assets/d0bbbc69-c8a8-43e1-b6ca-2409b1ed360a" />
+<img width="1916" height="688" alt="admin19" src="https://github.com/user-attachments/assets/81d5b0dc-a6cd-49e7-9626-c56d972d3b12" />
+
+
+# 👤 Gelişmiş Müşteri Deneyimi ve Rezervasyon Yönetim Paneli
+Travelin platformu, son kullanıcılar için sadece bir listeleme sitesi değil; seyahat planlarını uçtan uca yönetebildikleri, verilerin anlık işlendiği ve kişiselleştirilmiş bir **Customer Experience (CX)** merkezidir.
+
+## 📱 1. Dinamik Kullanıcı Arayüzü (Hybrid Layout Architecture)
+Sistem, kullanıcının giriş yaptığı anda kimliğini doğrular ve ona özel bir ekosistem hazırlar:
+* **Dinamik Sidebar Filtreleme:** Giriş yapan kullanıcının rolü "Customer" (Member) olarak tanımlandığında, `Customer Layout` devreye girer. Sidebar, sadece müşterinin yetki alanındaki (Dashboard, Rezervasyonlarım, Profil Ayarları) menüleri gösterecek şekilde asenkron olarak filtrelenir.
+* **Responsive Control Center:** Panel, mobil öncelikli (Mobile-First) tasarımı sayesinde kullanıcıların seyahat halindeyken bile rezervasyonlarını yönetmesine ve dijital biletlerine erişmesine olanak tanır.
+
+
+## 📋 2. Stratejik Rezervasyon Yönetim Merkezi
+Dashboard, müşterinin seyahat geçmişini ve gelecekteki planlarını bir "Seyahat Günlüğü" titizliğinde sunar:
+* **Akıllı Durum Filtreleme:** Kullanıcılar, karmaşayı önlemek adına rezervasyonlarını **"Onay Bekleyenler"** ve **"Kabul Edilenler"** statülerine göre anlık olarak filtreleyebilir. 
+* **🔎 Göz Sekmesi (Deep Dive Detail):** Tablodaki "Göz" ikonuna tıklandığında, ilgili rezervasyonun derinliklerine inilir. Burada; turun tam adı, kesinleşmiş tarih, buluşma koordinatları ve PNR bilgileri gibi operasyonel detaylar sergilenir.
+* **🚫 Reaktif İptal Mekanizması:** Kullanıcılar, planda bir değişiklik olması durumunda panel üzerinden rezervasyonlarını iptal edebilir. Bu işlem MongoDB üzerinde `Status: Cancelled` bayrağını tetikler ve admin paneline anlık veri akışı sağlar.
+
+
+## ➕ 3. İnteraktif Rezervasyon Motoru & Dinamik Fiyatlandırma
+Yeni bir rezervasyon oluşturma süreci, kullanıcıyı hatadan koruyan ve hızı artıran teknik bir hesaplama motoruyla yönetilir:
+* **Live Price Calculation (Canlı Hesaplama):** Kullanıcı bir tur seçip kişi sayısını artırdığında, sayfa yenilenmeden (JavaScript/DOM manipülasyonu ile) **"Kişi Sayısı x Birim Fiyat"** algoritması çalışır. Toplam ödeme tutarı kullanıcıya anlık olarak yansıtılır.
+* **Veri Tutarlılığı:** Seçilen kişi sayısı ve dinamik tutar, MongoDB koleksiyonuna `Decimal128` hassasiyetinde kaydedilerek finansal tutarlılık sağlanır.
+
+
+## 🎫 4. Dijital Biletleme ve Tur Operasyon Detayları
+Admin tarafından onaylanan her rezervasyon, müşteri panelinde fiziksel bir biletin tüm işlevlerini gören dijital bir yapıya dönüşür:
+* **Zengin Veri İçeriği:** Dijital bilet üzerinde; turun ismi, seyahat tarihi, katılım sağlayacak **Toplam Kişi Sayısı** ve ödenen **Toplam Tutar** net bir şekilde dekont mantığıyla sunulur.
+* **Rehber Ataması (Guide Assignment):** Kullanıcı, bilet üzerinde kendisine eşlik edecek olan profesyonel **Tur Rehberinin** adını görebilir. Bu, müşteri ile saha ekibi arasındaki güven bağını güçlendirir.
+* **Güvenlik:** Her bilet, sahteciliği önlemek adına benzersiz bir PNR ve doğrulama odaklı QR kod mimarisiyle donatılmıştır.
+
+
+## 📧 5. Otomatik Mail Bildirimi ve Profil Senkronizasyonu
+Proje, kullanıcıyı her aşamada bilgilendiren bir otomasyon sistemine sahiptir:
+* **Admin Onay Tetikleyicisi:** Admin, yönetim panelinden bir rezervasyonu "Onaylandı" olarak işaretlediği anda, arka planda asenkron bir `MailService` (SMTP) çalışır.
+* **Mail Otomasyonu:** Müşterinin e-posta adresine; rezervasyonun başarıyla onaylandığını bildiren, bilet detaylarını içeren ve "İyi Yolculuklar" temalı profesyonel bir bilgilendirme maili gönderilir.
+* **Profil Yönetimi:** Kullanıcılar; profil fotoğraflarını, iletişim verilerini ve şifrelerini Identity altyapısı üzerinden güncelleyebilir; yapılan değişiklikler tüm sistemde (Biletler, Yorumlar vb.) anlık olarak senkronize edilir.
+
+
+## 🛠️ 6. Teknik Uygulama Detayları
+* **Data Mapping & Lookup:** MongoDB'deki `Reservations` koleksiyonu, `Tours` ve `Guides` koleksiyonlarıyla asenkron olarak "Join" (Lookup) edilerek müşteriye eksiksiz bir veri paketi sunulur.
+* **State Management:** Rezervasyon statüleri (Pending, Confirmed, Cancelled) arasındaki geçişler, UI tarafında renk kodlu badge'ler ile görselleştirilmiştir.
+* **Security & Auth:** Müşteri panelindeki tüm uç noktalar `[Authorize(Roles = "Customer,Member")]` yetki politikasıyla uçtan uca korunmaktadır.
+
+<img width="1914" height="913" alt="müşteri1" src="https://github.com/user-attachments/assets/53f410ee-4399-43ba-9890-843cdeda9c0e" />
+<img width="506" height="503" alt="müşteri2" src="https://github.com/user-attachments/assets/3d0e832f-6668-450d-953f-cad97986a433" />
+<img width="1919" height="910" alt="müşteri3" src="https://github.com/user-attachments/assets/f6b17fc5-f0e1-4371-b1ad-a0e15bce7367" />
+<img width="441" height="655" alt="müşteri4" src="https://github.com/user-attachments/assets/18a690ec-4541-46c3-a1e8-551c75c83c89" />
+<img width="1917" height="901" alt="müşteri5" src="https://github.com/user-attachments/assets/8a9432cf-f13a-4960-a814-4d5c943a444d" />
+<img width="799" height="706" alt="müşteri6" src="https://github.com/user-attachments/assets/186a7570-1be9-4185-a210-7139a832f564" />
+![müşteri7](https://github.com/user-attachments/assets/b03f48c1-233a-4cd0-963a-6f8f8bdb4322)
 
 
 
