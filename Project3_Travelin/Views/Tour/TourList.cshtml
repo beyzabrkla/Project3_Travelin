@@ -33,6 +33,24 @@
 
 <section class="trending pt-6 pb-0 bg-lgrey">
     <div class="container">
+        <div class="visa-filter-tabs text-center mb-5">
+            <div class="filter-wrapper shadow-sm p-2 bg-white rounded-pill d-inline-block">
+                <a href="/Tour/TourList?destination=@ViewBag.Destination&duration=@ViewBag.Duration"
+                   class="btn-visa-filter @(ViewBag.VisaStatus == null ? "active" : "")">
+                    <i class="fa fa-globe me-2"></i>Tümü
+                </a>
+
+                <a href="/Tour/TourList?visaStatus=false&destination=@ViewBag.Destination&duration=@ViewBag.Duration"
+                   class="btn-visa-filter @(ViewBag.VisaStatus != null && (bool)ViewBag.VisaStatus == false ? "active" : "")">
+                    <i class="fa fa-passport me-2"></i>Vizesiz
+                </a>
+
+                <a href="/Tour/TourList?visaStatus=true&destination=@ViewBag.Destination&duration=@ViewBag.Duration"
+                   class="btn-visa-filter @(ViewBag.VisaStatus != null && (bool)ViewBag.VisaStatus == true ? "active" : "")">
+                    <i class="fa fa-id-card me-2"></i>Vize Gerekenler
+                </a>
+            </div>
+        </div>
         <div class="list-results d-flex align-items-center justify-content-between">
             <div class="list-results-sort">
                 @if (totalTours > 0)
@@ -124,3 +142,45 @@
         </div>
     </div>
 </section>
+
+<style>
+    /* Filtre Konteynırı */
+    .filter-wrapper {
+        border: 1px solid #f0f0f0;
+    }
+
+    /* Temel Buton Tasarımı */
+    .btn-visa-filter {
+        display: inline-block;
+        padding: 10px 25px;
+        border-radius: 50px;
+        text-decoration: none;
+        color: #666; /* Pasif yazı rengi */
+        font-weight: 600;
+        font-size: 14px;
+        transition: all 0.3s ease;
+        border: 2px solid transparent;
+    }
+
+        /* Hover Durumu */
+        .btn-visa-filter:hover {
+            color: #5d0473;
+            background-color: #fcf4ff;
+        }
+
+        /* Aktif (Seçili) Buton - Senin Tema Rengin */
+        .btn-visa-filter.active {
+            background-color: #5d0473; /* Tema Moru */
+            color: white !important;
+            box-shadow: 0 4px 15px rgba(93, 4, 115, 0.3);
+        }
+
+    /* Kart Üzerindeki Badge'leri de Temaya Uyduralım */
+    .badge.bg-success {
+        background-color: #28a745 !important; /* Doğayı ve onayı temsilen yeşil kalsın ama tonu yumuşasın */
+    }
+
+    .badge.bg-danger {
+        background-color: #a30000 !important; /* Çok parlak kırmızı yerine daha oturaklı bir kırmızı */
+    }
+</style>

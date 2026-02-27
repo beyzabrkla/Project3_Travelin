@@ -1,10 +1,11 @@
-﻿@model DTOLayer.DTOs.TourDTOs.GetTourByIdDTO
+﻿@model GetTourByIdDTO
 @{
     ViewData["Title"] = "Rehberin Gezi Günlüğü";
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
-<section class="guide-log-header py-5" style="background: linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5)), url('@Model.ImageUrl') no-repeat center; background-size: cover; min-height: 400px; display: flex; align-items: center;">
+@* HEADER BÖLÜMÜ *@
+<section class="guide-log-header py-5" style="background: linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)), url('@Model.ImageUrl') no-repeat center; background-size: cover; min-height: 400px; display: flex; align-items: center;">
     <div class="container text-center text-white">
         <h1 class="display-4 fw-bold text-light">@Model.TourTitle</h1>
         <p class="lead">Rehberimiz <span class="fw-bold text-warning">@Model.GuideName</span> Kadrajından ve Kaleminden</p>
@@ -14,7 +15,7 @@
 <section class="guide-content py-5 bg-white">
     <div class="container">
         <div class="row">
-            @* SOL TARAF: BLOG İÇERİĞİ *@
+            @* SOL TARAF: REHBERİN BLOG İÇERİĞİ *@
             <div class="col-lg-8">
                 <div class="d-flex align-items-center mb-4 pb-3 border-bottom">
                     <img src="@(string.IsNullOrEmpty(Model.GuideImageUrl) ? "/images/default-guide.png" : Model.GuideImageUrl)"
@@ -26,8 +27,8 @@
                 </div>
 
                 <div class="blog-text-area mb-5">
-                    <h3 class="fw-bold mb-4"><i class="fa fa-pen-nib me-2 theme"></i>Bu Rota Hakkında Ne Düşünüyorum?</h3>
-                    <div class="p-4 rounded-3 shadow-sm bg-light border-start border-5 border-theme">
+                    <h3 class="fw-bold mb-4"><i class="fa fa-pen-nib me-2 theme" style="color:#6a008a;"></i>Bu Rota Hakkında Ne Düşünüyorum?</h3>
+                    <div class="p-4 rounded-3 shadow-sm bg-light border-start border-5" style="border-color: #6a008a !important;">
                         @if (!string.IsNullOrEmpty(Model.GuideDescription))
                         {
                             <p class="lead fst-italic text-dark mb-0" style="line-height: 1.8;">
@@ -36,22 +37,22 @@
                         }
                         else
                         {
-                            <p class="text-muted italic">Rehberimiz bu rota için henüz kişisel notlarını eklememiş.</p>
+                            <p class="text-muted italic">Rehberimiz bu rota için henüz kişisel notlarını paylaşmamış.</p>
                         }
                     </div>
                 </div>
 
-                @* REHBERİN FOTOĞRAFLARI *@
+                @* REHBERİN ÖZEL FOTOĞRAFLARI (GuideAlbumUrls) *@
                 <div class="gallery-area">
-                    <h4 class="fw-bold mb-4"><i class="fa fa-camera-retro me-2 theme"></i>Rehberimizin Kadrajından Görüntüler</h4>
+                    <h4 class="fw-bold mb-4"><i class="fa fa-camera-retro me-2 theme" style="color:#6a008a;"></i>Rehberimizin Kadrajından Görüntüler</h4>
                     <div class="row g-3">
-                        @if (Model.ImageAlbumUrls != null && Model.ImageAlbumUrls.Any())
+                        @if (Model.GuideAlbumUrls != null && Model.GuideAlbumUrls.Any())
                         {
-                            foreach (var img in Model.ImageAlbumUrls)
+                            foreach (var img in Model.GuideAlbumUrls)
                             {
                                 <div class="col-md-6">
                                     <div class="gallery-card overflow-hidden rounded-3 shadow-sm" style="height: 250px;">
-                                        <img src="@img" class="w-100 h-100" style="object-fit: cover;">
+                                        <img src="@img" class="w-100 h-100" style="object-fit: cover; transition: transform 0.3s ease;">
                                     </div>
                                 </div>
                             }
@@ -59,43 +60,36 @@
                         else
                         {
                             <div class="col-12">
-                                <div class="alert alert-secondary text-center">Rehber henüz fotoğraf yüklememiş.</div>
+                                <div class="alert alert-light text-center border">Rehberimiz henüz bu tura özel bir fotoğraf karesi eklememiş.</div>
                             </div>
                         }
                     </div>
                 </div>
             </div>
 
-            @* SAĞ TARAF: TEKNİK ÖZET (SABİT) *@
+            @* SAĞ TARAF: TUR KÜNYESİ *@
             <div class="col-lg-4">
                 <div class="card border-0 shadow-sm sticky-top" style="top: 100px; border-radius: 20px;">
                     <div class="card-body p-4 text-center">
                         <h5 class="fw-bold border-bottom pb-3 mb-4">Turun Künyesi</h5>
-
                         <div class="info-list text-start mb-4">
                             <div class="d-flex align-items-center mb-3">
-                                <div class="icon-box me-3 theme bg-light p-2 rounded">
-                                    <i class="fa fa-map-marker-alt"></i>
-                                </div>
+                                <i class="fa fa-map-marker-alt me-3" style="color:#6a008a;"></i>
                                 <span>@Model.TourCity, @Model.TourCountry</span>
                             </div>
                             <div class="d-flex align-items-center mb-3">
-                                <div class="icon-box me-3 theme bg-light p-2 rounded">
-                                    <i class="fa fa-calendar-alt"></i>
-                                </div>
+                                <i class="fa fa-calendar-alt me-3" style="color:#6a008a;"></i>
                                 <span>@Model.TourDate.ToString("dd MMMM yyyy")</span>
                             </div>
                             <div class="d-flex align-items-center mb-3">
-                                <div class="icon-box me-3 theme bg-light p-2 rounded">
-                                    <i class="fa fa-users"></i>
-                                </div>
+                                <i class="fa fa-users me-3" style="color:#6a008a;"></i>
                                 <span>@Model.TourCapacity Kişi Kapasite</span>
                             </div>
                         </div>
 
-                        <div class="price-box bg-theme text-white p-3 rounded-pill mb-4 shadow" style="background-color: #6a008a";>
-                            <span class="small d-block">Tur Fiyatı</span>
-                            <h3 class="fw-bold mb-0 text-light">@Model.TourPrice.ToString("C2")</h3>
+                        <div class="price-box text-white p-3 rounded-pill mb-4 shadow" style="background-color: #6a008a;">
+                            <span class="small d-block text-light opacity-75">Tur Fiyatı</span>
+                            <h3 class="fw-bold mb-0 text-white">@Model.TourPrice.ToString("C2")</h3>
                         </div>
 
                         <a href="/Tour/TourDetail/@Model.TourId" class="btn btn-outline-dark w-100 rounded-pill py-2">

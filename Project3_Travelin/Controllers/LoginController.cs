@@ -47,7 +47,7 @@ namespace Project3_Travelin.Controllers
                 if (await _userManager.IsInRoleAsync(user, "Guide"))
                 {
                     // Guide Dashboard'a yönlendir
-                    return RedirectToAction("Dashboard", "GuideDashboard");
+                    return RedirectToAction("Index", "Home");
                 }
 
                 // Customer ise Customer Dashboard'a gider

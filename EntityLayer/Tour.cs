@@ -25,11 +25,15 @@ namespace EntityLayer
         public List<string> ImageAlbumUrls { get; set; }
 
         [BsonRepresentation(BsonType.Decimal128)]
-        public decimal TourPrice { get; set; } // Tur fiyatı
+        public decimal TourPrice { get; set; } 
         public string GuideId { get; set; }
+        public string GuideDescription { get; set; }
+        public string GuideImage { get; set; }
+        public List<string> GuideAlbumUrls { get; set; } 
         public string VideoUrl { get; set; }
-        public int Rating { get; set; } // 1-5 arası yıldız puanı
-        public int ReviewCount { get; set; } // toplam yorum sayısı
+        public int Rating { get; set; }
+        public int ReviewCount { get; set; }
+        public bool IsVisaRequired { get; set; } // true: Vize İstiyor, false: Vize İstemiyor
     }
 }
 

@@ -184,25 +184,32 @@
 
                             <div class="p-4 d-flex flex-column justify-content-between flex-grow-1">
                                 <div class="mb-3">
-                                    <p class="text-muted small tour-description-text mb-3">@item.SubDescription</p>
-
-                                    @* REHBER SEÇİLİYSE: Rehberin Tur Hakkındaki Blog Notu *@
+                                    @* KARAR MEKANİZMASI: Rehber seçiliyse Rehber Notunu, değilse Genel Kısa Açıklamayı göster *@
                                     @if (!string.IsNullOrEmpty(selectedGuideId) && !string.IsNullOrEmpty(item.GuideDescription))
                                     {
-                                        <div class="guide-special-note p-3 rounded mb-3">
-                                            <div class="badge-guide-name theme fw-bold mb-1">REHBERİN NOTU</div>
-                                            <i class="fa fa-quote-left theme me-1" style="font-size: 0.7rem;"></i>
-                                            <span class="text-dark fst-italic">
-                                                @(item.GuideDescription.Length > 95 ? item.GuideDescription.Substring(0, 95) + "..." : item.GuideDescription)
-                                            </span>
+                                        @* REHBER SEÇİLİ: Birincil metin artık Rehberin samimi notu *@
+                                        <div class="guide-special-note p-3 rounded mb-3 border-start border-4 shadow-sm" style="border-color: #5d0473 !important;">
+                                            <div class="badge-guide-name theme fw-bold mb-1" style="font-size: 0.75rem;">
+                                                <i class="fa fa-pen-nib me-1"></i> REHBERİN GÜNLÜĞÜNDEN
+                                            </div>
+                                            <p class="text-dark fst-italic mb-0" style="font-size: 0.9rem; line-height: 1.5;">
+                                                "@(item.GuideDescription.Length > 150 ? item.GuideDescription.Substring(0, 147) + "..." : item.GuideDescription)"
+                                            </p>
                                         </div>
+                                    }
+                                    else
+                                    {
+                                        @* REHBER SEÇİLİ DEĞİL (TÜM ROTALAR): Genel tur açıklaması *@
+                                        <p class="text-muted small tour-description-text mb-3" style="min-height: 60px;">
+                                            @item.SubDescription
+                                        </p>
                                     }
                                 </div>
 
-                                <div class="d-flex justify-content-between align-items-center pt-3 border-top">
+                                <div class="d-flex justify-content-between align-items-center pt-3 border-top mt-auto">
                                     <span class="fw-bold theme h5 mb-0">@item.TourPrice.ToString("C2")</span>
 
-                                    @*Rehber seçiliyse Log sayfasına, değilse Standart Detay sayfasına *@
+                                    @* Buton Yönlendirmesi *@
                                     @if (!string.IsNullOrEmpty(selectedGuideId))
                                     {
                                         <a href="/Tour/GuideTourLog/@item.TourId" class="nir-btn-thin">Rehber Günlüğü</a>

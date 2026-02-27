@@ -1,5 +1,107 @@
 ﻿<footer class="pt-20 pb-4" style="background-image: url(/travelin/images/background_pattern.png);">
     <div class="section-shape top-0" style="background-image: url(/travelin/images/shape8.png);"></div>
+
+    @* ── OTO-KAYAN TUR FOTOĞRAF ŞERIDI ── *@
+    @if (ViewBag.FooterPhotos != null && ((List<string>)ViewBag.FooterPhotos).Count > 0)
+    {
+        var photos = (List<string>)ViewBag.FooterPhotos;
+        <div class="tour-photo-strip">
+            <div class="strip-header">
+                <i class="bi bi-images"></i> Tur Fotoğrafları
+            </div>
+            <div class="strip-wrapper">
+                <div class="strip-track">
+                    @* İki kez render et — sonsuz döngü efekti için *@
+                    @for (int i = 0; i < 2; i++)
+                    {
+                        foreach (var photo in photos)
+                        {
+                            <div class="strip-item">
+                                <a href="/Tour/TourList">
+                                    <img src="@photo" alt="Tur"
+                                         onerror="this.closest('.strip-item').style.display='none'" />
+                                </a>
+                            </div>
+                        }
+                    }
+                </div>
+            </div>
+        </div>
+    }
+
+    <style>
+        .tour-photo-strip {
+            padding: 1.5rem 0 2rem;
+            overflow: hidden;
+        }
+
+        .strip-header {
+            text-align: center;
+            color: rgba(255,255,255,0.7);
+            font-size: .8rem;
+            font-weight: 600;
+            letter-spacing: .12em;
+            text-transform: uppercase;
+            margin-bottom: 1rem;
+        }
+
+            .strip-header i {
+                margin-right: .4rem;
+            }
+
+        .strip-wrapper {
+            overflow: hidden;
+            width: 100%;
+        }
+
+        .strip-track {
+            display: flex;
+            gap: 10px;
+            width: max-content;
+            animation: stripScroll 30s linear infinite;
+        }
+
+            .strip-track:hover {
+                animation-play-state: paused;
+            }
+
+        .strip-item {
+            flex-shrink: 0;
+            width: 160px;
+            height: 110px;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+            .strip-item a {
+                display: block;
+                width: 100%;
+                height: 100%;
+            }
+
+            .strip-item img {
+                width: 100%;
+                height: 100%;
+                object-fit: cover;
+                transition: transform .3s ease, opacity .3s ease;
+            }
+
+            .strip-item:hover img {
+                transform: scale(1.08);
+                opacity: .85;
+            }
+
+        @@keyframes stripScroll {
+            0% {
+                transform: translateX(0);
+            }
+
+            100% {
+                transform: translateX(-50%);
+            }
+        }
+    </style>
+
     <div class="footer-upper pb-4">
         <div class="container">
             <div class="row">
@@ -26,7 +128,6 @@
                             <li><a href="about-us.html">Tur ve Rezervasyon Bilgileri</a></li>
                             <li><a href="about-us.html">Gizlilik Politikası</a></li>
                             <li><a href="about-us.html">Kullanım Şartları</a></li>
-                            <li><a href="about-us.html">Müşteri Hizmetleri</a></li>
                             <li><a href="about-us.html">İptal ve İade Politikası</a></li>
                         </ul>
                     </div>
@@ -67,7 +168,7 @@
         <div class="container">
             <div class="row footer-pay align-items-center justify-content-between text-lg-start text-center">
                 <div class="col-lg-8 footer-payment-nav mb-4">
-                    <ul class="">
+                    <ul>
                         <li class="me-2">Destekliyoruz:</li>
                         <li class="me-2"><i class="fab fa-cc-mastercard fs-4"></i></li>
                         <li class="me-2"><i class="fab fa-cc-paypal fs-4"></i></li>
@@ -78,16 +179,7 @@
                 </div>
                 <div class="col-lg-4 footer-payment-nav mb-4">
                     <ul class="d-flex align-items-center">
-                        <li class="me-2 w-75">
-                            <select class="niceSelect rounded">
-                                <option>English</option>
-                                <option>Chinese</option>
-                                <option>Russian</option>
-                                <option>Japanese</option>
-                                <option>Korean</option>
-                            </select>
-                        </li>
-                        <li class="w-25">
+                        <li class="w-100">
                             <select class="niceSelect rounded">
                                 <option>$ USD</option>
                                 <option>$ AUD</option>
@@ -106,7 +198,7 @@
         <div class="container">
             <div class="copyright-inner rounded p-3 d-md-flex align-items-center justify-content-between">
                 <div class="copyright-text">
-                    <p class="m-0 white">@DateTime.Now Travelin. Tüm Hakları Saklıdır.</p>
+                    <p class="m-0 white">@DateTime.Now.Year Travelin. Tüm Hakları Saklıdır.</p>
                 </div>
                 <div class="social-links">
                     <ul>

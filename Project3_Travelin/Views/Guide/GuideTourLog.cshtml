@@ -11,52 +11,62 @@
 
 <form method="post" enctype="multipart/form-data">
     <input type="hidden" asp-for="TourId" />
+    <input type="hidden" asp-for="TourTitle" />
 
     <div class="card border-0 shadow-sm rounded-3 p-4 mb-4">
+        @* 1. REHBERİN NOTU *@
         <div class="mb-4">
             <h5 class="fw-bold mb-3" style="color:#5d0473;">
                 <i class="bi bi-pencil-fill me-2"></i>Bu Rota Hakkında Ne Düşünüyorum?
             </h5>
-            <textarea name="GuideComment" class="form-control border-0 bg-light p-3"
+            <textarea asp-for="GuideDescription" class="form-control border-0 bg-light p-3"
                       rows="6" placeholder="Rehber notlarınızı buraya yazın..."
-                      style="border-radius: 12px;">@Model.GuideDescription</textarea>
+                      style="border-radius: 12px;"></textarea>
             <div class="form-text mt-2 text-muted">
-                Not: Bu metin tur detay sayfasında kullanıcılar tarafından görüntülenecektir.
+                <i class="bi bi-info-circle me-1"></i>Bu metin tur detay sayfasında sizin günlüğünüz olarak görünecektir.
             </div>
         </div>
 
         <hr class="text-muted my-4 opacity-25">
 
+        @* 2. REHBERİN FOTOĞRAF GALERİSİ *@
         <div>
             <h5 class="fw-bold mb-3" style="color:#5d0473;">
                 <i class="bi bi-camera-fill me-2"></i>Rehberimizin Kadrajından Görüntüler
             </h5>
 
-            @if (!string.IsNullOrEmpty(Model.GuideImageUrl))
+            @if (Model.GuideAlbumUrls != null && Model.GuideAlbumUrls.Any())
             {
                 <div class="mb-3 d-flex gap-2 overflow-auto py-2">
-                    <img src="@Model.GuideImageUrl" class="rounded-3 shadow-sm" style="height: 120px; width: 180px; object-fit: cover;">
-                    @* Varsa diğer görseller *@
+                    @foreach (var imgUrl in Model.GuideAlbumUrls)
+                    {
+                        <div class="position-relative">
+                            <img src="@imgUrl" class="rounded-3 shadow-sm" style="height: 120px; width: 180px; object-fit: cover;">
+                            @* Mevcut resimleri post sırasında kaybetmemek için *@
+                            <input type="hidden" name="GuideAlbumUrls" value="@imgUrl" />
+                        </div>
+                    }
                 </div>
+            }
+            else
+            {
+                <p class="text-muted small italic mb-3">Henüz bu tur için kişisel fotoğraf yüklemediniz.</p>
             }
 
             <div class="input-group">
-                <input type="file" name="GuideImages" class="form-control" id="inputGroupFile" multiple>
+                <input type="file" name="GuideImages" class="form-control" id="inputGroupFile" multiple accept="image/*">
                 <label class="input-group-text bg-white" for="inputGroupFile">Yeni Fotoğraf Yükle</label>
             </div>
-            <p class="small text-success mt-2">
-                <i class="bi bi-info-circle me-1"></i>En fazla 4 fotoğraf yükleyebilirsiniz.
+            <p class="small text-secondary mt-2">
+                <i class="bi bi-info-circle me-1"></i>Eklediğiniz fotoğraflar sadece size özel albümde saklanır.
             </p>
         </div>
     </div>
 
-    @* BUTONLAR *@
     <div class="d-flex gap-2">
         <button type="submit" class="btn text-white px-4 rounded-pill" style="background:#5d0473;">
-            <i class="bi bi-save me-2"></i>Değişiklikleri Kaydet
+            <i class="bi bi-save me-2"></i>Günlüğü Kaydet
         </button>
-        <a href="/Guide/MyTours" class="btn btn-outline-secondary px-4 rounded-pill">
-            Vazgeç
-        </a>
+        <a href="/Guide/MyTours" class="btn btn-outline-secondary px-4 rounded-pill">Vazgeç</a>
     </div>
 </form>
