@@ -77,7 +77,8 @@ namespace Project3_Travelin.Controllers
         [HttpGet]
         public async Task<IActionResult> GuideTourLog(string id)
         {
-            var tourValue = await _tourService.GetTourByIdAsync(id);
+            var tourValue = await _tourService.GetTourByIdAsync(id); 
+            if (tourValue == null) return NotFound();
 
             var model = _mapper.Map<ResultTourDTO>(tourValue);
 
@@ -95,27 +96,28 @@ namespace Project3_Travelin.Controllers
                 if (existingTourData != null)
                 {
                     var updateTour = _mapper.Map<UpdateTourDTO>(existingTourData);
+
                     updateTour.GuideDescription = model.GuideDescription;
 
                     if (model.GuideImages != null && model.GuideImages.Any())
                     {
+                        if (updateTour.GuideAlbumUrls == null) updateTour.GuideAlbumUrls = new List<string>();
+
                         foreach (var item in model.GuideImages)
                         {
                             var extension = Path.GetExtension(item.FileName);
                             var newImageName = Guid.NewGuid() + extension;
-
                             var location = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/userimages/", newImageName);
 
                             using var stream = new FileStream(location, FileMode.Create);
                             await item.CopyToAsync(stream);
 
-                            if (updateTour.ImageAlbumUrls == null) updateTour.ImageAlbumUrls = new List<string>();
-                            updateTour.ImageAlbumUrls.Add("/userimages/" + newImageName);
+                            updateTour.GuideAlbumUrls.Add("/userimages/" + newImageName);
                         }
                     }
 
                     await _tourService.UpdateTourAsync(updateTour);
-                    TempData["Success"] = "Gezi günlüğü başarıyla güncellendi.";
+                    TempData["Success"] = "Gezi günlüğünüz başarıyla güncellendi.";
                 }
             }
             catch (Exception ex)

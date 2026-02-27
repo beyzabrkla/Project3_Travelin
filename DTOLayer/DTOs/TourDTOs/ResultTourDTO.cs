@@ -22,8 +22,10 @@ namespace DTOLayer.DTOs.TourDTOs
         public string GuideName { get; set; }
         public string GuideTitle { get; set; }
         public string GuideImageUrl { get; set; }
+        public List<string> GuideAlbumUrls { get; set; }
         public string GuideDescription { get; set; }
         public int Rating { get; set; } 
-        public int ReviewCount { get; set; } 
+        public int ReviewCount { get; set; }
+        public bool IsVisaRequired { get; set; } // true: Vize İstiyor, false: Vize İstemiyor
     }
 }

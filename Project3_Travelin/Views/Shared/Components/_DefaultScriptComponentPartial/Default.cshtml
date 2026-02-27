@@ -9,6 +9,43 @@
         <button type="submit" class="btn btn-primary">Search</button>
     </form>
 </div>
+<script>
+    function googleTranslateElementInit() {
+        new google.translate.TranslateElement(
+            { pageLanguage: 'tr', autoDisplay: false },
+            'google_translate_element'
+        );
+    }
+
+    function doGoogleTranslate(lang) {
+        if (lang === 'tr') {
+            var d = new Date();
+            d.setTime(d.getTime() + (-1 * 24 * 60 * 60 * 1000));
+            document.cookie = "googtrans=; expires=" + d.toGMTString() + "; path=/";
+            document.cookie = "googtrans=; expires=" + d.toGMTString() + "; domain=" + window.location.hostname;
+            window.location.reload();
+            return;
+        }
+        var val = '/tr/' + lang;
+        document.cookie = "googtrans=" + val + "; path=/";
+        document.cookie = "googtrans=" + val + "; domain=" + window.location.hostname;
+        window.location.reload();
+    }
+
+    document.addEventListener('DOMContentLoaded', function () {
+        var match = document.cookie.match(/googtrans=\/tr\/([a-zA-Z-]+)/);
+        if (match && match[1]) {
+            var sel = document.getElementById('headerLangSelect');
+            if (sel) {
+                for (var i = 0; i < sel.options.length; i++) {
+                    if (sel.options[i].value === match[1]) { sel.selectedIndex = i; break; }
+                }
+            }
+        }
+    });
+</script>
+
+<script src="//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
 
 
 

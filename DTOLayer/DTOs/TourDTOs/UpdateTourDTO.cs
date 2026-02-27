@@ -21,12 +21,10 @@ namespace DTOLayer.DTOs.TourDTOs
         public List<string> ImageAlbumUrls { get; set; }
         public List<IFormFile> GuideImages { get; set; } // Yeni yüklenecek dosyalar
         public string GuideId { get; set; }
-
         public string GuideName { get; set; }
-
         public string GuideTitle { get; set; }
-
         public string GuideImageUrl { get; set; }
+        public List<string> GuideAlbumUrls { get; set; }
         public string GuideDescription { get; set; }
 
     }

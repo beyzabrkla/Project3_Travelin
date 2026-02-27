@@ -3,6 +3,141 @@
     ViewData["Title"] = "Yeni Tur Ekle";
     Layout = "~/Views/Shared/_AdminLayout.cshtml";
 }
+
+@* ══════════════════════════════════════════════════════
+   AI AÇIKLAMA OLUŞTURMA MODALI
+══════════════════════════════════════════════════════ *@
+<div class="modal fade" id="aiModal" tabindex="-1" aria-labelledby="aiModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg" style="border-radius:16px;overflow:hidden;">
+
+            <!-- Modal Header -->
+            <div class="modal-header border-0 pb-0 px-4 pt-4" style="background:linear-gradient(135deg,#5d0473,#9333ea);">
+                <div class="d-flex align-items-center gap-3">
+                    <div style="background:rgba(255,255,255,0.2);border-radius:10px;padding:8px 10px;">
+                        <i class="bi bi-stars text-white fs-5"></i>
+                    </div>
+                    <div>
+                        <h5 class="modal-title text-white fw-bold mb-0" id="aiModalLabel">AI Açıklama Asistanı</h5>
+                        <small class="text-white opacity-75">Tur bilgilerinize göre açıklama oluşturun</small>
+                    </div>
+                </div>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+
+            <!-- Modal Body -->
+            <div class="modal-body p-4">
+
+                <!-- Mevcut form bilgileri otomatik doldurulacak -->
+                <div class="alert d-flex align-items-center gap-2 mb-4"
+                     style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:10px;padding:.75rem 1rem;">
+                    <i class="bi bi-info-circle text-success"></i>
+                    <small class="text-success">Formdaki bilgiler otomatik olarak alındı. İsterseniz düzenleyebilirsiniz.</small>
+                </div>
+
+                <div class="row g-3 mb-4">
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold" style="font-size:.82rem;color:#4a5568;">Tur Başlığı</label>
+                        <input type="text" id="ai_title" class="form-control" placeholder="Örn: Kapadokya Balon Turu"
+                               style="border-radius:8px;font-size:.875rem;" />
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label fw-semibold" style="font-size:.82rem;color:#4a5568;">Ülke</label>
+                        <input type="text" id="ai_country" class="form-control" placeholder="Türkiye"
+                               style="border-radius:8px;font-size:.875rem;" />
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label fw-semibold" style="font-size:.82rem;color:#4a5568;">Şehir</label>
+                        <input type="text" id="ai_city" class="form-control" placeholder="Nevşehir"
+                               style="border-radius:8px;font-size:.875rem;" />
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label fw-semibold" style="font-size:.82rem;color:#4a5568;">Süre</label>
+                        <input type="text" id="ai_duration" class="form-control" placeholder="3 Gün / 2 Gece"
+                               style="border-radius:8px;font-size:.875rem;" />
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label fw-semibold" style="font-size:.82rem;color:#4a5568;">Fiyat (₺)</label>
+                        <input type="text" id="ai_price" class="form-control" placeholder="5000"
+                               style="border-radius:8px;font-size:.875rem;" />
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label fw-semibold" style="font-size:.82rem;color:#4a5568;">Ton / Stil</label>
+                        <select id="ai_tone" class="form-select" style="border-radius:8px;font-size:.875rem;">
+                            <option value="profesyonel">Profesyonel & Bilgilendirici</option>
+                            <option value="heyecanli">Heyecanlı & Macera Dolu</option>
+                            <option value="romantik">Romantik & Şiirsel</option>
+                            <option value="lüks">Lüks & Premium</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Generate Butonu -->
+                <button type="button" id="aiGenerateBtn" onclick="generateWithAI()"
+                        class="btn w-100 text-white fw-semibold mb-4"
+                        style="background:linear-gradient(135deg,#5d0473,#9333ea);border:none;border-radius:10px;padding:.75rem;font-size:.9rem;transition:all .2s;">
+                    <i class="bi bi-stars me-2"></i>
+                    <span id="aiBtnText">Açıklama Oluştur</span>
+                </button>
+
+                <!-- Sonuç Alanı -->
+                <div id="aiResultArea" style="display:none;">
+                    <hr style="border-color:#e2e8f0;">
+                    <h6 class="fw-bold mb-3" style="color:#2d3748;">
+                        <i class="bi bi-check-circle-fill text-success me-2"></i>Oluşturulan Açıklamalar
+                    </h6>
+
+                    <!-- Detaylı Açıklama -->
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between align-items-center mb-1">
+                            <label class="fw-semibold" style="font-size:.82rem;color:#4a5568;">
+                                <i class="bi bi-text-paragraph me-1"></i>Detaylı Açıklama
+                            </label>
+                            <button type="button" onclick="applyFull()"
+                                    class="btn btn-sm"
+                                    style="background:#f0fdf4;color:#16a34a;border:1px solid #bbf7d0;border-radius:6px;font-size:.75rem;padding:.25rem .75rem;">
+                                <i class="bi bi-check2 me-1"></i>Uygula
+                            </button>
+                        </div>
+                        <textarea id="ai_fullResult" class="form-control" rows="6"
+                                  style="border-radius:8px;font-size:.82rem;background:#f8fafc;resize:vertical;"></textarea>
+                    </div>
+
+                    <!-- Kısa Açıklama -->
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between align-items-center mb-1">
+                            <label class="fw-semibold" style="font-size:.82rem;color:#4a5568;">
+                                <i class="bi bi-card-text me-1"></i>Kısa Açıklama (Alt Başlık)
+                            </label>
+                            <button type="button" onclick="applySub()"
+                                    class="btn btn-sm"
+                                    style="background:#f0fdf4;color:#16a34a;border:1px solid #bbf7d0;border-radius:6px;font-size:.75rem;padding:.25rem .75rem;">
+                                <i class="bi bi-check2 me-1"></i>Uygula
+                            </button>
+                        </div>
+                        <textarea id="ai_subResult" class="form-control" rows="2"
+                                  style="border-radius:8px;font-size:.82rem;background:#f8fafc;"></textarea>
+                    </div>
+
+                    <!-- İkisini Birden Uygula -->
+                    <button type="button" onclick="applyBoth()" data-bs-dismiss="modal"
+                            class="btn w-100 text-white fw-semibold"
+                            style="background:#16a34a;border:none;border-radius:10px;padding:.65rem;font-size:.875rem;">
+                        <i class="bi bi-check-all me-2"></i>İkisini de Forma Uygula ve Kapat
+                    </button>
+                </div>
+
+                <!-- Hata Mesajı -->
+                <div id="aiErrorArea" style="display:none;" class="alert alert-danger mt-3" style="border-radius:10px;">
+                    <i class="bi bi-exclamation-triangle me-2"></i>
+                    <span id="aiErrorText"></span>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>
+
 <!-- PAGE HEADER -->
 <div class="page-header">
     <div>
@@ -15,7 +150,8 @@
             </ol>
         </nav>
     </div>
-    <a asp-action="TourList" class="btn btn-outline-secondary d-flex align-items-center gap-2" style="border-radius:10px;font-size:.875rem;font-weight:500;padding:.55rem 1.1rem;">
+    <a asp-action="TourList" class="btn btn-outline-secondary d-flex align-items-center gap-2"
+       style="border-radius:10px;font-size:.875rem;font-weight:500;padding:.55rem 1.1rem;">
         <i class="bi bi-arrow-left"></i> Tur Listesine Dön
     </a>
 </div>
@@ -36,30 +172,52 @@
                     </div>
                 </div>
                 <div class="section-body">
+
                     <!-- Tur Başlığı -->
                     <div class="field-group">
                         <label asp-for="TourTitle" class="field-label">
                             <i class="bi bi-tag" style="color:#a0aec0;font-size:.85rem;"></i>
                             Tur Başlığı <span class="required">*</span>
                         </label>
-                        <input asp-for="TourTitle" class="form-control" placeholder="Örn: Kapadokya Balon Turu - 3 Gece 4 Gün" maxlength="120" id="tourTitleInput" />
+                        <input asp-for="TourTitle" class="form-control"
+                               placeholder="Örn: Kapadokya Balon Turu - 3 Gece 4 Gün"
+                               maxlength="120" id="tourTitleInput" />
                         <div class="char-counter" id="titleCounter">0 / 120</div>
-                        <span asp-validation-for="TourTitle" class="text-danger-field"><i class="bi bi-exclamation-circle"></i><span></span></span>
+                        <span asp-validation-for="TourTitle" class="text-danger-field">
+                            <i class="bi bi-exclamation-circle"></i><span></span>
+                        </span>
                     </div>
 
-                    <!-- Açıklama -->
+                    <!-- Açıklama - AI Butonu ile -->
                     <div class="field-group">
-                        <label asp-for="FullDescription" class="field-label">
-                            <i class="bi bi-text-left" style="color:#a0aec0;font-size:.85rem;"></i>
-                            Açıklama <span class="required">*</span>
-                        </label>
-                        <textarea asp-for="FullDescription" class="form-control" placeholder="Tur hakkında detaylı açıklama yazın..." maxlength="1000" id="descInput" rows="5"></textarea>
+                        <div class="d-flex justify-content-between align-items-center mb-1">
+                            <label asp-for="FullDescription" class="field-label mb-0">
+                                <i class="bi bi-text-left" style="color:#a0aec0;font-size:.85rem;"></i>
+                                Açıklama <span class="required">*</span>
+                            </label>
+                            <!-- AI BUTONU -->
+                            <button type="button" onclick="openAiModal()"
+                                    class="btn btn-sm d-flex align-items-center gap-1"
+                                    style="background:linear-gradient(135deg,#5d0473,#9333ea);color:white;border:none;border-radius:8px;padding:.3rem .85rem;font-size:.78rem;font-weight:600;transition:all .2s;"
+                                    onmouseover="this.style.opacity='.85'" onmouseout="this.style.opacity='1'">
+                                <i class="bi bi-stars"></i>
+                                AI ile Oluştur
+                            </button>
+                        </div>
+                        <textarea asp-for="FullDescription" class="form-control"
+                                  placeholder="Tur hakkında detaylı açıklama yazın veya AI ile oluşturun..."
+                                  maxlength="1000" id="descInput" rows="5"></textarea>
                         <div class="char-counter" id="descCounter">0 / 1000</div>
-                        <span asp-validation-for="FullDescription" class="text-danger-field"><i class="bi bi-exclamation-circle"></i><span></span></span>
+                        <span asp-validation-for="FullDescription" class="text-danger-field">
+                            <i class="bi bi-exclamation-circle"></i><span></span>
+                        </span>
                     </div>
+
+                    <!-- Kısa Açıklama -->
                     <div class="field-group">
                         <label asp-for="SubDescription" class="field-label">Kısa Açıklama (Alt Başlık)</label>
-                        <input asp-for="SubDescription" class="form-control" placeholder="Tur kartında görünecek kısa özet..." maxlength="200" />
+                        <input asp-for="SubDescription" class="form-control" id="subDescInput"
+                               placeholder="Tur kartında görünecek kısa özet..." maxlength="200" />
                         <span asp-validation-for="SubDescription" class="text-danger-field"></span>
                     </div>
 
@@ -86,9 +244,12 @@
                                 </label>
                                 <div class="input-with-icon">
                                     <i class="bi bi-globe2 input-icon"></i>
-                                    <input asp-for="TourCountry" class="form-control" placeholder="Örn: Türkiye" id="countryInput" style="padding-left:2.4rem;" />
+                                    <input asp-for="TourCountry" class="form-control"
+                                           placeholder="Örn: Türkiye" id="countryInput" style="padding-left:2.4rem;" />
                                 </div>
-                                <span asp-validation-for="TourCountry" class="text-danger-field"><i class="bi bi-exclamation-circle"></i><span></span></span>
+                                <span asp-validation-for="TourCountry" class="text-danger-field">
+                                    <i class="bi bi-exclamation-circle"></i><span></span>
+                                </span>
                             </div>
                         </div>
                         <div class="col-md-6">
@@ -99,9 +260,12 @@
                                 </label>
                                 <div class="input-with-icon">
                                     <i class="bi bi-geo-alt input-icon"></i>
-                                    <input asp-for="TourCity" class="form-control" placeholder="Örn: Nevşehir, Kapadokya" id="cityInput" />
+                                    <input asp-for="TourCity" class="form-control"
+                                           placeholder="Örn: Nevşehir, Kapadokya" id="cityInput" />
                                 </div>
-                                <span asp-validation-for="TourCity" class="text-danger-field"><i class="bi bi-exclamation-circle"></i><span></span></span>
+                                <span asp-validation-for="TourCity" class="text-danger-field">
+                                    <i class="bi bi-exclamation-circle"></i><span></span>
+                                </span>
                             </div>
                         </div>
                     </div>
@@ -122,13 +286,13 @@
                         <label asp-for="GuideId" class="field-label">Tur Rehberi <span class="required">*</span></label>
                         <div class="input-with-icon">
                             <i class="bi bi-person input-icon"></i>
-                            <select asp-for="GuideId" class="form-select" asp-items="ViewBag.Guides" style="padding-left:2.4rem;">
+                            <select asp-for="GuideId" class="form-select" asp-items="ViewBag.Guides"
+                                    style="padding-left:2.4rem;">
                                 <option value="">— Bir Rehber Seçin —</option>
                             </select>
                         </div>
                         <span asp-validation-for="GuideId" class="text-danger-field"></span>
                     </div>
-
                     <div class="field-hint">
                         <i class="bi bi-info-circle me-1"></i> Rehber listede yoksa önce "Rehberler" sekmesinden yeni rehber eklemelisiniz.
                     </div>
@@ -159,7 +323,9 @@
                                            min="@DateTime.Now.ToString("yyyy-MM-dd")" />
                                 </div>
                                 <div class="field-hint"><i class="bi bi-info-circle me-1"></i>Bugünden önceki tarih seçilemez.</div>
-                                <span asp-validation-for="TourDate" class="text-danger-field"><i class="bi bi-exclamation-circle"></i><span></span></span>
+                                <span asp-validation-for="TourDate" class="text-danger-field">
+                                    <i class="bi bi-exclamation-circle"></i><span></span>
+                                </span>
                             </div>
                         </div>
 
@@ -180,7 +346,24 @@
                                     </button>
                                 </div>
                                 <div class="field-hint"><i class="bi bi-info-circle me-1"></i>Maksimum katılımcı sayısı (1–500)</div>
-                                <span asp-validation-for="TourCapacity" class="text-danger-field"><i class="bi bi-exclamation-circle"></i><span></span></span>
+                                <span asp-validation-for="TourCapacity" class="text-danger-field">
+                                    <i class="bi bi-exclamation-circle"></i><span></span>
+                                </span>
+                            </div>
+                        </div>
+
+                        <!-- Fiyat -->
+                        <div class="col-md-6">
+                            <div class="field-group">
+                                <label asp-for="TourPrice" class="field-label">
+                                    <i class="bi bi-currency-dollar" style="color:#a0aec0;font-size:.85rem;"></i>
+                                    Tur Fiyatı <span class="required">*</span>
+                                </label>
+                                <div class="input-with-icon">
+                                    <i class="bi bi-cash-stack input-icon"></i>
+                                    <input asp-for="TourPrice" type="number" step="0.01" class="form-control"
+                                           placeholder="0.00" id="priceInput" />
+                                </div>
                             </div>
                         </div>
 
@@ -196,14 +379,16 @@
                                         <label for="dayCount">Gün Sayısı</label>
                                         <div class="input-with-icon">
                                             <i class="bi bi-sun input-icon"></i>
-                                            <input type="number" id="dayCount" min="1" max="30" value="3" class="form-control" placeholder="3" />
+                                            <input type="number" id="dayCount" min="1" max="30" value="3"
+                                                   class="form-control" placeholder="3" />
                                         </div>
                                     </div>
                                     <div class="duration-unit">
                                         <label for="nightCount">Gece Sayısı</label>
                                         <div class="input-with-icon">
                                             <i class="bi bi-moon input-icon"></i>
-                                            <input type="number" id="nightCount" min="0" max="30" value="2" class="form-control" placeholder="2" />
+                                            <input type="number" id="nightCount" min="0" max="30" value="2"
+                                                   class="form-control" placeholder="2" />
                                         </div>
                                     </div>
                                 </div>
@@ -211,7 +396,9 @@
                                 <div class="field-hint" id="durationPreview">
                                     <i class="bi bi-clock me-1"></i>Önizleme: <strong id="durationText">3 Gün / 2 Gece</strong>
                                 </div>
-                                <span asp-validation-for="DayNight" class="text-danger-field"><i class="bi bi-exclamation-circle"></i><span></span></span>
+                                <span asp-validation-for="DayNight" class="text-danger-field">
+                                    <i class="bi bi-exclamation-circle"></i><span></span>
+                                </span>
                             </div>
                         </div>
                     </div>
@@ -228,7 +415,6 @@
                     </div>
                 </div>
                 <div class="section-body">
-                    <!-- URL ile -->
                     <div class="field-group">
                         <label asp-for="ImageUrl" class="field-label">
                             <i class="bi bi-link-45deg" style="color:#a0aec0;font-size:.85rem;"></i>
@@ -236,21 +422,22 @@
                         </label>
                         <div class="input-with-icon">
                             <i class="bi bi-link-45deg input-icon"></i>
-                            <input asp-for="ImageUrl" type="url" class="form-control" placeholder="https://ornek.com/gorsel.jpg" id="imageUrlInput" />
+                            <input asp-for="ImageUrl" type="url" class="form-control"
+                                   placeholder="https://ornek.com/gorsel.jpg" id="imageUrlInput" />
                         </div>
                         <div class="field-hint"><i class="bi bi-info-circle me-1"></i>JPEG, PNG, WebP desteklenir.</div>
                         <img src="" alt="Görsel önizleme" class="url-preview-thumb" id="urlPreviewImg" />
-                        <span asp-validation-for="ImageUrl" class="text-danger-field"><i class="bi bi-exclamation-circle"></i><span></span></span>
+                        <span asp-validation-for="ImageUrl" class="text-danger-field">
+                            <i class="bi bi-exclamation-circle"></i><span></span>
+                        </span>
                     </div>
 
-                    <!-- Ayırıcı -->
                     <div class="d-flex align-items-center gap-3 my-3">
                         <div style="flex:1;height:1px;background:#e2e8f0;"></div>
                         <span style="font-size:.73rem;color:#a0aec0;font-weight:600;text-transform:uppercase;letter-spacing:.06em;">veya</span>
                         <div style="flex:1;height:1px;background:#e2e8f0;"></div>
                     </div>
 
-                    <!-- Dosya yükleme -->
                     <div class="image-upload-zone" id="uploadZone">
                         <input type="file" accept="image/*" id="imageFileInput" aria-label="Görsel dosyası seç" />
                         <div class="upload-icon"><i class="bi bi-cloud-arrow-up"></i></div>
@@ -269,11 +456,8 @@
                 </div>
             </div>
 
-        </div>
-
-        <!-- ═══════════════════════════════════════
-             RIGHT COLUMN — SIDEBAR PANEL
-        ════════════════════════════════════════ -->
+        </div><!-- /form-main -->
+        <!-- SIDEBAR PANEL -->
         <div class="sidebar-panel">
 
             <!-- YAYIM DURUMU -->
@@ -295,7 +479,6 @@
                         </div>
                         <i class="bi bi-check-circle-fill ms-auto" style="color:#16a34a;font-size:.95rem;"></i>
                     </label>
-
                     <label class="status-option" id="statusDraft">
                         <input type="radio" name="PublishStatus" value="draft" onchange="updateStatus(this)" />
                         <span class="status-dot dot-draft"></span>
@@ -304,7 +487,6 @@
                             <div class="ssub">Şimdilik gizle</div>
                         </div>
                     </label>
-
                     <label class="status-option" id="statusPassive">
                         <input type="radio" name="PublishStatus" value="passive" onchange="updateStatus(this)" />
                         <span class="status-dot dot-passive"></span>
@@ -329,7 +511,8 @@
                     <div class="summary-box">
                         <div class="summary-row">
                             <span class="label">Başlık</span>
-                            <span class="value" id="sumTitle" style="max-width:150px;text-align:right;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">—</span>
+                            <span class="value" id="sumTitle"
+                                  style="max-width:150px;text-align:right;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">—</span>
                         </div>
                         <div class="summary-row">
                             <span class="label">Ülke / Şehir</span>
@@ -355,7 +538,7 @@
                 </div>
             </div>
 
-            <!-- FORMUN GÖNDERİM BUTONLARI -->
+            <!-- BUTONLAR -->
             <div class="form-section">
                 <div class="section-body">
                     <div class="form-actions">
@@ -370,16 +553,18 @@
                 </div>
             </div>
 
-            <!-- KISA İPUÇLARI -->
+            <!-- İPUÇLARI -->
             <div class="form-section">
                 <div class="section-header" style="background:none;">
                     <div class="section-icon amber"><i class="bi bi-lightbulb"></i></div>
-                    <div>
-                        <div class="section-title">İpuçları</div>
-                    </div>
+                    <div><div class="section-title">İpuçları</div></div>
                 </div>
                 <div class="section-body" style="padding-top:.75rem;">
                     <ul style="list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:.6rem;">
+                        <li style="font-size:.78rem;color:#718096;display:flex;gap:.5rem;align-items:flex-start;">
+                            <i class="bi bi-stars" style="color:#9333ea;margin-top:1px;flex-shrink:0;"></i>
+                            <strong>AI ile Oluştur</strong> butonuyla açıklama otomatik yazılır.
+                        </li>
                         <li style="font-size:.78rem;color:#718096;display:flex;gap:.5rem;align-items:flex-start;">
                             <i class="bi bi-check2-circle" style="color:#16a34a;margin-top:1px;flex-shrink:0;"></i>
                             Başlık <strong>60–80 karakter</strong> arasında olmalı.
@@ -391,10 +576,6 @@
                         <li style="font-size:.78rem;color:#718096;display:flex;gap:.5rem;align-items:flex-start;">
                             <i class="bi bi-check2-circle" style="color:#16a34a;margin-top:1px;flex-shrink:0;"></i>
                             Açıklama <strong>özellikler ve dahil/hariç</strong> bilgileri içermeli.
-                        </li>
-                        <li style="font-size:.78rem;color:#718096;display:flex;gap:.5rem;align-items:flex-start;">
-                            <i class="bi bi-check2-circle" style="color:#16a34a;margin-top:1px;flex-shrink:0;"></i>
-                            Kapasite doluluk oranı rezervasyon panelinden takip edilir.
                         </li>
                     </ul>
                 </div>
@@ -408,12 +589,12 @@
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
     <script>
-        // ── KARAKTER SAYACI ─────────────────────────────
+
+        // ── KARAKTER SAYACI ────────────────────────────
         function initCounter(inputId, counterId, max) {
             const el = document.getElementById(inputId);
             const counter = document.getElementById(counterId);
             if (!el || !counter) return;
-
             const update = () => {
                 const len = el.value.length;
                 counter.textContent = `${len} / ${max}`;
@@ -422,48 +603,37 @@
             el.addEventListener('input', update);
             update();
         }
-
         initCounter('tourTitleInput', 'titleCounter', 120);
         initCounter('descInput', 'descCounter', 1000);
 
-        // ── KAPASİTE STEPPER ───────────────────────────
+        // ── STEPPER ───────────────────────────────────
         function stepperDecrement() {
             const inp = document.getElementById('capacityInput');
             let val = parseInt(inp.value) || 1;
-            if (val > 1) {
-                inp.value = val - 1;
-                inp.dispatchEvent(new Event('input')); // Özeti tetikle
-            }
+            if (val > 1) { inp.value = val - 1; inp.dispatchEvent(new Event('input')); }
         }
-
         function stepperIncrement() {
             const inp = document.getElementById('capacityInput');
             let val = parseInt(inp.value) || 1;
-            if (val < 500) {
-                inp.value = val + 1;
-                inp.dispatchEvent(new Event('input')); // Özeti tetikle
-            }
+            if (val < 500) { inp.value = val + 1; inp.dispatchEvent(new Event('input')); }
         }
 
-        // ── SÜRE OLUŞTURUCU (GÜN/GECE) ─────────────────
+        // ── SÜRE ──────────────────────────────────────
         function updateDuration() {
             const days   = parseInt(document.getElementById('dayCount').value) || 0;
             const nights = parseInt(document.getElementById('nightCount').value) || 0;
             const text   = `${days} Gün / ${nights} Gece`;
-
             document.getElementById('dayNightHidden').value = text;
             document.getElementById('durationText').textContent = text;
             updateSummary();
         }
-
         document.getElementById('dayCount').addEventListener('input', updateDuration);
         document.getElementById('nightCount').addEventListener('input', updateDuration);
 
-        // ── GÖRSEL ÖNİZLEME (URL) ───────────────────────
+        // ── GÖRSEL ÖNİZLEME ──────────────────────────
         const imageUrlInput = document.getElementById('imageUrlInput');
         const urlPreviewImg = document.getElementById('urlPreviewImg');
         let urlDebounce;
-
         imageUrlInput.addEventListener('input', function () {
             clearTimeout(urlDebounce);
             urlDebounce = setTimeout(() => {
@@ -478,11 +648,10 @@
             }, 600);
         });
 
-        // ── GÖRSEL ÖNİZLEME (DOSYA YÜKLEME) ─────────────
-        const uploadZone = document.getElementById('uploadZone');
+        const uploadZone     = document.getElementById('uploadZone');
         const imageFileInput = document.getElementById('imageFileInput');
-        const previewBox = document.getElementById('previewBox');
-        const previewImg = document.getElementById('previewImg');
+        const previewBox     = document.getElementById('previewBox');
+        const previewImg     = document.getElementById('previewImg');
 
         imageFileInput.addEventListener('change', function () {
             const file = this.files[0];
@@ -503,7 +672,7 @@
             previewImg.src = '';
         }
 
-        // ── DURUM SEÇİMİ (RADİO) ───────────────────────
+        // ── YAYIM DURUMU ──────────────────────────────
         function updateStatus(radio) {
             ['statusActive','statusDraft','statusPassive'].forEach(id => {
                 document.getElementById(id)?.classList.remove('selected-active','selected-draft');
@@ -513,60 +682,142 @@
             else if (radio.value === 'draft') parent.classList.add('selected-draft');
         }
 
-        // ── CANLI ÖZET PANELİ ──────────────────────────
+        // ── CANLI ÖZET ────────────────────────────────
         function updateSummary() {
-            const getValue = (id) => document.getElementById(id)?.value.trim() || '';
-
-            const title    = getValue('tourTitleInput');
-            const country  = getValue('countryInput');
-            const city     = getValue('cityInput');
-            const date     = getValue('tourDateInput');
-            const duration = getValue('dayNightHidden');
-            const capacity = getValue('capacityInput');
-
-            // Rehber adını yakala (select içindeki görünen metin)
-            const guideEl = document.querySelector('select[asp-for="GuideId"]') || document.querySelector('select[name="GuideId"]');
+            const title    = document.getElementById('tourTitleInput')?.value.trim() || '';
+            const country  = document.getElementById('countryInput')?.value.trim()  || '';
+            const city     = document.getElementById('cityInput')?.value.trim()     || '';
+            const date     = document.getElementById('tourDateInput')?.value        || '';
+            const duration = document.getElementById('dayNightHidden')?.value       || '';
+            const capacity = document.getElementById('capacityInput')?.value        || '';
+            const guideEl  = document.querySelector('select[name="GuideId"]');
             const guideName = guideEl && guideEl.selectedIndex > 0 ? guideEl.options[guideEl.selectedIndex].text : '—';
 
-            document.getElementById('sumTitle').textContent    = title || '—';
+            document.getElementById('sumTitle').textContent    = title    || '—';
             document.getElementById('sumLocation').textContent = (country && city) ? `${country} / ${city}` : (country || city || '—');
-            document.getElementById('sumDate').textContent     = date ? formatDate(date) : '—';
+            document.getElementById('sumDate').textContent     = date     ? formatDate(date) : '—';
             document.getElementById('sumDuration').textContent = duration || '—';
             document.getElementById('sumCapacity').textContent = capacity ? `${capacity} kişi` : '—';
-
-            // Eğer HTML'de rehber için bir sumGuide ID'li alan açarsan burası çalışır
-            const sumGuide = document.getElementById('sumGuide');
-            if (sumGuide) sumGuide.textContent = guideName;
+            document.getElementById('sumGuide').textContent    = guideName;
         }
 
-        function formatDate(dateStr) {
-            const [y, m, d] = dateStr.split('-');
-            return `${d}.${m}.${y}`;
+        function formatDate(d) {
+            const [y,m,day] = d.split('-');
+            return `${day}.${m}.${y}`;
         }
 
-        // Tüm tetikleyicileri bağla
-        ['tourTitleInput','countrySelect','cityInput','tourDateInput','capacityInput'].forEach(id => {
+        ['tourTitleInput','countryInput','cityInput','tourDateInput','capacityInput','priceInput'].forEach(id => {
             const el = document.getElementById(id);
-            if (el) {
-                const eventType = el.tagName === 'SELECT' ? 'change' : 'input';
-                el.addEventListener(eventType, updateSummary);
-            }
+            if (el) el.addEventListener('input', updateSummary);
         });
-
-        // Rehber dropdown'ı için özel dinleyici
         const guideDropdown = document.querySelector('select[name="GuideId"]');
         if (guideDropdown) guideDropdown.addEventListener('change', updateSummary);
 
-        // Sayfa yüklendiğinde çalıştır
         updateDuration();
         updateSummary();
 
-        // ── FORM GÖNDERİMİ ─────────────────────────────
-        document.getElementById('createTourForm').addEventListener('submit', function (e) {
+        // ── FORM GÖNDERİMİ ────────────────────────────
+        document.getElementById('createTourForm').addEventListener('submit', function () {
             const btn = document.getElementById('submitBtn');
             btn.disabled = true;
             btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Kaydediliyor...';
         });
+
+        // ══════════════════════════════════════════════
+        // AI AÇIKLAMA OLUŞTURMA
+        // ══════════════════════════════════════════════
+
+        // Modalı açarken formdaki bilgileri otomatik taşı
+        function openAiModal() {
+            document.getElementById('ai_title').value    = document.getElementById('tourTitleInput')?.value || '';
+            document.getElementById('ai_country').value  = document.getElementById('countryInput')?.value  || '';
+            document.getElementById('ai_city').value     = document.getElementById('cityInput')?.value     || '';
+            document.getElementById('ai_duration').value = document.getElementById('dayNightHidden')?.value || '';
+            document.getElementById('ai_price').value    = document.getElementById('priceInput')?.value    || '';
+
+            // Önceki sonuçları temizle
+            document.getElementById('aiResultArea').style.display = 'none';
+            document.getElementById('aiErrorArea').style.display  = 'none';
+
+            const modal = new bootstrap.Modal(document.getElementById('aiModal'));
+            modal.show();
+        }
+
+        async function generateWithAI() {
+            const btn     = document.getElementById('aiGenerateBtn');
+            const btnText = document.getElementById('aiBtnText');
+
+            const title    = document.getElementById('ai_title').value.trim();
+            const country  = document.getElementById('ai_country').value.trim();
+            const city     = document.getElementById('ai_city').value.trim();
+            const duration = document.getElementById('ai_duration').value.trim();
+            const price    = document.getElementById('ai_price').value.trim();
+            const tone     = document.getElementById('ai_tone').value;
+
+            if (!title) {
+                showAiError('Lütfen en azından tur başlığını girin.');
+                return;
+            }
+
+            // Yüklenme durumu
+            btn.disabled = true;
+            btnText.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span>Oluşturuluyor...';
+            document.getElementById('aiResultArea').style.display = 'none';
+            document.getElementById('aiErrorArea').style.display  = 'none';
+
+            try {
+                const response = await fetch('/AdminTour/GenerateDescription', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]').value
+                    },
+                    body: JSON.stringify({ title, country, city, duration, price, tone })
+                });
+
+                const data = await response.json();
+
+                // Groq endpoint'ten gelen yanıt
+                if (!data.success) {
+                    showAiError(data.error || 'Bilinmeyen hata oluştu.');
+                    return;
+                }
+
+                document.getElementById('ai_fullResult').value = data.fullDescription || '';
+                document.getElementById('ai_subResult').value  = data.subDescription  || '';
+                document.getElementById('aiResultArea').style.display = 'block';
+
+            } catch (err) {
+                showAiError('Bağlantı hatası: ' + err.message);
+            } finally {
+                btn.disabled = false;
+                btnText.innerHTML = '<i class="bi bi-stars me-2"></i>Yeniden Oluştur';
+            }
+        }
+
+        function showAiError(msg) {
+            document.getElementById('aiErrorText').textContent = msg;
+            document.getElementById('aiErrorArea').style.display = 'block';
+        }
+
+        // Sadece detaylı açıklamayı forma uygula
+        function applyFull() {
+            const val = document.getElementById('ai_fullResult').value;
+            const target = document.getElementById('descInput');
+            target.value = val;
+            target.dispatchEvent(new Event('input')); // char counter güncelle
+        }
+
+        // Sadece kısa açıklamayı forma uygula
+        function applySub() {
+            document.getElementById('subDescInput').value = document.getElementById('ai_subResult').value;
+        }
+
+        // İkisini birden uygula
+        function applyBoth() {
+            applyFull();
+            applySub();
+        }
+
     </script>
 }
-
