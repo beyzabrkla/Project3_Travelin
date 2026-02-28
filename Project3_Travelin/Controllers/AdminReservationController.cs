@@ -1,4 +1,4 @@
-﻿using BusinessLayer.Abstract;
+using BusinessLayer.Abstract;
 using DTOLayer.DTOs.ReservationDTOs;
 using MailKit.Net.Smtp;
 using Microsoft.AspNetCore.Authorization;
@@ -87,7 +87,7 @@ namespace Project3_Travelin.Controllers
             using (var client = new SmtpClient())
             {
                 client.Connect("smtp.gmail.com", 587, false);
-                client.Authenticate("beyzailetisimapp@gmail.com", "qrmoackfzratkiky");
+                client.Authenticate("beyzailetisimapp@gmail.com", "");
                 client.Send(mimeMessage);
                 client.Disconnect(true);
             }
